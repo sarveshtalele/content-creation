@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.3.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.4.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -31,7 +31,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 - [Quick start](#quick-start)
 - [Install](#install)
 - [Use it](#use-it)
-- [The six diagrams](#the-six-diagrams)
+- [The ten diagrams](#the-ten-diagrams)
 - [Customise the CTA, hook and voice](#customise-the-cta-hook-and-voice)
 - [How it works](#how-it-works)
 - [Review gate](#review-gate)
@@ -57,7 +57,7 @@ Turning an article into a clean diagram is slow, and AI-made diagrams are often 
 
 ## Features
 
-- **6 diagram templates** picked automatically from the shape of your content
+- **10 diagram templates**, 6 flat and 4 with 3D motion, picked automatically from the shape of your content
 - **Animated GIF** by default, under 5 MB, looping, in your personal brand
 - **Narrated Reel** (1080x1920 MP4, offline male voice, 90 seconds or less) on request
 - **LinkedIn post** with a hook question, arrow bullets, link and your closing CTA on request
@@ -150,7 +150,7 @@ python3 $S finalize work                                      # after attest.jso
 
 Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | post | brand | build | review | finalize`.
 
-## The six diagrams
+## The ten diagrams
 
 The plugin chooses one with `studio.py pick` (a deterministic score over the source's wording and structure). The agent may override with a reason.
 
@@ -162,6 +162,10 @@ The plugin chooses one with `studio.py pick` (a deterministic score over the sou
 | **hub** | one concept with named parts | <img src="docs/img/hub.jpg" width="190"> |
 | **ecosystem** | one core fanning out to 3-5 sections | <img src="docs/img/ecosystem.jpg" width="190"> |
 | **framework** | a 6 or 9 part framework, each part a mini-diagram, plus takeaways | <img src="docs/img/framework.jpg" width="190"> |
+| **exploded** (3D) | a thing made of layers, pulled apart | <img src="docs/img/exploded.jpg" width="190"> |
+| **isoflow** (3D) | an ordered flow across isometric slabs | <img src="docs/img/isoflow.jpg" width="190"> |
+| **orbit** (3D) | a core with 4-6 things around it | <img src="docs/img/orbit.jpg" width="190"> |
+| **stairs** (3D) | levels or stages that climb | <img src="docs/img/stairs.jpg" width="190"> |
 
 Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
 

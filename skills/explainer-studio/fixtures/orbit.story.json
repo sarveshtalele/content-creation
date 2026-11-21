@@ -1,0 +1,7 @@
+{"meta":{"title":"One assistant, many integrations","slug":"assistant-integrations"},"gif":{"template":"orbit","title":"One assistant, many integrations","subtitle":"Six integrations connect it to daily work","orbit":{"hub":{"title":"One assistant","sub":"Six integrations"},"items":[
+{"title":"Email","sub":"Read and draft messages","icon":"bell","group":"blue"},
+{"title":"Calendar","sub":"Find free time and book meetings","icon":"clipboard","group":"green"},
+{"title":"Documents","sub":"Write and edit files","icon":"table","group":"clay"},
+{"title":"Chat","sub":"Post updates to the team","icon":"users","group":"blue"},
+{"title":"Tasks","sub":"Track work and due dates","icon":"target","group":"green"},
+{"title":"Search","sub":"Look things up across every tool","icon":"eye","group":"clay"}]}}}

@@ -24,11 +24,15 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'hub | columns | pipeline | lanes | ecosystem | framework   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
     'columns': 'catalogue by category: gif.hub{title,sub?,tagline}, gif.columns[3-4]{label,icon,group,items[2-3]{title<=22,sub<=60,icon}}',
     'pipeline': 'top-down workflow: gif.pipeline{start{title,sub?,icon},stages[2-4]{label,group,link?,nodes[2-4]{title<=24,sub<=44}},result{title,sub?,icon}}',
     'lanes': 'layers of a stack/ecosystem: gif.lanes{hub{title,sub?,icon},lanes[3-5]{label<=22,icon,group,items[2-3]{title<=22,sub<=50}}}',
+    'exploded': '3D layers pulled apart (isometric plates) with a flat label card each: gif.exploded{hub{title<=22},layers[3-5]{title<=24,sub<=60,icon,group}} (top layer first)',
+    'isoflow': 'a flow across isometric slabs, one stop per slab: gif.isoflow{stops[3-5]{title<=24,sub<=50,icon,group}} (first to last)',
+    'orbit': 'a glossy core with tilted 3D rings and 4-6 cards around it: gif.orbit{hub{title<=22,sub?<=24},items[4-6]{title<=24,sub<=44,icon,group}}',
+    'stairs': 'isometric blocks climbing left to right (levels, stages, maturity): gif.stairs{steps[3-5]{title<=22,sub<=50,icon,group}} (lowest first)',
     'ecosystem': 'one core fanning out to 3-5 sections with rails: gif.ecosystem{hub{title<=22,sub?<=24,icon?},sections[3-5]{label<=22,icon,group,items[2-3]{title<=24,sub<=50}}}',
     'framework': 'a framework as 6|9 mini-diagram cards + takeaways: gif.framework{takeaways_title?,cards[6|9]{title<=26,body<=96,icon,group,caption?<=40,viz{type,root?,items}},takeaways[3-5]{title<=24,body<=44,icon}}; viz.type steps(2-4; <=14 chars, <=8 when 3) stack(2-3,<=16) tree(root<=22 + 2-3, <=14, <=9 when 3) fan(root<=9 + 2-3,<=16) table(2-4 rows "a|b|c"; cells <=10 with 3 columns, <=16 with 2)',
   },
@@ -188,7 +192,7 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
-TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework')
+TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs')
 VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
@@ -220,6 +224,17 @@ def v_ecosystem(v, g, icons):
     for i, s_ in enumerate(_list(v, 'gif.ecosystem.sections', E.get('sections'), 3, 5)):
         w = f'gif.ecosystem.sections[{i}]'; _S(v, w + '.label', s_.get('label'), 3, 22); _ic(v, w + '.icon', s_.get('icon'), icons); _grp(v, w + '.group', s_.get('group'))
         for j, x in enumerate(_list(v, w + '.items', s_.get('items'), 2, 3)): _S(v, f'{w}.items[{j}].title', x.get('title'), 3, 24); _S(v, f'{w}.items[{j}].sub', x.get('sub'), 8, 50)
+def _nodes(v, w, L, lo, hi, tmax, smax, icons):
+    for i, x in enumerate(_list(v, w, L, lo, hi)):
+        _S(v, f'{w}[{i}].title', x.get('title'), 3, tmax); _S(v, f'{w}[{i}].sub', x.get('sub'), 8, smax); _ic(v, f'{w}[{i}].icon', x.get('icon'), icons); _grp(v, f'{w}[{i}].group', x.get('group'))
+def v_exploded(v, g, icons):
+    X = g.get('exploded', {}); _S(v, 'gif.exploded.hub.title', X.get('hub', {}).get('title'), 2, 22); _nodes(v, 'gif.exploded.layers', X.get('layers'), 3, 5, 24, 60, icons)
+def v_isoflow(v, g, icons): _nodes(v, 'gif.isoflow.stops', g.get('isoflow', {}).get('stops'), 3, 5, 24, 50, icons)
+def v_orbit(v, g, icons):
+    O = g.get('orbit', {}); h = O.get('hub', {}); _S(v, 'gif.orbit.hub.title', h.get('title'), 2, 22)
+    if h.get('sub') is not None: _S(v, 'gif.orbit.hub.sub', h['sub'], 3, 24)
+    _nodes(v, 'gif.orbit.items', O.get('items'), 4, 6, 24, 44, icons)
+def v_stairs(v, g, icons): _nodes(v, 'gif.stairs.steps', g.get('stairs', {}).get('steps'), 3, 5, 22, 50, icons)
 def v_gif(v, g, icons):
     G = SPEC['gif']; tpl = g.get('template', 'hub')
     if tpl not in TEMPLATES: v.e('gif.template must be ' + '|'.join(TEMPLATES)); return
@@ -228,6 +243,7 @@ def v_gif(v, g, icons):
     if 'source' in g: v.w('gif.source is ignored: the GIF no longer shows a source line')
     if tpl == 'framework': return v_framework(v, g, icons)
     if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
+    if tpl in ('exploded', 'isoflow', 'orbit', 'stairs'): return {'exploded': v_exploded, 'isoflow': v_isoflow, 'orbit': v_orbit, 'stairs': v_stairs}[tpl](v, g, icons)
     if tpl == 'columns':
         h = g.get('hub', {}); _S(v, 'gif.hub.title', h.get('title'), 2, 22); _S(v, 'gif.hub.tagline', h.get('tagline'), 4, 34)
         if h.get('sub') is not None: _S(v, 'gif.hub.sub', h['sub'], 4, 40)

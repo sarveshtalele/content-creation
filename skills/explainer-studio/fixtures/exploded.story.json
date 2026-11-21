@@ -1,0 +1,6 @@
+{"meta":{"title":"Anatomy of a web request","slug":"web-request-anatomy"},"gif":{"template":"exploded","title":"A web request in layers","subtitle":"Pull the request apart into five layers","exploded":{"hub":{"title":"A web request"},"layers":[
+{"title":"Browser layer","sub":"Builds the address, sends headers, waits for the answer","icon":"globe","group":"blue"},
+{"title":"Network layer","sub":"DNS finds the server and TLS keeps traffic private","icon":"lock","group":"green"},
+{"title":"Edge layer","sub":"A CDN serves cached files; a load balancer spreads traffic","icon":"rocket","group":"clay"},
+{"title":"Application layer","sub":"Checks the user, applies business rules, builds the response","icon":"layers","group":"blue"},
+{"title":"Data layer","sub":"A database stores records; a cache keeps hot answers close","icon":"database","group":"green"}]}}}

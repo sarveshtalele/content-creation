@@ -1,0 +1,6 @@
+{"meta":{"title":"How code reaches production","slug":"code-to-production"},"gif":{"template":"isoflow","title":"A release pipeline","subtitle":"One pipeline, one stop at a time","isoflow":{"stops":[
+{"title":"Push a commit","sub":"A developer pushes and the pipeline starts","icon":"rocket","group":"blue"},
+{"title":"Build and test","sub":"Compile the code and run the unit tests","icon":"table","group":"green"},
+{"title":"Security scan","sub":"Check dependencies for known problems","icon":"lock","group":"clay"},
+{"title":"Staging deploy","sub":"Release to a safe copy of production","icon":"clipboard","group":"blue"},
+{"title":"Production release","sub":"Ship to users while monitoring watches","icon":"eye","group":"green"}]}}}

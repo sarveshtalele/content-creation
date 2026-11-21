@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.0
+- Four 3D motion templates: `exploded` (layers pulled apart), `isoflow` (isometric flow), `orbit` (core with tilted rings and 4-6 cards), `stairs` (isometric levels that climb). CSS 3D transforms and exact isometric blocks for the shapes, flat axis-aligned cards for every word, so the same layout gates apply.
+- `engine/gif_3d.js` helpers; `uniformSub` gives every card in a diagram one sub-text size.
+- Fixtures, validators, picker skeletons and previews for all four.
+
 ## 2.3.0
 - `studio.py brand`: change the follow pill (name, follow word, tagline, avatar), the post's closing CTA lines and the voice with one command. Stored in `~/.cache/explainer-studio/brand.json`, so updates never overwrite it; `--reset` restores the defaults.
 - New guide `docs/CUSTOMIZE.md`: update the CTA, rewrite the hook, then recreate the GIF, Reel or post.

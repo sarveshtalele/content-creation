@@ -10,6 +10,10 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `hub` | one concept, nine parts | `gif.hub`, `gif.groups`, `gif.cards[9]` |
 | `ecosystem` | one core, 3-5 sections | `gif.ecosystem{hub, sections[3-5]{label, icon, group, items[2-3]}}` |
 | `framework` | 6 or 9 parts, each drawable | `gif.framework{cards[6|9]{title, body, icon, group, caption, viz}, takeaways[3-5]}` |
+| `exploded` | a thing made of layers, pulled apart in 3D | `gif.exploded{hub{title}, layers[3-5]{title, sub, icon, group}}` (top layer first) |
+| `isoflow` | an ordered flow across isometric slabs | `gif.isoflow{stops[3-5]{title, sub, icon, group}}` |
+| `orbit` | a core with 4-6 things around it | `gif.orbit{hub{title, sub?}, items[4-6]{title, sub, icon, group}}` |
+| `stairs` | levels or stages that climb | `gif.stairs{steps[3-5]{title, sub, icon, group}}` (lowest first) |
 
 `group` is a colour: `blue`, `green`, `clay` or `sand`. Icons come from `studio.py spec --icons`. Every text must reuse the source's words (checked).
 
@@ -22,6 +26,12 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `tree` | a root over children | `root`, `items[2-4]` |
 | `fan` | one source feeding outputs | `root`, `items[2-4]` |
 | `table` | header row + rows | `items` as `"a|b|c"` rows, 2-3 cells |
+
+## How the 3D templates work
+
+The 3D is decoration, the words are flat. Plates and rings use real CSS 3D transforms (`rotateX`, `rotateZ`); isometric blocks are exact three-face polygons. Every label lives in a normal, axis-aligned card, so the same layout checks (overflow, overlap, empty cards, safe area) apply and the text stays crisp. Helpers are in `engine/gif_3d.js`: `plate`, `iso`, `rayRect`, `uniformSub` (one sub-text size for the whole diagram), `mix` (tints).
+
+The picker favours the 2D templates unless the source clearly describes anatomy and layers, 3D flows, things around a centre, or levels. To force one, tell your agent: *"use the orbit template"*.
 
 ## Add a template
 
