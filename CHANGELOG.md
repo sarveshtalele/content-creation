@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.0
+
+- Three new 3D "cutaway city" templates, inspired by isometric building-cutaway infographics (layout idea only, no third-party branding):
+  - **tower**: an isometric building, one glass room per floor with a small illustrated scene, numbered markers and side callouts joined by flowing-dot leaders.
+  - **skyline**: isometric towers whose height encodes a ranking (`size` 1-10), with a value flag on each roof and lit windows.
+  - **conveyor**: an isometric belt running through 3-4 gates, boxes changing colour at each gate.
+- A shared scene library (`engine/gif_scenes.js`): 14 flat illustrations (screen, chart, chat, docs, gears, checklist, search, shield, cloud, people, rocket, database, bulb, target) built from plain shapes, so every render is identical.
+- `studio.py pick` scores the new templates; `studio.py spec` lists their limits and the scene names. Words stay in flat, axis-aligned cards; only decoration is 3D.
+
 ## 2.4.0
 - Four 3D motion templates: `exploded` (layers pulled apart), `isoflow` (isometric flow), `orbit` (core with tilted rings and 4-6 cards), `stairs` (isometric levels that climb). CSS 3D transforms and exact isometric blocks for the shapes, flat axis-aligned cards for every word, so the same layout gates apply.
 - `engine/gif_3d.js` helpers; `uniformSub` gives every card in a diagram one sub-text size.

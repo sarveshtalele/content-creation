@@ -9,7 +9,10 @@ import { buildExploded } from './gif_exploded.js';
 import { buildIsoflow } from './gif_isoflow.js';
 import { buildOrbit } from './gif_orbit.js';
 import { buildStairs } from './gif_stairs.js';
-const T = { hub: buildHub, columns: buildColumns, pipeline: buildPipeline, lanes: buildLanes, ecosystem: buildEcosystem, framework: buildFramework, exploded: buildExploded, isoflow: buildIsoflow, orbit: buildOrbit, stairs: buildStairs };
+import { buildTower } from './gif_tower.js';
+import { buildSkyline } from './gif_skyline.js';
+import { buildConveyor } from './gif_conveyor.js';
+const T = { hub: buildHub, columns: buildColumns, pipeline: buildPipeline, lanes: buildLanes, ecosystem: buildEcosystem, framework: buildFramework, exploded: buildExploded, isoflow: buildIsoflow, orbit: buildOrbit, stairs: buildStairs, tower: buildTower, skyline: buildSkyline, conveyor: buildConveyor };
 export function buildGif(stage, D) {
   const f = T[D.gif.template || 'hub']; if (!f) throw new Error('unknown gif template ' + D.gif.template);
   return f(stage, D);

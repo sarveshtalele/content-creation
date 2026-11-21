@@ -19,6 +19,9 @@ def pick(full, meta=None):
       'isoflow': (5 * _c(r'\b(pipeline|data flow|dataflow|ci/cd|deploy(?:ment)?|release|request path|hand ?off|route|routing)\b', t) + 2 * _c(r'\b(then|next|finally|after that)\b', t)) * k * .55,
       'orbit': (7 * _c(r'\b(around|orbit|surrounds?|revolves?|central|hub and spoke|at the center|at the centre|connects? to)\b', t) + 3 * _c(r'\b(integrations?|plugins?|partners?|apps?|connectors?)\b', t)) * k * .6,
       'stairs': (9 * _c(r'\b(levels?|maturity|roadmap|milestones?|stages? of growth|beginner|intermediate|advanced|ladder|progression|grow(?:s|th)?)\b', t)) * k * .6,
+      'tower': (8 * _c(r'\b(floors?|storey|stories|building|tower|skyscraper|levels? of|layer by layer|top to bottom|bottom to top|foundation|rooftop|roof)\b', t) + 2 * _c(r'\b(stack|tiers?)\b', t)) * k * .6,
+      'skyline': (8 * _c(r'\b(rank(?:s|ed|ing)?|biggest|largest|highest|tallest|top \d+|leaderboard|compare[sd]?|market share|growth of|vs\.?)\b', t) + 3 * _c(r'\b\d+(?:\.\d+)?\s?(?:%|x|k|m|b|million|billion)\b', t)) * k * .5,
+      'conveyor': (8 * _c(r'\b(conveyor|assembly line|factory|queue|gate|gates|checkpoint|screening|review|approval|moderation|quality control|handoff|hand-off|production line)\b', t) + 2 * _c(r'\b(automat\w+|batch|inspect\w*)\b', t)) * k * .55,
       'ecosystem': (6 * _c(r'\b(ecosystem|platform|fans? out|sections?|suite|portfolio)\b', t) + 2 * _c(r'\b(sources|ingestion|storage|processing|serving|deployment|governance)\b', t)) * k,
       'framework': (6 * _c(r'\b(framework|governance|policy|policies|compliance|principles|pillars|controls?|takeaways?|best practices)\b', t) + 3 * _c(r'\b(nine|eight|six|checklist|reuse|reusable)\b', t)) * k,
       'columns': (3 * _c(r'\b(models?|products?|tools?|plans?|pricing|features?|categories|category|catalog|catalogue|lineup|family|families|variants|offerings|services|options)\b', t) + .7 * items + 1.5 * heads + 6 * lists3) * k,
@@ -28,7 +31,7 @@ def pick(full, meta=None):
     s = {a: round(b, 1) for a, b in s.items()}
     best = max(s, key=lambda a: (s[a], a == 'hub'))
     if s[best] < 12: best = 'hub'
-    return {'template': best, 'scores': s, 'why': {'pipeline': 'the source describes ordered steps or a flow', 'lanes': 'the source describes layers or a stack', 'columns': 'the source lists things grouped by category', 'hub': 'one central thing made of named parts (files, settings, components)', 'ecosystem': 'one core that fans out into several sections, each with parts', 'exploded': 'a thing made of layers or parts, shown pulled apart in 3D', 'isoflow': 'an ordered flow that reads well across 3D slabs', 'orbit': 'a core with 4-6 things around it (integrations, partners, parts)', 'stairs': 'levels, stages or a progression that climbs', 'framework': 'a framework of 6-9 parts, each easy to show as a small diagram, plus takeaways'}[best]}
+    return {'template': best, 'scores': s, 'why': {'pipeline': 'the source describes ordered steps or a flow', 'lanes': 'the source describes layers or a stack', 'columns': 'the source lists things grouped by category', 'hub': 'one central thing made of named parts (files, settings, components)', 'ecosystem': 'one core that fans out into several sections, each with parts', 'exploded': 'a thing made of layers or parts, shown pulled apart in 3D', 'isoflow': 'an ordered flow that reads well across 3D slabs', 'orbit': 'a core with 4-6 things around it (integrations, partners, parts)', 'stairs': 'levels, stages or a progression that climbs', 'tower': 'a building of floors or layers, each room showing a small scene', 'skyline': 'a ranking or size comparison shown as city towers', 'conveyor': 'items passing through checks, gates or hand-offs on a belt', 'framework': 'a framework of 6-9 parts, each easy to show as a small diagram, plus takeaways'}[best]}
 
 
 # Minimal fill-in skeletons, printed by `studio.py pick` so the agent writes only the content (no schema reading). "…" = your words from the source.
@@ -42,6 +45,9 @@ SKELETON = {
  'exploded': _G % 'exploded' + '"exploded":{"hub":{"title":"…"},"layers":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-5]}}',
  'isoflow': _G % 'isoflow' + '"isoflow":{"stops":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-5]}}',
  'orbit': _G % 'orbit' + '"orbit":{"hub":{"title":"…","sub":"…"},"items":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x4-6]}}',
+ 'tower': _G % 'tower' + '"tower":{"hub":{"title":"…"},"floors":[{"title":"…","sub":"…","icon":"icon","group":"blue","scene":"screen|chart|chat|docs|gears|checklist|search|shield|cloud|people|rocket|database|bulb|target"} x3-5]}}',
+ 'skyline': _G % 'skyline' + '"skyline":{"buildings":[{"title":"…","sub":"…","value":"…","size":5,"icon":"icon","group":"blue"} x3-5]}}',
+ 'conveyor': _G % 'conveyor' + '"conveyor":{"gates":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-4]}}',
  'stairs': _G % 'stairs' + '"stairs":{"steps":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-5]}}',
  'ecosystem': _G % 'ecosystem' + '"ecosystem":{"hub":{"title":"…","sub":"…","icon":"icon"},"sections":[{"label":"…","icon":"icon","group":"blue","items":[%s x2-3]} x3-5]}}' % _I,
  'framework': _G % 'framework' + '"framework":{"cards":[{"title":"…","body":"…","icon":"icon","group":"blue","caption":"…","viz":{"type":"steps|stack|tree|fan|table","root":"…(tree,fan)","items":["…" x2-4]}} x6|9],"takeaways":[{"title":"…","body":"…","icon":"icon"} x3-5]}}',

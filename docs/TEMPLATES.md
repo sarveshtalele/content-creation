@@ -14,6 +14,9 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `isoflow` | an ordered flow across isometric slabs | `gif.isoflow{stops[3-5]{title, sub, icon, group}}` |
 | `orbit` | a core with 4-6 things around it | `gif.orbit{hub{title, sub?}, items[4-6]{title, sub, icon, group}}` |
 | `stairs` | levels or stages that climb | `gif.stairs{steps[3-5]{title, sub, icon, group}}` (lowest first) |
+| `tower` | a building of floors, each room a small scene | `gif.tower{hub{title}, floors[3-5]{title, sub, icon, group, scene}}` (top floor first) |
+| `skyline` | a ranking or size comparison | `gif.skyline{buildings[3-5]{title, sub, value, size 1-10, icon, group}}` (value is shown on the roof, e.g. `82%`) |
+| `conveyor` | items passing through gates | `gif.conveyor{gates[3-4]{title, sub, icon, group}}` (first gate first) |
 
 `group` is a colour: `blue`, `green`, `clay` or `sand`. Icons come from `studio.py spec --icons`. Every text must reuse the source's words (checked).
 
@@ -32,6 +35,10 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 The 3D is decoration, the words are flat. Plates and rings use real CSS 3D transforms (`rotateX`, `rotateZ`); isometric blocks are exact three-face polygons. Every label lives in a normal, axis-aligned card, so the same layout checks (overflow, overlap, empty cards, safe area) apply and the text stays crisp. Helpers are in `engine/gif_3d.js`: `plate`, `iso`, `rayRect`, `uniformSub` (one sub-text size for the whole diagram), `mix` (tints).
 
 The picker favours the 2D templates unless the source clearly describes anatomy and layers, 3D flows, things around a centre, or levels. To force one, tell your agent: *"use the orbit template"*.
+
+### Scenes (tower)
+
+`scene` picks the small illustration inside a floor: `screen, chart, chat, docs, gears, checklist, search, shield, cloud, people, rocket, database, bulb, target`. Scenes are flat shapes that draw in part by part, so they are identical on every render. Add one in `engine/gif_scenes.js` and to `SCENES` in `scripts/validate_story.py`.
 
 ## Add a template
 

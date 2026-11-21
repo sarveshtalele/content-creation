@@ -1,0 +1,4 @@
+{"meta":{"title":"How a post passes review","slug":"post-review-belt"},"gif":{"template":"conveyor","title":"How a post passes review","subtitle":"Three gates before it goes live","conveyor":{"gates":[
+{"title":"Screening","sub":"Software flags spam and unsafe words","icon":"shield","group":"blue"},
+{"title":"Review","sub":"An editor checks facts and tone","icon":"search","group":"green"},
+{"title":"Approval","sub":"The owner signs off and picks a time","icon":"check","group":"clay"}]}}}

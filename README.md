@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.4.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -31,7 +31,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 - [Quick start](#quick-start)
 - [Install](#install)
 - [Use it](#use-it)
-- [The ten diagrams](#the-ten-diagrams)
+- [The thirteen diagrams](#the-thirteen-diagrams)
 - [Customise the CTA, hook and voice](#customise-the-cta-hook-and-voice)
 - [How it works](#how-it-works)
 - [Review gate](#review-gate)
@@ -150,7 +150,7 @@ python3 $S finalize work                                      # after attest.jso
 
 Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | post | brand | build | review | finalize`.
 
-## The ten diagrams
+## The thirteen diagrams
 
 The plugin chooses one with `studio.py pick` (a deterministic score over the source's wording and structure). The agent may override with a reason.
 
@@ -166,6 +166,9 @@ The plugin chooses one with `studio.py pick` (a deterministic score over the sou
 | **isoflow** (3D) | an ordered flow across isometric slabs | <img src="docs/img/isoflow.jpg" width="190"> |
 | **orbit** (3D) | a core with 4-6 things around it | <img src="docs/img/orbit.jpg" width="190"> |
 | **stairs** (3D) | levels or stages that climb | <img src="docs/img/stairs.jpg" width="190"> |
+| **tower** (3D) | a building of floors, each room a small scene | <img src="docs/img/tower.jpg" width="190"> |
+| **skyline** (3D) | a ranking or size comparison as city towers | <img src="docs/img/skyline.jpg" width="190"> |
+| **conveyor** (3D) | items passing through gates, checks or hand-offs | <img src="docs/img/conveyor.jpg" width="190"> |
 
 Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
 

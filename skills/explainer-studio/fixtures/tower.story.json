@@ -1,0 +1,6 @@
+{"meta":{"title":"The five floors of an AI app","slug":"ai-app-floors"},"gif":{"template":"tower","title":"The five floors of an AI app","subtitle":"Each floor does one job","tower":{"hub":{"title":"AI app"},"floors":[
+{"title":"Interface","sub":"People type and read answers","icon":"chat","group":"blue","scene":"screen"},
+{"title":"Assistant","sub":"Understands the request and plans the work","icon":"bolt","group":"clay","scene":"chat"},
+{"title":"Tools","sub":"Search, run code and read files","icon":"gear","group":"green","scene":"gears"},
+{"title":"Data","sub":"Stores documents and history","icon":"database","group":"blue","scene":"database"},
+{"title":"Safety","sub":"Checks, limits and logs","icon":"shield","group":"clay","scene":"shield"}]}}}
