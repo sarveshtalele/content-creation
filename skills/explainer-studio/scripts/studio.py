@@ -53,6 +53,7 @@ def env_for(lib):
     if d and (ffver(shutil.which('ffmpeg') or 'ffmpeg') < 7): e['PATH'] = d + os.pathsep + e['PATH']
     return e
 def run(cmd, cwd=None, env=None, quiet=False):
+    if cmd and cmd[0] in ('ffmpeg', 'ffprobe', 'node'): cmd = [shutil.which(cmd[0], path=(env or os.environ)['PATH']) or cmd[0]] + list(cmd[1:])   # Windows resolves a bare name in the parent's PATH, not env's
     r = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace')
     if r.returncode and not quiet: sys.stderr.write((r.stdout + r.stderr)[-1800:])
     return r
