@@ -5,7 +5,7 @@ import { PAL, scene, header, footer, finish, reveal, flow, node, badge, layer, W
 export function buildPipeline(stage, D) {
   const S = scene(stage, D), g = S.g, p = g.pipeline, N = p.stages.length;
   header(S);
-  const nodeH = { 2: 156, 3: 142, 4: 110 }[N], bandH = nodeH + 62, bigH = 88, avail = BOTTOM - TOP;
+  const nodeH = { 2: 138, 3: 126, 4: 106 }[N], bandH = nodeH + 62, bigH = 88, avail = BOTTOM - TOP;
   const gap = Math.min(70, Math.max(36, (avail - 2 * bigH - N * bandH) / (N + 1)));
   const used = 2 * bigH + N * bandH + (N + 1) * gap; let y = TOP + Math.max(0, Math.round((avail - used) / 2));
   const cx = 540; let t = .9;
@@ -22,12 +22,12 @@ export function buildPipeline(stage, D) {
   p.stages.forEach((st, i) => {
     const P = PAL[st.group], top = prevBottom + gap, n = st.nodes.length, link = st.link !== false, ng = link ? 44 : 24, inner = 984, nw = Math.floor((inner - (n - 1) * ng) / n);
     flow(S, `M${cx} ${prevBottom + 2} V${top - 2}`, i === 0 ? PAL.blue.bd : PAL[p.stages[i - 1].group].bd, { t0: t, dur: .5, w: 4.5 }); t += .45;
-    const band = box(S.root, { x: 24, y: top, w: 1032, h: bandH, r: 30, fill: P.soft, bd: P.bd, bw: 2.5, shadow: false, css: 'border-style:dashed;' });
+    const band = box(S.root, { x: 24, y: top, w: 1032, h: bandH, r: 30, fill: P.soft, bd: P.bd, bw: 2.5, shadow: false, bg: true, css: 'border-style:dashed;' });
     const lw = Math.min(520, st.label.length * 13 + 40), lab = box(S.root, { x: 48, y: top - 19, w: lw, h: 38, r: 19, fill: '#fff', bd: P.bd, bw: 2.5, shadow: false });
     tx(lab, `pl${i}`, st.label, { x: 0, y: 0, w: lw - 5, h: 34, size: 20, weight: 700, color: P.ink, align: 'center', ls: .06 });
     reveal(S, band, t, { dy: 8, sc: .98, d: .45 }); reveal(S, lab, t + .15, { dy: 6, d: .35 }); t += .35; const ls = layer(S);
     st.nodes.forEach((nd, j) => {
-      const nx = 24 + 24 + j * (nw + ng), ny = top + 38, b = node(S, `pn${i}${j}`, { x: nx, y: ny, w: nw, h: nodeH - 0, title: nd.title, sub: nd.sub, group: st.group, tsize: n === 4 ? 23 : 26, ssize: n === 4 ? 18 : 20, center: true, r: 20, fill: '#fff' });
+      const nx = 24 + 24 + j * (nw + ng), ny = top + 38, b = node(S, `pn${i}${j}`, { x: nx, y: ny, w: nw, h: nodeH - 0, title: nd.title, sub: nd.sub, group: st.group, tsize: n === 4 ? 23 : 26, ssize: n === 4 ? 18 : 20, center: true, r: 20, fill: '#fff', fit: true });
       reveal(S, b, t, { dy: 12, sc: .92, d: .4 });
       if (link && j > 0) flow(S, `M${nx - ng + 3} ${ny + nodeH / 2} H${nx - 3}`, P.bd, { t0: t - .1, dur: .35, w: 4, head: 12, svg: ls });
       t += .4;

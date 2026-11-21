@@ -30,7 +30,7 @@ SPEC = {
     'pipeline': 'top-down workflow: gif.pipeline{start{title,sub?,icon},stages[2-4]{label,group,link?,nodes[2-4]{title<=24,sub<=44}},result{title,sub?,icon}}',
     'lanes': 'layers of a stack/ecosystem: gif.lanes{hub{title,sub?,icon},lanes[3-5]{label<=22,icon,group,items[2-3]{title<=22,sub<=50}}}',
     'ecosystem': 'one core fanning out to 3-5 sections with rails: gif.ecosystem{hub{title<=22,sub?<=24,icon?},sections[3-5]{label<=22,icon,group,items[2-3]{title<=24,sub<=50}}}',
-    'framework': 'a framework as 6|9 mini-diagram cards + takeaways: gif.framework{takeaways_title?,cards[6|9]{title<=26,body<=96,icon,group,caption?<=40,viz{type,root?,items}},takeaways[3-5]{title<=24,body<=44,icon}}; viz.type steps(2-4,<=14) stack(2-4,<=18) tree(root+2-4,<=10) fan(root<=12+2-4,<=22) table(2-4 rows "a|b|c",<=10 per cell) chips(root<=14+2-4,<=12)',
+    'framework': 'a framework as 6|9 mini-diagram cards + takeaways: gif.framework{takeaways_title?,cards[6|9]{title<=26,body<=96,icon,group,caption?<=40,viz{type,root?,items}},takeaways[3-5]{title<=24,body<=44,icon}}; viz.type steps(2-4; <=14 chars, <=8 when 3) stack(2-3,<=16) tree(root<=22 + 2-3, <=14, <=9 when 3) fan(root<=9 + 2-3,<=16) table(2-4 rows "a|b|c"; cells <=10 with 3 columns, <=16 with 2)',
   },
   'post': {'hook': S(15, 150), 'bullets': [3, 6], 'bullet_chars': [20, 150], 'max_chars': 1100},
   'thresholds': {'claim_support': 1.0, 'overlap_min': 0.40, 'overlap_warn': 0.55, 'recall@3': 0.9, 'mrr': 0.7, 'coverage': 0.5, 'ungrounded_entities': 0},
@@ -189,7 +189,7 @@ def _ic(v, w, val, icons, req=True):
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
 TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework')
-VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 4, 18, False), 'tree': (2, 4, 10, True), 'fan': (2, 4, 22, True), 'table': (2, 4, 30, False), 'chips': (2, 4, 12, True)}
+VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
     if F.get('takeaways_title') is not None: _S(v, 'gif.framework.takeaways_title', F['takeaways_title'], 4, 24)
@@ -201,15 +201,15 @@ def v_framework(v, g, icons):
         z = c.get('viz') or {}; t = z.get('type')
         if t not in VIZ: v.e(f'{w}.viz.type must be ' + '|'.join(VIZ)); continue
         lo, hi, mx, root = VIZ[t]; it = _list(v, w + '.viz.items', z.get('items'), lo, hi)
-        if root: _S(v, w + '.viz.root', z.get('root'), 2, {'tree': 22, 'fan': 12, 'chips': 14}[t])
+        if root: _S(v, w + '.viz.root', z.get('root'), 2, {'tree': 22, 'fan': 9}[t])
         if t == 'table':
             cols = {len(str(r).split('|')) for r in it}
             if len(cols) != 1 or not cols <= {2, 3}: v.e(f'{w}.viz.items: every row needs the same 2-3 cells separated by |')
             for r in it:
                 for cell in str(r).split('|'):
-                    if not 1 <= len(cell.strip()) <= 10: v.e(f'{w}.viz.items: table cell "{cell.strip()}" must be 1-10 chars')
+                    if not 1 <= len(cell.strip()) <= (10 if len(r.split('|')) == 3 else 16): v.e(f'{w}.viz.items: table cell "{cell.strip()}" must be 1-{10 if len(r.split("|")) == 3 else 16} chars')
             continue
-        lim = 14 if t == 'tree' and len(it) <= 3 else 12 if t == 'steps' and len(it) == 4 else mx
+        lim = {('steps', 3): 8, ('tree', 3): 9}.get((t, len(it)), mx)
         for j, x in enumerate(it): _S(v, f'{w}.viz.items[{j}]', x, 2, lim)
     tk = _list(v, 'gif.framework.takeaways', F.get('takeaways'), 3, 5)
     for i, k in enumerate(tk):

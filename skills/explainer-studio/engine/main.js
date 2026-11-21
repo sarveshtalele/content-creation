@@ -46,6 +46,10 @@ function layoutInfo() {
   return { items: out, cap: capR };
 }
 window.LAYOUT = () => layoutInfo();
+window.BOXES = () => [...stage.querySelectorAll('[data-box]')].filter(el => !el.classList.contains('tx') && effOpacity(el) >= .95).map(el => {
+  const r = el.getBoundingClientRect(), tx = [...[...el.querySelectorAll('.tx')].map(t => bounds(t).r), ...[...el.querySelectorAll('svg')].map(s => s.getBoundingClientRect())].filter(q => q.width > 0);
+  return { r: [r.left, r.top, r.right, r.bottom], tb: tx.length ? Math.max(...tx.map(q => q.bottom)) : null, tt: tx.length ? Math.min(...tx.map(q => q.top)) : null, n: tx.length, bg: el.dataset.bg === '1', round: parseFloat(el.style.borderRadius) >= Math.min(r.width, r.height) / 2 - 1, i: [...stage.querySelectorAll('[data-box]')].indexOf(el), el };
+});
 window.TEXTS = () => collectTexts();
 async function loadFonts() {
   const fam = ['500 40px Lora', '600 40px Lora', '700 40px Lora', 'italic 500 40px Lora', '400 30px Inter', '500 30px Inter', '600 30px Inter', '700 30px Inter', '800 30px Inter', '400 30px "JetBrains Mono"', '500 30px "JetBrains Mono"', '700 30px "JetBrains Mono"'];
@@ -76,7 +80,7 @@ async function setupGif(D) {
 (async () => {
   const D = await (await fetch('data.json')).json();
   FLAGS.logo = D.logo === true;
+  await loadFonts();                                   // before building: templates measure text to fit it
   await (MODE === 'gif' ? setupGif(D) : setupReel(D));
-  await loadFonts();
   window.READY = true;
 })().catch(e => { console.error(e); throw e; });

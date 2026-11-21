@@ -20,10 +20,10 @@ export function E(parent, cls = '', css = '', html = '', tag = 'div') {
   return e;
 }
 const px = v => (typeof v === 'number' ? v + 'px' : v);
-export function box(parent, { x, y, w, h, r = 28, fill = C.card, bd = C.line, bw = 2, shadow = true, css = '' }) {
+export function box(parent, { x, y, w, h, r = 28, fill = C.card, bd = C.line, bw = 2, shadow = true, css = '', bg = false }) {
   const sh = shadow ? `box-shadow:0 ${Math.round(h * .03 + 4)}px 0 ${C.line};` : '';
   const b = E(parent, 'abs', `left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${r}px;background:${fill};border:${bw}px solid ${bd};box-sizing:border-box;${sh}${css}`);
-  b.dataset.box = '1'; return b;
+  b.dataset.box = '1'; if (bg) b.dataset.bg = '1'; return b;   // bg: a band that other boxes intentionally sit on
 }
 // text box: id is what readcheck sees. Fixed width + nowrap unless wrap=true. Text is centred in the box vertically.
 export function tx(parent, id, text, { x, y, w, h, size = 36, weight = 600, color = C.ink, font = 'sans', align = 'left', wrap = false, ls = 0, lh = 1.2, italic = false, css = '' }) {
@@ -166,4 +166,19 @@ export const PALS = [
 export function chip(parent, id, text, { size = 30, pal = PALS[0], weight = 600 } = {}) {
   const e = E(parent, 'tx sans', `display:inline-flex;align-items:center;white-space:nowrap;font-size:${size}px;font-weight:${weight};color:${pal.ink};background:${pal.soft};border:2.5px solid ${pal.bd};border-radius:${size}px;padding:${Math.round(size * .3)}px ${Math.round(size * .65)}px;box-sizing:border-box`);
   const s = E(e, '', 'display:block', '', 'span'); s.textContent = text; e.dataset.id = id; e.dataset.text = text; e.dataset.box = '1'; return e;
+}
+
+// ---- Text measuring (fonts are loaded before any template is built) ----
+let _m = null;
+export function measure(text, { size, weight = 600, font = 'sans', w, lh = 1.2 }) {
+  if (!_m) _m = E(document.body, '', 'position:absolute;visibility:hidden;left:-9999px;top:0;overflow-wrap:normal;word-break:normal');
+  _m.className = font; _m.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;overflow-wrap:normal;word-break:normal;box-sizing:border-box;width:${w}px;font-size:${size}px;font-weight:${weight};line-height:${lh};white-space:normal`;
+  _m.textContent = text;
+  const rg = document.createRange(); rg.selectNodeContents(_m);   // same box the layout validator measures
+  return { h: Math.max(rg.getBoundingClientRect().height, 0), wide: _m.scrollWidth > w + .5 };
+}
+// largest size in [min,max] at which `text` wraps inside w x h with no word wider than w
+export function fitSize(text, { w, h, max = 24, min = 13, weight = 600, font = 'sans', lh = 1.2 }) {
+  for (let s = max; s >= min; s--) { const m = measure(text, { size: s, weight, font, w, lh }); if (m.h <= h + .5 && !m.wide) return s; }
+  return min;
 }

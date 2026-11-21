@@ -18,7 +18,7 @@ export function buildLanes(stage, D) {
   let t = 2.4;
   L.lanes.forEach((ln, i) => {
     const P = PAL[ln.group], top = y0 + i * (laneH + gapL), cy = top + laneH / 2, n = ln.items.length;
-    const band = box(S.root, { x: 24, y: top, w: 1032, h: laneH, r: 28, fill: P.soft, bd: P.bd, bw: 2, shadow: false, css: 'border-style:dashed;opacity:.9' });
+    const band = box(S.root, { x: 24, y: top, w: 1032, h: laneH, r: 28, fill: P.soft, bd: P.bd, bw: 2, shadow: false, bg: true, css: 'border-style:dashed;opacity:.9' });
     reveal(S, band, t - .2, { dy: 8, sc: .98, d: .4 }); const ls = layer(S);
     flow(S, `M${TX} ${cy} H${74}`, P.bd, { t0: t - .2, dur: .3, w: 4, head: 11, svg: ls });
     const chipW = 188, chipH = laneH - 28, chip = box(S.root, { x: 80, y: top + 14, w: chipW, h: chipH, r: 22, fill: '#fff', bd: P.bd, bw: 3, css: `box-shadow:0 4px 0 ${C.line};` });
@@ -30,7 +30,7 @@ export function buildLanes(stage, D) {
     ln.items.forEach((it, j) => {
       const ix = ix0 + j * (iw + gx);
       flow(S, `M${prevX + 2} ${cy} H${ix - 2}`, P.bd, { t0: tt, dur: .3, w: 4, head: 11, svg: ls });
-      const b = node(S, `li${i}${j}`, { x: ix, y: top + Math.round((laneH - itemH) / 2), w: iw, h: itemH, title: it.title, sub: it.sub, group: ln.group, tsize: 22, ssize: 18, r: 20, fill: '#fff' });
+      const b = node(S, `li${i}${j}`, { x: ix, y: top + Math.round((laneH - itemH) / 2), w: iw, h: itemH, title: it.title, sub: it.sub, group: ln.group, tsize: 22, ssize: 18, r: 20, fill: '#fff', fit: true });
       reveal(S, b, tt + .25, { dy: 10, sc: .93, d: .4 }); prevX = ix + iw; tt += .55;
     });
     t = tt + .35;

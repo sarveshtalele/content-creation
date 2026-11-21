@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.1
+- Rebuilt `ecosystem` and `framework` with measured text fitting (the browser measures each text, so sizes match the checks): no overflow, no empty cards, no overlapping boxes.
+- New Playwright checks on the final frame: `BOX-OVERLAP` (two boxes overlapping without nesting) and `EMPTY-CARD` (a card whose text leaves more than 32% of its height empty). Bands and section headers are marked `bg` and exempt.
+- Tightened card sizes and bigger fitted text in `hub`, `columns`, `pipeline` and `lanes`. Ecosystem hub text now fits inside its circle.
+
 ## 2.1.0
 - New GIF templates: `ecosystem` (core fanning into sections) and `framework` (6 or 9 mini-diagram cards plus takeaways).
 - One GIF by default; Reel and post only when requested. Male Reel voice (am_michael).

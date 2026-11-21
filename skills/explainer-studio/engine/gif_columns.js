@@ -2,7 +2,7 @@
 import { C, E, box, tx, spark, enter, seg, eo } from './kit.js';
 import { PAL, scene, header, footer, finish, reveal, flow, node, badge, W } from './gif_common.js';
 
-const CARD_H = 134, GAP = 20, Y0 = 160;
+const CARD_H = 148, GAP = 20, Y0 = 160;
 export function buildColumns(stage, D) {
   const S = scene(stage, D), g = S.g, cols = g.columns, nc = cols.length;
   header(S);
@@ -23,7 +23,7 @@ export function buildColumns(stage, D) {
     const spineTop = Y0 + 6, pillTop = nodeY;
     flow(S, `M${cx} ${spineTop} V${pillTop - 2}`, P.bd, { t0: t, dur: .5 + n * .4, w: 4, head: 13 });
     col.items.forEach((it, j) => {
-      const card = node(S, `k${i}${j}`, { x, y: Y0 + j * (CARD_H + GAP), w: colW, h: CARD_H, title: it.title, sub: it.sub, ic: it.icon, group: col.group, tsize: nc === 4 ? 23 : 26, ssize: nc === 4 ? 19 : 21 });
+      const card = node(S, `k${i}${j}`, { x, y: Y0 + j * (CARD_H + GAP), w: colW, h: CARD_H, title: it.title, sub: it.sub, ic: it.icon, group: col.group, tsize: nc === 4 ? 23 : 26, ssize: nc === 4 ? 19 : 21, fit: true });
       reveal(S, card, t + .15 + j * .42, { dy: 16 });
     });
     const pill = box(S.root, { x: x + 8, y: pillTop, w: colW - 16, h: nodeH, r: 42, fill: P.soft, bd: P.bd, bw: 3, css: `box-shadow:0 5px 0 ${C.line};` });

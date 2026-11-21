@@ -22,7 +22,6 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `tree` | a root over children | `root`, `items[2-4]` |
 | `fan` | one source feeding outputs | `root`, `items[2-4]` |
 | `table` | header row + rows | `items` as `"a|b|c"` rows, 2-3 cells |
-| `chips` | a centre with items around it | `root`, `items[2-4]` |
 
 ## Add a template
 

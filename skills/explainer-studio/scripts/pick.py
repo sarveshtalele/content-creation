@@ -36,5 +36,5 @@ SKELETON = {
  'pipeline': _G % 'pipeline' + '"pipeline":{"start":{"title":"…","sub":"…","icon":"icon"},"stages":[{"label":"…","group":"blue","nodes":[%s x2-4]} x2-4],"result":{"title":"…","sub":"…","icon":"icon"}}}' % _I,
  'lanes': _G % 'lanes' + '"lanes":{"hub":{"title":"…","sub":"…","icon":"icon"},"lanes":[{"label":"…","icon":"icon","group":"blue","items":[%s x2-3]} x3-5]}}' % _I,
  'ecosystem': _G % 'ecosystem' + '"ecosystem":{"hub":{"title":"…","sub":"…","icon":"icon"},"sections":[{"label":"…","icon":"icon","group":"blue","items":[%s x2-3]} x3-5]}}' % _I,
- 'framework': _G % 'framework' + '"framework":{"cards":[{"title":"…","body":"…","icon":"icon","group":"blue","caption":"…","viz":{"type":"steps|stack|tree|fan|table|chips","root":"…(tree,fan,chips)","items":["…" x2-4]}} x6|9],"takeaways":[{"title":"…","body":"…","icon":"icon"} x3-5]}}',
+ 'framework': _G % 'framework' + '"framework":{"cards":[{"title":"…","body":"…","icon":"icon","group":"blue","caption":"…","viz":{"type":"steps|stack|tree|fan|table","root":"…(tree,fan)","items":["…" x2-4]}} x6|9],"takeaways":[{"title":"…","body":"…","icon":"icon"} x3-5]}}',
 }

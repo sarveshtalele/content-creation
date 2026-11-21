@@ -5,7 +5,7 @@ const { openDemo, closeServer, takeSize } = await import(pathToFileURL(path.join
 const args = process.argv.slice(2), { w: VW, h: VH } = takeSize(args), opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const dir = args[0], Q = opt('--q', ''), STEP = +opt('--step', 0.1), TOP = +opt('--top', 0), BOT = +opt('--bottom', VH), SIDE = +opt('--side', 40);
 const { browser, page } = await openDemo(dir, { w: VW, h: VH, q: Q, gl: false });
-const res = await page.evaluate(({ STEP, TOP, BOT, SIDE }) => {
+const res = await page.evaluate(({ STEP, TOP, BOT, SIDE, Q_GIF }) => {
   const W = innerWidth, H = innerHeight, issues = {}, note = (k, t, msg) => { (issues[k] ??= { msg, t0: t, t1: t, n: 0 }); issues[k].t1 = t; issues[k].n++; };
   const fonts = new Set();
   for (let t = 0; t <= window.DUR - 0.001; t += STEP) {
@@ -32,9 +32,19 @@ const res = await page.evaluate(({ STEP, TOP, BOT, SIDE }) => {
     // scene bleed: texts from two scenes both ≥ .5 opacity
     const sc = new Set(L.items.filter(i => i.op > .5 && i.scene >= 0).map(i => i.scene)); if (sc.size > 1) note('SCENE-BLEED', t, `texts of ${sc.size} scenes visible together`);
   }
+  if (Q_GIF) {   // structure checks on the finished page: boxes must not collide, and cards must not be mostly empty
+    window.render(window.DUR - 1.5);
+    const B = window.BOXES();
+    for (let a = 0; a < B.length; a++) for (let b = a + 1; b < B.length; b++) {
+      const A = B[a], Z = B[b]; if (A.bg || Z.bg || A.el.contains(Z.el) || Z.el.contains(A.el)) continue;
+      const ox = Math.min(A.r[2], Z.r[2]) - Math.max(A.r[0], Z.r[0]), oy = Math.min(A.r[3], Z.r[3]) - Math.max(A.r[1], Z.r[1]);
+      if (ox > 6 && oy > 6) note('BOX-OVERLAP #' + A.i + ' x #' + Z.i, window.DUR, `two boxes overlap ${ox.toFixed(0)}x${oy.toFixed(0)}px at (${A.r[0].toFixed(0)},${A.r[1].toFixed(0)})`);
+    }
+    for (const A of B) { const h = A.r[3] - A.r[1], w = A.r[2] - A.r[0]; if (A.n && !A.round && !A.bg && h > 100 && w > 150 && ((A.r[3] - A.tb) > .32 * h || (A.tt - A.r[1]) > .32 * h)) note('EMPTY-CARD #' + A.i, window.DUR, `card ${w.toFixed(0)}x${h.toFixed(0)} at (${A.r[0].toFixed(0)},${A.r[1].toFixed(0)}) is mostly empty: text spans ${(A.tt - A.r[1]).toFixed(0)}..${(A.tb - A.r[1]).toFixed(0)} of ${h.toFixed(0)}px`); }
+  }
   const fontsOk = [...fonts].map(f => { const [fam, wt] = [f.slice(0, f.lastIndexOf(' ')), f.slice(f.lastIndexOf(' ') + 1)]; return f + ': ' + document.fonts.check(`${wt} 30px "${fam}"`); });
   return { issues: Object.entries(issues).map(([k, v]) => ({ k, ...v })), fontsOk };
-}, { STEP, TOP, BOT, SIDE });
+}, { STEP, TOP, BOT, SIDE, Q_GIF: /mode=gif/.test(Q) });
 await browser.close(); closeServer();
 console.log('fonts:', res.fontsOk.join(' | '));
 if (!res.issues.length) { console.log('VALIDATE OK: no overflow, leakage, overlap or safe-zone violations'); process.exit(0); }

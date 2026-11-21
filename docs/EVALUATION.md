@@ -31,3 +31,14 @@ At 100% gates, the reviewer opens `out/review/*.png` and writes `attest.json` wi
 - A visual check by a model or person looking at stills can miss subtle issues in frames it did not sample.
 - Speech-to-text verification needs the optional ASR model (`sh scripts/setup.sh asr`); without it the speech gate fails rather than passing silently.
 - Source fidelity depends on the source; the plugin does not fact-check the source itself.
+
+## Layout checks on the final frame (GIF)
+
+Besides the per-frame checks (overflow, leak, overlap, safe area), the validator inspects the finished frame:
+
+| Check | Fails when |
+|---|---|
+| `BOX-OVERLAP` | two boxes overlap by more than 6x6 px and one is not inside the other (bands and section headers set `bg` and are exempt) |
+| `EMPTY-CARD` | a card taller than 100 px leaves more than 32% of its height empty above or below its text (round hubs are exempt) |
+
+A GIF is only finalized when both pass, the contact sheets have been looked at, and the attest token matches.

@@ -1,5 +1,5 @@
 // Template "hub": one central idea with 9 parts around it (top row, side rows, two bottom cards). Hub-and-spoke with flowing arrows.
-import { C, E, box, tx, path, circ, draw, headAt, tri, icon, spark, keycap, enter, seg, eo, fit } from './kit.js';
+import { C, E, box, tx, path, circ, draw, headAt, tri, icon, spark, keycap, enter, seg, eo, fit, fitSize } from './kit.js';
 import { PAL, scene, header, footer, finish, reveal, flow, badge, W } from './gif_common.js';
 
 const PH = [[C.blueSoft, C.blueD, C.blue], [C.claySoft, C.clayD, C.clay], [C.greenSoft, C.greenD, C.green]];
@@ -15,7 +15,7 @@ function card(S, id, c, { x, y, w, h }) {
   E(b, 'abs', `left:16px;right:16px;top:72px;height:0;border-top:2px dashed ${C.line}`);
   return b;
 }
-const body = (b, id, text, { w, h, size }) => tx(b, id, text, { x: 13, y: 82, w, h, size, weight: 500, color: C.mid, wrap: true, lh: 1.27, css: 'align-items:flex-start;' });
+const body = (b, id, text, { w, h, size }) => tx(b, id, text, { x: 13, y: 80, w, h, size, weight: 500, color: '#45443F', wrap: true, lh: 1.27 });
 
 export function buildHub(stage, D) {
   const S = scene(stage, D), g = S.g, cards = g.cards, { root, svg, A, at } = S;
@@ -68,7 +68,7 @@ export function buildHub(stage, D) {
   order.forEach((i, k) => {
     const c = cards[i], s = slot(i), id = 'c' + i, b = card(S, id, c, s), P = PAL[c.group];
     const FIT = { top: [[34, 24], [48, 22], [200, 21]], side: [[60, 28], [92, 25], [200, 23]], wide: [[70, 30], [110, 27], [200, 25]], narrow: [[40, 30], [70, 27], [200, 25]] };
-    const sz = fit(c.body || '', FIT[s.kind]), bw = s.w - 26;
+    const bw = s.w - 26, sz = fitSize(c.body || ' ', { w: bw - 4, h: s.h - 82 - 12 - 8, max: { top: 24, side: 32, wide: 32, narrow: 32 }[s.kind], min: 17, weight: 500, lh: 1.27 });
     const t0 = i < 7 ? times[k] : i === 7 ? 11.8 : 13.4, kids = [];
     if (i < 7) { flow(S, pathFor(i), P.bd, { t0: t0 - .55, dur: .55 }); reveal(S, b, t0); }
     if (c.kind === 'chips') {

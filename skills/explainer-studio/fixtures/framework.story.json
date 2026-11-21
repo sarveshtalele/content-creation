@@ -63,7 +63,7 @@
      "viz": {
       "type": "steps",
       "items": [
-       "Principles",
+       "Rules",
        "Policies",
        "Checks"
       ]
@@ -94,9 +94,9 @@
      "viz": {
       "type": "fan",
       "items": [
-       "Bug tests",
-       "Speed tests",
-       "Security tests"
+       "Bugs",
+       "Performance",
+       "Security"
       ],
       "root": "Build"
      }
@@ -108,14 +108,13 @@
      "body": "Track errors, latency, and usage and alert when a metric crosses its threshold.",
      "caption": "Alert at the threshold",
      "viz": {
-      "type": "chips",
+      "type": "fan",
+      "root": "Metrics",
       "items": [
        "Errors",
        "Latency",
-       "Usage",
-       "Alerts"
-      ],
-      "root": "Metrics"
+       "Usage"
+      ]
      }
     },
     {
