@@ -230,12 +230,17 @@ def build_gif(work, story, lib, env, out, slug):
     os.makedirs(out, exist_ok=True); vid = os.path.join(out, 'gif_video.mp4'); print('[gif] rendering...')
     r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', size, '--fps', '10', '--workers', workers(), '--q', 'mode=gif', '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('gif render failed')
+    png = os.path.join(out, f'{slug}-linkedin.png')                      # the complete diagram as one still image: the last full frame before the closing fade (default output)
+    dur_v = float((probe(env, vid, 'format=duration').get('format') or {}).get('duration') or 0)
+    ff_ = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'
+    run([ff_, '-y', '-v', 'error', '-ss', str(max(0.0, dur_v - 2.5)), '-i', vid, '-frames:v', '1', png], env=env, quiet=True)
     fin = os.path.join(out, f'{slug}-linkedin.gif')
     for w, c in ((1080, 128), (900, 128), (800, 96), (720, 96), (640, 64)):  # always 4:5 portrait; width only shrinks to fit 5 MB
         make_gif(vid, fin, w, 10, c, env)
         if os.path.getsize(fin) <= 5 * 1048576: break
     os.remove(vid); mb = os.path.getsize(fin) / 1048576; print(f'[gif] done -> {fin} ({w}px, {mb:.1f} MB)')
-    return {'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
+    if os.path.isfile(png): print(f'[image] done -> {png} (1080x1350 PNG, the complete diagram)')
+    return {'image': png if os.path.isfile(png) else None, 'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
 
 def build(a):
     work = os.path.abspath(a.dir); ok, story, chunks, rep = do_check(work, quiet=False)
@@ -309,6 +314,7 @@ def review(a):
         G['reel.speech_matches_script'] = sp == 'verified'
         times = [round(dur * x, 2) for x in (.06, .2, .35, .5, .65, .8, .95)]; sheet(env, f, times, os.path.join(rd, 'reel_sheet.png'), 270)
     if 'post' in B: pf = os.path.join(out, f'{story["meta"]["slug"]}-linkedin-post.txt'); files.append(pf); G['post.exact_cta_lines'] = all(l in open(pf, encoding='utf-8').read() for l in brand()['post_cta'])
+    files = files + [x['image'] for x in B.values() if isinstance(x, dict) and x.get('image') and x['image'] not in files]   # the PNG is part of what is attested
     token = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
     bad = [k for k, v in G.items() if v is not True]; pct = round(100 * (len(G) - len(bad)) / max(1, len(G)))
     rep_ = {'gates': G, 'passed': len(G) - len(bad), 'total': len(G), 'confidence_pct': pct, 'token': token, 'sheets': [x for x in ('gif_sheet.png', 'reel_sheet.png') if os.path.exists(os.path.join(rd, x))]}; dump(rep_, os.path.join(rd, 'gates.json'))
@@ -327,7 +333,7 @@ def finalize(a):
     if not os.path.exists(at): print('REFUSED: out/review/attest.json missing (look at the sheets, then write it)'); return 1
     A = load(at); need = ('text_legible', 'nothing_overlaps_or_clipped', 'matches_source', 'arrows_follow_the_logic')
     story = load(os.path.join(work, 'story.json')); B = load(os.path.join(out, 'build.json'))['artifacts']
-    files = [x['file'] for x in B.values() if isinstance(x, dict) and 'file' in x]; slug = story['meta']['slug']; pf = os.path.join(out, f'{slug}-linkedin-post.txt')
+    files = [x['file'] for x in B.values() if isinstance(x, dict) and 'file' in x] + [x['image'] for x in B.values() if isinstance(x, dict) and x.get('image')]; slug = story['meta']['slug']; pf = os.path.join(out, f'{slug}-linkedin-post.txt')
     if 'post' in B: files.append(pf)
     cur = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
     if cur != R['token']: print('REFUSED: outputs changed since review; run studio.py review again'); return 1

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.0
+
+- **conveyor rebuilt as a data-driven animated infographic.** Each gate now carries a pass rate (`stat{value,pct}`): a ring gauge on the gate, a count-up bar in a tally panel, a light curtain that pulses when a box passes, and a numbered badge. The boxes encode the data too: the share that fails drops off the belt at its gate with a red mark, survivors take the gate's colour. Techniques: staged reveal, count-up numbers, one value shown twice (ring and bar), motion that carries meaning. `conveyor.tally` is the panel heading.
+- **Image by default.** `studio.py build` now also writes `<slug>-linkedin.png`, the complete diagram as one 1080x1350 still (the last full frame before the closing fade). It is attested and copied by `finalize` with the GIF. The narrated Reel stays on demand (`--artifacts reel`).
+- Fix: Reel "big" scenes could overflow their box for short phrases; the box height now scales with the font size.
+- Added a Reel story to the conveyor fixture so the sample video can be rebuilt.
+
 ## 2.5.0
 
 - Three new 3D "cutaway city" templates, inspired by isometric building-cutaway infographics (layout idea only, no third-party branding):

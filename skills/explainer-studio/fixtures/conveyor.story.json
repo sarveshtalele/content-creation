@@ -1,4 +1,204 @@
-{"meta":{"title":"How a post passes review","slug":"post-review-belt"},"gif":{"template":"conveyor","title":"How a post passes review","subtitle":"Three gates before it goes live","conveyor":{"gates":[
-{"title":"Screening","sub":"Software flags spam and unsafe words","icon":"shield","group":"blue"},
-{"title":"Review","sub":"An editor checks facts and tone","icon":"search","group":"green"},
-{"title":"Approval","sub":"The owner signs off and picks a time","icon":"check","group":"clay"}]}}}
+{
+ "meta": {
+  "title": "How a post passes review",
+  "slug": "post-review-belt",
+  "source_label": "Source: How a post passes review"
+ },
+ "gif": {
+  "template": "conveyor",
+  "title": "How a post passes review",
+  "subtitle": "Three gates before it goes live",
+  "conveyor": {
+   "tally": "Share of posts that pass each gate",
+   "gates": [
+    {
+     "title": "Screening",
+     "sub": "Software flags spam and unsafe words",
+     "icon": "shield",
+     "group": "blue",
+     "stat": {
+      "value": "88%",
+      "pct": 88
+     }
+    },
+    {
+     "title": "Review",
+     "sub": "An editor checks facts and tone",
+     "icon": "search",
+     "group": "green",
+     "stat": {
+      "value": "70%",
+      "pct": 70
+     }
+    },
+    {
+     "title": "Approval",
+     "sub": "The owner signs off and picks a time",
+     "icon": "check",
+     "group": "clay",
+     "stat": {
+      "value": "95%",
+      "pct": 95
+     }
+    }
+   ]
+  }
+ },
+ "beats": [
+  {
+   "id": "b1",
+   "role": "hook",
+   "say": "Ever wonder what happens to your post before it goes live?"
+  },
+  {
+   "id": "b2",
+   "role": "stakes",
+   "say": "Without checks, spam and unsafe words could reach your readers.",
+   "cite": [
+    [
+     "c01",
+     "spam and unsafe words"
+    ]
+   ]
+  },
+  {
+   "id": "b3",
+   "role": "answer",
+   "say": "Every post moves along a belt with three gates before it goes live.",
+   "cite": [
+    [
+     "c01",
+     "Every post moves along a belt with three gates before it goes live"
+    ]
+   ]
+  },
+  {
+   "id": "b4",
+   "role": "how",
+   "say": "First, Screening. Software flags spam and unsafe words, and about 88% of posts pass.",
+   "cite": [
+    [
+     "c01",
+     "Software flags spam and unsafe words"
+    ]
+   ]
+  },
+  {
+   "id": "b5",
+   "role": "how",
+   "say": "Next, Review. An editor checks facts and tone, and around 70% of the remaining posts pass.",
+   "cite": [
+    [
+     "c02",
+     "An editor checks facts and tone"
+    ]
+   ]
+  },
+  {
+   "id": "b6",
+   "role": "how",
+   "say": "Last, Approval. The owner signs off and picks a time, and nearly 95% of reviewed posts pass.",
+   "cite": [
+    [
+     "c02",
+     "The owner signs off and picks a time"
+    ]
+   ]
+  },
+  {
+   "id": "b7",
+   "role": "proof",
+   "say": "Only then does the post go live.",
+   "cite": [
+    [
+     "c02",
+     "only then does the post go live"
+    ]
+   ]
+  },
+  {
+   "id": "b8",
+   "role": "takeaway",
+   "say": "So your readers see work that has been screened, reviewed and approved."
+  },
+  {
+   "id": "b9",
+   "role": "engage",
+   "say": "Try naming the gate that would catch the most problems on your team."
+  }
+ ],
+ "scenes": [
+  {
+   "id": "s1",
+   "type": "hook",
+   "beats": [
+    "b1",
+    "b2"
+   ],
+   "p": {
+    "q": "What happens to your post before it goes live?",
+    "sub": "Spam and unsafe words must not reach your readers.",
+    "chips": [
+     "Spam",
+     "Unsafe words"
+    ]
+   }
+  },
+  {
+   "id": "s2",
+   "type": "flow",
+   "beats": [
+    "b3",
+    "b4",
+    "b5",
+    "b6"
+   ],
+   "p": {
+    "title": "Three gates on one belt",
+    "steps": [
+     {
+      "label": "Screening",
+      "sub": "88% of posts pass",
+      "icon": "shield",
+      "cue": "Screening"
+     },
+     {
+      "label": "Review",
+      "sub": "70% of posts pass",
+      "icon": "search",
+      "cue": "Review"
+     },
+     {
+      "label": "Approval",
+      "sub": "95% of posts pass",
+      "icon": "check",
+      "cue": "Approval"
+     }
+    ]
+   }
+  },
+  {
+   "id": "s3",
+   "type": "big",
+   "beats": [
+    "b7",
+    "b8"
+   ],
+   "p": {
+    "big": "Go live",
+    "sub": "Screened, reviewed and approved before it goes live"
+   }
+  },
+  {
+   "id": "s4",
+   "type": "big",
+   "beats": [
+    "b9"
+   ],
+   "p": {
+    "big": "Your call",
+    "sub": "Which gate catches the most on your team?"
+   }
+  }
+ ]
+}

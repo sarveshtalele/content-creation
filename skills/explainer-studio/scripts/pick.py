@@ -47,7 +47,7 @@ SKELETON = {
  'orbit': _G % 'orbit' + '"orbit":{"hub":{"title":"…","sub":"…"},"items":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x4-6]}}',
  'tower': _G % 'tower' + '"tower":{"hub":{"title":"…"},"floors":[{"title":"…","sub":"…","icon":"icon","group":"blue","scene":"screen|chart|chat|docs|gears|checklist|search|shield|cloud|people|rocket|database|bulb|target"} x3-5]}}',
  'skyline': _G % 'skyline' + '"skyline":{"buildings":[{"title":"…","sub":"…","value":"…","size":5,"icon":"icon","group":"blue"} x3-5]}}',
- 'conveyor': _G % 'conveyor' + '"conveyor":{"gates":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-4]}}',
+ 'conveyor': _G % 'conveyor' + '"conveyor":{"tally":"…","gates":[{"title":"…","sub":"…","icon":"icon","group":"blue","stat":{"value":"88%","pct":88}} x3-4]}}',
  'stairs': _G % 'stairs' + '"stairs":{"steps":[{"title":"…","sub":"…","icon":"icon","group":"blue"} x3-5]}}',
  'ecosystem': _G % 'ecosystem' + '"ecosystem":{"hub":{"title":"…","sub":"…","icon":"icon"},"sections":[{"label":"…","icon":"icon","group":"blue","items":[%s x2-3]} x3-5]}}' % _I,
  'framework': _G % 'framework' + '"framework":{"cards":[{"title":"…","body":"…","icon":"icon","group":"blue","caption":"…","viz":{"type":"steps|stack|tree|fan|table","root":"…(tree,fan)","items":["…" x2-4]}} x6|9],"takeaways":[{"title":"…","body":"…","icon":"icon"} x3-5]}}',

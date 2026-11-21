@@ -128,7 +128,7 @@ function dialog(root, sc) {
 // ── big: one number / phrase ──
 function big(root, sc) {
   const p = sc.props, h = head(root, sc, false), sz = fit(p.big, [[8, 190], [14, 150], [22, 110], [40, 84]]);
-  const bh = est(p.big, sz, 920, 1.05) + 20, b = tx(root, sc.id + '-big', p.big, { x: 80, y: 480, w: 920, h: bh, size: sz, weight: 700, font: 'serif', color: C.clayD, wrap: true, lh: 1.05, align: 'center' });
+  const bh = est(p.big, sz, 920, 1.05) + 20 + Math.round(sz * .16), b = tx(root, sc.id + '-big', p.big, { x: 80, y: 480, w: 920, h: bh, size: sz, weight: 700, font: 'serif', color: C.clayD, wrap: true, lh: 1.05, align: 'center' });
   const s = p.sub ? tx(root, sc.id + '-sub', p.sub, { x: 100, y: 480 + bh + 40, w: 880, h: est(p.sub, 44, 880, 1.25) + 12, size: 44, weight: 500, color: C.ink, wrap: true, lh: 1.25, align: 'center' }) : null;
   return t => { h.anim(t); pop(b, t, when(sc, 0), { sc: .85, dy: 20, d: .7 }); if (s) enter(s, t, when(sc, 1), { dy: 14 }); };
 }

@@ -34,7 +34,7 @@ SPEC = {
     'orbit': 'a glossy core with tilted 3D rings and 4-6 cards around it: gif.orbit{hub{title<=22,sub?<=24},items[4-6]{title<=24,sub<=44,icon,group}}',
     'tower': 'isometric cutaway building, one room per floor with a small scene (stack, process, levels): gif.tower{hub{title<=26},floors[3-5]{title<=22,sub<=50,icon,group,scene}} (top floor first); scene in SCENES list',
     'skyline': 'isometric city, tower height shows a ranking or size: gif.skyline{buildings[3-5]{title<=20,sub<=44,value<=6 chars,size 1-10,icon,group}}',
-    'conveyor': 'isometric belt through 3-4 gates (processing, review, hand-off): gif.conveyor{gates[3-4]{title<=22,sub<=50,icon,group}} (first gate first)',
+    'conveyor': 'isometric belt through 3-4 gates (processing, review, hand-off): gif.conveyor{tally<=34 (panel heading),gates[3-4]{title<=22,sub<=50,icon,group,stat{value<=8 e.g. "88%",pct 0-100 = share passing}}} (first gate first)',
     'stairs': 'isometric blocks climbing left to right (levels, stages, maturity): gif.stairs{steps[3-5]{title<=22,sub<=50,icon,group}} (lowest first)',
     'ecosystem': 'one core fanning out to 3-5 sections with rails: gif.ecosystem{hub{title<=22,sub?<=24,icon?},sections[3-5]{label<=22,icon,group,items[2-3]{title<=24,sub<=50}}}',
     'framework': 'a framework as 6|9 mini-diagram cards + takeaways: gif.framework{takeaways_title?,cards[6|9]{title<=26,body<=96,icon,group,caption?<=40,viz{type,root?,items}},takeaways[3-5]{title<=24,body<=44,icon}}; viz.type steps(2-4; <=14 chars, <=8 when 3) stack(2-3,<=16) tree(root<=22 + 2-3, <=14, <=9 when 3) fan(root<=9 + 2-3,<=16) table(2-4 rows "a|b|c"; cells <=10 with 3 columns, <=16 with 2)',
@@ -249,7 +249,13 @@ def v_skyline(v, g, icons):
         if not isinstance(b, dict): continue
         _S(v, f'gif.skyline.buildings[{i}].value', b.get('value'), 1, 6)
         if not (isinstance(b.get('size'), int) and not isinstance(b.get('size'), bool) and 1 <= b['size'] <= 10): v.e(f'gif.skyline.buildings[{i}].size must be an integer 1-10')
-def v_conveyor(v, g, icons): _nodes(v, 'gif.conveyor.gates', g.get('conveyor', {}).get('gates'), 3, 4, 22, 50, icons)
+def v_conveyor(v, g, icons):
+    C_ = g.get('conveyor', {}); _S(v, 'gif.conveyor.tally', C_.get('tally'), 8, 34); G_ = C_.get('gates'); _nodes(v, 'gif.conveyor.gates', G_, 3, 4, 22, 50, icons)
+    for i, x in enumerate(G_ if isinstance(G_, list) else []):
+        st = x.get('stat') if isinstance(x, dict) else None
+        if not isinstance(st, dict): v.e(f'gif.conveyor.gates[{i}].stat must be {{"value":"88%","pct":88}} (the share that passes this gate, taken from the source)'); continue
+        _S(v, f'gif.conveyor.gates[{i}].stat.value', st.get('value'), 1, 8)
+        if not (isinstance(st.get('pct'), (int, float)) and not isinstance(st.get('pct'), bool) and 0 <= st['pct'] <= 100): v.e(f'gif.conveyor.gates[{i}].stat.pct must be a number 0-100')
 def v_gif(v, g, icons):
     G = SPEC['gif']; tpl = g.get('template', 'hub')
     if tpl not in TEMPLATES: v.e('gif.template must be ' + '|'.join(TEMPLATES)); return

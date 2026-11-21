@@ -25,7 +25,9 @@ python3 S/scripts/studio.py review W               # fix failed gates; at 100% L
 python3 S/scripts/studio.py finalize W             # deliver ONLY the files in W/final/
 ```
 
-## GIF (1080x1350, thirteen templates)
+## GIF + PNG (1080x1350, thirteen templates)
+
+`build --artifacts gif` writes the animated GIF and `<slug>-linkedin.png`, the complete diagram as one image. Give the user both. The Reel (MP4) only when asked.
 `pick` chooses: pipeline (steps), columns (categories), lanes (layers), hub (one concept, parts), ecosystem (core -> sections), framework (6|9 parts, each a mini diagram + takeaways), exploded (3D layers pulled apart), isoflow (3D ordered flow), orbit (core with 4-6 around it), stairs (3D levels that climb). Override only if clearly wrong. Reuse the source's own words; icons by meaning (`spec --icons`); fill every slot, keep to the limits.
 
 ## Reel (only if asked; `spec` has limits)

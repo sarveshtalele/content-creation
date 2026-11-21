@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.5.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.6.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -58,7 +58,7 @@ Turning an article into a clean diagram is slow, and AI-made diagrams are often 
 ## Features
 
 - **10 diagram templates**, 6 flat and 4 with 3D motion, picked automatically from the shape of your content
-- **Animated GIF** by default, under 5 MB, looping, in your personal brand
+- **Animated GIF + still PNG** by default: the GIF is under 5 MB and loops; the PNG is the complete diagram as one image (1080x1350). Both in your personal brand
 - **Narrated Reel** (1080x1920 MP4, offline male voice, 90 seconds or less) on request
 - **LinkedIn post** with a hook question, arrow bullets, link and your closing CTA on request
 - **Review gate** with Playwright layout checks (overflow, overlap, empty cards) and speech-to-text verification of the voice
@@ -86,7 +86,7 @@ You paste an article, essay, URL or GitHub repo. The plugin reads it once, **pic
 
 | You say | You get |
 |---|---|
-| *"Make a LinkedIn diagram from this"* (or just paste a source) | 1 GIF, 1080x1350, animated |
+| *"Make a LinkedIn diagram from this"* (or just paste a source) | 1 GIF (animated) + 1 PNG (the complete diagram), 1080x1350 |
 | *"...and a video"* / *"make a Reel"* | + narrated 1080x1920 MP4, subtitles, poster |
 | *"...and a post"* | + LinkedIn post with arrow bullets, link, closing CTA |
 
@@ -135,7 +135,7 @@ Tell your agent what you want and paste the source:
 > *Make a Reel from this article* (male narrator, 90 seconds or less)
 > *GIF and post from this essay*
 
-If you give a source and no artifact, you get the GIF. The agent runs the pipeline in [SKILL.md](skills/explainer-studio/SKILL.md). To drive it yourself:
+If you give a source and no artifact, you get the GIF and its PNG still; the narrated Reel only when you ask. The agent runs the pipeline in [SKILL.md](skills/explainer-studio/SKILL.md). To drive it yourself:
 
 ```bash
 S=skills/explainer-studio/scripts/studio.py
@@ -168,7 +168,7 @@ The plugin chooses one with `studio.py pick` (a deterministic score over the sou
 | **stairs** (3D) | levels or stages that climb | <img src="docs/img/stairs.jpg" width="190"> |
 | **tower** (3D) | a building of floors, each room a small scene | <img src="docs/img/tower.jpg" width="190"> |
 | **skyline** (3D) | a ranking or size comparison as city towers | <img src="docs/img/skyline.jpg" width="190"> |
-| **conveyor** (3D) | items passing through gates, checks or hand-offs | <img src="docs/img/conveyor.jpg" width="190"> |
+| **conveyor** (3D) | items passing through gates, with a pass rate per gate (ring gauges, count-up bars, boxes that drop off) | <img src="docs/img/conveyor.jpg" width="190"> |
 
 Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
 
