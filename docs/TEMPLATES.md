@@ -33,3 +33,5 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 6. **Verify:** `python3 scripts/selftest.py`, then `studio.py build` and `review` on the fixture; fix any OVERFLOW / LEAK / OVERLAP lines and look at the contact sheet.
 
 Design rules that keep output consistent: fixed canvas, text sized from content length with a floor of 14px, boxes sized to content (no large empty areas), one arrow per relationship, dots only on arrows.
+
+To change the CTA, avatar or hook on an existing diagram, see [CUSTOMIZE.md](CUSTOMIZE.md).

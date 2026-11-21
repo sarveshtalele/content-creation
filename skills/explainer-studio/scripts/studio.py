@@ -6,6 +6,7 @@
   studio.py check DIR                   validate story.json + accuracy metrics; prints only what must be fixed
   studio.py build DIR [--artifacts gif|reel|post|all]   (default: gif only; reel/post only when the user asked)
   studio.py post DIR | eval DIR | pick DIR (best GIF template)
+  studio.py brand [--name --tagline --follow --cta LINE --avatar FILE --voice V --reset]   change the CTA/brand, then rebuild
   studio.py review DIR                  deterministic gates + contact sheets; prints the token to attest
   studio.py finalize DIR                copies to DIR/final only when every gate is 100% and the visual attestation matches"""
 import argparse, hashlib, json, os, re, shutil, subprocess, sys, time
@@ -94,7 +95,13 @@ def load_project(work):
     for f in ('story.json', 'source.chunks.json', 'source_full.txt', 'source.meta.json'):
         if not os.path.exists(os.path.join(work, f)): sys.exit(f'missing {f} in {work} (run ingest, then write story.json)')
     return load(os.path.join(work, 'story.json')), load(os.path.join(work, 'source.chunks.json')), open(os.path.join(work, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(work, 'source.meta.json'))
-def brand(): return cfg('brand.json')
+USER_BRAND = os.path.join(EH, 'brand.json'); USER_AVATAR = os.path.join(EH, 'avatar.png')
+def brand():
+    """Shipped defaults, overlaid by the user's own brand in ~/.cache/explainer-studio/brand.json (survives re-installs and updates)."""
+    b = cfg('brand.json'); b.setdefault('follow', 'Follow')
+    if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
+    return b
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png'}
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -145,6 +152,7 @@ def stage(work, name, data):
     for f in os.listdir(os.path.join(SKILL, 'engine')):
         if f.endswith(('.js', '.html')): shutil.copy(os.path.join(SKILL, 'engine', f), d)
     shutil.copytree(os.path.join(SKILL, 'assets'), os.path.join(d, 'assets'))
+    if os.path.isfile(USER_AVATAR): shutil.copy(USER_AVATAR, os.path.join(d, 'assets', 'avatar.png'))   # the user's own avatar replaces the shipped one
     dump(data, os.path.join(d, 'data.json')); return d
 BAD = re.compile(r'^BAD\s+(\S+)\s+at\s+([\d.]+)s\s+\d+ chars\s+need\s+([\d.]+)s\s+got\s+([\d.]+)s', re.M)
 def readcheck(lib, env, film, size, q=None):
@@ -167,7 +175,7 @@ def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
     tails, end_hold = {}, 4.4
     for it in range(5):
-        D = TL.build(story, dur, tails, end_hold); D['brand'] = {'name': b['name'], 'tagline': b['tagline'], 'avatar': 'assets/avatar.png'}; D['logo'] = has_claude(work)
+        D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work)
         film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920')
         if rc == 2: sys.exit('readcheck could not run:\n' + txt[-800:])
         if not bad: break
@@ -209,7 +217,7 @@ def build_gif(work, story, lib, env, out, slug):
     b = brand(); g = dict(story['gif']); g['template'] = g.get('template', 'hub'); g['H'] = H = 1350; size = f'1080x{H}'; hold = 5.4
     g.pop('source', None)
     for it in range(5):
-        g['hold'] = hold; film = stage(work, '.film-gif', {'brand': {'name': b['name'], 'tagline': b['tagline'], 'avatar': 'assets/avatar.png'}, 'logo': has_claude(work), 'gif': g})
+        g['hold'] = hold; film = stage(work, '.film-gif', {'brand': brand_for_film(b), 'logo': has_claude(work), 'gif': g})
         bad, txt, rc = readcheck(lib, env, film, size, 'mode=gif')
         if rc == 2: sys.exit('readcheck could not run:\n' + txt[-800:])
         if not bad: break
@@ -329,14 +337,49 @@ def finalize(a):
     dump({'confidence_pct': 100, 'gates': R['gates'], 'token': cur, 'files': {os.path.basename(f): sha(os.path.join(fin, os.path.basename(f))) for f in os.listdir(fin) for f in [os.path.join(fin, f)]}}, os.path.join(fin, 'MANIFEST.json'))
     print('FINAL (all gates 100%, visual review attested):'); [print('  ', os.path.join(fin, f)) for f in sorted(os.listdir(fin))]; return 0
 
+def set_brand(a):
+    """studio.py brand [--name N] [--tagline T] [--follow F] [--cta LINE ...] [--avatar FILE] [--voice V] [--speed X] [--reset]"""
+    if a.reset:
+        for p in (USER_BRAND, USER_AVATAR):
+            if os.path.exists(p): os.remove(p)
+        print('brand reset to the shipped defaults')
+    cur = load(USER_BRAND) if os.path.exists(USER_BRAND) else {}; errs = []
+    def put(k, v, lo, hi):
+        if v is None: return
+        v = v.strip()
+        if not lo <= len(v) <= hi: errs.append(f'{k}: {len(v)} chars, must be {lo}-{hi} (the CTA pill is one line)')
+        else: cur[k] = v
+    put('name', a.name, 2, 30); put('tagline', a.tagline, 4, 44); put('follow', a.follow, 3, 14)
+    if a.cta:
+        if not 1 <= len(a.cta) <= 4 or any(not 5 <= len(x.strip()) <= 220 for x in a.cta): errs.append('--cta: give 1-4 lines of 5-220 characters each (one --cta per line)')
+        else: cur['post_cta'] = [x.strip() for x in a.cta]
+    if a.voice: cur['voice'] = a.voice.strip()
+    if a.speed is not None:
+        if 0.8 <= a.speed <= 1.2: cur['speed'] = a.speed
+        else: errs.append('--speed: use 0.8-1.2')
+    if a.avatar:
+        ext = os.path.splitext(a.avatar)[1].lower()
+        if not os.path.isfile(a.avatar) or ext not in ('.png', '.jpg', '.jpeg', '.webp'): errs.append('--avatar: give an existing .png, .jpg or .webp file')
+        elif os.path.getsize(a.avatar) > 2 * 1048576: errs.append('--avatar: file is over 2 MB; use a square image around 256-512 px')
+        else: os.makedirs(EH, exist_ok=True); shutil.copy(a.avatar, USER_AVATAR); print('avatar saved:', USER_AVATAR)
+    if errs: [print('FIX ', e) for e in errs]; return 1
+    if cur: dump(cur, USER_BRAND)
+    elif not (a.avatar or a.reset): print('(nothing to change: pass --name, --tagline, --follow, --cta, --avatar, --voice, --speed or --reset)')
+    b = brand(); print(json.dumps({k: b[k] for k in ('name', 'follow', 'tagline', 'post_cta', 'voice', 'speed') if k in b}, ensure_ascii=False, indent=1))
+    print('avatar:', USER_AVATAR if os.path.isfile(USER_AVATAR) else 'shipped default'); print('Saved in ' + USER_BRAND + '. Next: studio.py build DIR --artifacts gif  (reel/post/all as needed), then review and finalize.'); return 0
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
     for n in ('check', 'eval', 'post', 'pick', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
+    br = sp.add_parser('brand')
+    for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
+    br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
     b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default='gif')
     a = ap.parse_args()
     if a.cmd == 'doctor': return doctor(a)
+    if a.cmd == 'brand': return set_brand(a)
     if a.cmd == 'spec': return spec(a)
     if a.cmd == 'ingest': m = ING.run(a.src, a.out, a.max_chars); print(json.dumps(m, ensure_ascii=False)); print('-> read', os.path.join(a.out, 'source.md'), 'once; cite chunk ids [cNN]'); return 0
     if a.cmd == 'pick':

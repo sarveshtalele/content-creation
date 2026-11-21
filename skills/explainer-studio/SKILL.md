@@ -34,5 +34,8 @@ Arc: hook (question from the source) -> stakes -> answer -> how -> proof -> take
 ## Post (only if asked)
 `post{hook (question), bullets[{t,c:[chunkIds]}]}`; the script adds arrows, link and the exact closing CTA. Do not rewrite the CTA.
 
+## Change CTA, avatar, voice or hook (user asks to update and recreate)
+Brand: `studio.py brand --name --follow --tagline --avatar FILE --cta LINE (repeat) --voice --speed` (limits are checked; saved outside the repo). Hook: edit `gif.title`/`gif.subtitle`, `post.hook`, or the first Reel beat and scene in the existing `work/story.json`, keep it grounded, then `check`. Rebuild with `build work --artifacts <gif|reel|post|all>`, then `review`, look at the sheets, attest, `finalize`. Do not re-ingest or rewrite unchanged content. Details: docs/CUSTOMIZE.md.
+
 ## Report
 List the `final/` files. State that accuracy metrics are lexical proxies and the visual check is a look at stills.

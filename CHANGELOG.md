@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0
+- `studio.py brand`: change the follow pill (name, follow word, tagline, avatar), the post's closing CTA lines and the voice with one command. Stored in `~/.cache/explainer-studio/brand.json`, so updates never overwrite it; `--reset` restores the defaults.
+- New guide `docs/CUSTOMIZE.md`: update the CTA, rewrite the hook, then recreate the GIF, Reel or post.
+- README restructured: hero with live demo, navigation, why/features, quick start, FAQ, documentation index.
+
 ## 2.2.0
 - Windows, macOS and Linux parity: `setup.py` and `install.py` replace the shell-only scripts (the `.sh` files remain as wrappers). Link fallback (symlink, junction, copy), resumable Python download, UTF-8 console and file handling, `py -3` interpreter discovery.
 - GIF encoding is now plain ffmpeg from Python (no `sh`); the Reel mux step finds Git for Windows' `sh.exe`, and `doctor` reports it.

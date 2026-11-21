@@ -1,9 +1,16 @@
 <div align="center">
 
+<img src="docs/img/demo.gif" width="360" alt="A LinkedIn diagram GIF made by explainer-studio">
+
 # explainer-studio
 
+**Paste an article, URL or repo. Get one grounded, on-brand LinkedIn diagram GIF.**<br>
+Add a narrated Reel or a LinkedIn post only when you want them.
+
+[Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
+
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.2.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.3.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -12,17 +19,68 @@
 ![Format](https://img.shields.io/badge/format-LinkedIn%201080%C3%971350-0A66C2?logo=linkedin&logoColor=white)
 ![Security](https://img.shields.io/badge/security-SSRF%20guard%20%C2%B7%20secret%20redaction-brightgreen)
 
-**Paste a source. Get one grounded, on-brand LinkedIn diagram GIF. Ask for a Reel or a post only when you want one.**
-
-Works in Claude Code, Codex, Antigravity and Gemini CLI from one skill folder. ChatGPT is supported for the text steps only.
-
-`6 diagram templates` · `1080x1350 LinkedIn portrait` · `flowing-dot arrows` · `grounded in the source` · `review gate before delivery`
-
 </div>
 
 ---
 
-## What it does
+<details>
+<summary><b>Table of contents</b></summary>
+
+- [Why explainer-studio](#why-explainer-studio)
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Install](#install)
+- [Use it](#use-it)
+- [The six diagrams](#the-six-diagrams)
+- [Customise the CTA, hook and voice](#customise-the-cta-hook-and-voice)
+- [How it works](#how-it-works)
+- [Review gate](#review-gate)
+- [Security](#security)
+- [FAQ](#faq)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Licence and credits](#licence-and-credits)
+
+</details>
+
+## Why explainer-studio
+
+Turning an article into a clean diagram is slow, and AI-made diagrams are often wrong, cluttered or off-brand. This plugin makes the model do one small job, writing a compact `story.json` from your source, and leaves everything else to deterministic code: choosing the template, checking every claim against the source, laying out text so nothing overflows, rendering, and measuring the result. Same input, same output, every time.
+
+| | |
+|---|---|
+| **Grounded** | every claim cites a verbatim quote; names and numbers not in the source are rejected |
+| **Consistent** | one 1080x1350 LinkedIn portrait format, one palette, one footer, flowing-dot arrows |
+| **Token-light** | the model reads the source once and writes only content; checks print only what failed |
+| **Gated** | nothing is delivered until every automated gate passes and the contact sheets have been looked at |
+| **Yours** | change name, tagline, avatar, CTA and voice with one command |
+
+## Features
+
+- **6 diagram templates** picked automatically from the shape of your content
+- **Animated GIF** by default, under 5 MB, looping, in your personal brand
+- **Narrated Reel** (1080x1920 MP4, offline male voice, 90 seconds or less) on request
+- **LinkedIn post** with a hook question, arrow bullets, link and your closing CTA on request
+- **Review gate** with Playwright layout checks (overflow, overlap, empty cards) and speech-to-text verification of the voice
+- **Safe by default**: SSRF guard, secret redaction, hook-free and symlink-free repo clones, checksummed model downloads
+- **Portable**: macOS, Windows and Linux; Claude Code, Codex, Antigravity and Gemini CLI from one skill folder (ChatGPT for the text steps)
+
+## Quick start
+
+```bash
+git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation
+python3 install.py                                   # Windows: py -3 install.py
+python3 skills/explainer-studio/scripts/setup.py     # one time; Windows: py -3 skills\explainer-studio\scripts\setup.py
+python3 skills/explainer-studio/scripts/studio.py doctor   # must print READY
+```
+
+Then open your agent and say:
+
+> *Create a LinkedIn diagram from https://github.com/owner/repo*
+
+Want your own name, avatar and CTA on it? `studio.py brand --name "You" --tagline "..." --avatar me.png`, see [the guide](docs/CUSTOMIZE.md).
+
+### What you get for each request
 
 You paste an article, essay, URL or GitHub repo. The plugin reads it once, **picks the diagram that fits the shape of the content**, and renders one animated GIF in your personal brand. A male-voice narrated Reel (MP4) and a LinkedIn post are built **only if you ask**.
 
@@ -33,41 +91,6 @@ You paste an article, essay, URL or GitHub repo. The plugin reads it once, **pic
 | *"...and a post"* | + LinkedIn post with arrow bullets, link, closing CTA |
 
 Nothing is delivered until every automated gate passes **and** a reviewer has looked at the contact sheets (see [Review gate](#review-gate)).
-
-## The six diagrams
-
-The plugin chooses one with `studio.py pick` (a deterministic score over the source's wording and structure). The agent may override with a reason.
-
-| Template | Best for | Preview |
-|---|---|---|
-| **pipeline** | ordered steps, workflows, request paths | <img src="docs/img/pipeline.jpg" width="190"> |
-| **columns** | a catalogue grouped by category | <img src="docs/img/columns.jpg" width="190"> |
-| **lanes** | layers of a stack | <img src="docs/img/lanes.jpg" width="190"> |
-| **hub** | one concept with named parts | <img src="docs/img/hub.jpg" width="190"> |
-| **ecosystem** | one core fanning out to 3-5 sections | <img src="docs/img/ecosystem.jpg" width="190"> |
-| **framework** | a 6 or 9 part framework, each part a mini-diagram, plus takeaways | <img src="docs/img/framework.jpg" width="190"> |
-
-Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
-
-## How it works
-
-```mermaid
-flowchart LR
-  S[Source<br/>URL, repo, text, file] --> I[ingest<br/>chunks + ids, secrets redacted]
-  I --> P[pick<br/>best template + skeleton]
-  P --> A[Agent writes story.json<br/>the only LLM step]
-  A --> C{check<br/>schema, grounding,<br/>metrics}
-  C -- fix list --> A
-  C -- OK --> B[build<br/>GIF / Reel / post]
-  B --> R{review<br/>deterministic gates<br/>+ contact sheets}
-  R -- failed gate --> A
-  R -- 100% --> V[Agent looks at the sheets<br/>writes attest.json]
-  V --> F[finalize<br/>final/ folder]
-```
-
-The model is used for exactly one thing: writing a compact `story.json` from the source. Everything else (ingest, template choice, validation, voice, rendering, measurement, review) is code, so the same input produces the same output.
-
-**Token budget.** The agent reads the source once, runs `pick` (about 250 tokens: template, limits, fill-in skeleton), writes only the content, and sees only failures from `check`/`review`. GIF-only runs skip the narration schema entirely. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Install
 
@@ -125,7 +148,64 @@ python3 $S review work                                        # gates + contact 
 python3 $S finalize work                                      # after attest.json; copies to work/final/
 ```
 
-Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | post | build | review | finalize`.
+Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | post | brand | build | review | finalize`.
+
+## The six diagrams
+
+The plugin chooses one with `studio.py pick` (a deterministic score over the source's wording and structure). The agent may override with a reason.
+
+| Template | Best for | Preview |
+|---|---|---|
+| **pipeline** | ordered steps, workflows, request paths | <img src="docs/img/pipeline.jpg" width="190"> |
+| **columns** | a catalogue grouped by category | <img src="docs/img/columns.jpg" width="190"> |
+| **lanes** | layers of a stack | <img src="docs/img/lanes.jpg" width="190"> |
+| **hub** | one concept with named parts | <img src="docs/img/hub.jpg" width="190"> |
+| **ecosystem** | one core fanning out to 3-5 sections | <img src="docs/img/ecosystem.jpg" width="190"> |
+| **framework** | a 6 or 9 part framework, each part a mini-diagram, plus takeaways | <img src="docs/img/framework.jpg" width="190"> |
+
+Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
+
+## Customise the CTA, hook and voice
+
+| I want to... | Do this |
+|---|---|
+| change the **follow pill** (name, "Follow" word, tagline, avatar) | `studio.py brand --name ... --follow ... --tagline ... --avatar me.png` |
+| change the **post's closing CTA lines** | `studio.py brand --cta "line one" --cta "line two"` |
+| change the **narrator** | `studio.py brand --voice am_onyx --speed 1.0` |
+| change the **hook** (GIF title and subtitle, post opening, Reel opening) | edit `work/story.json`, then `studio.py check` |
+| **recreate** the GIF, Reel or post | `studio.py build work --artifacts gif` (or `reel`, `post`, `all`), then `review` and `finalize` |
+
+Your brand is stored outside the repo (`~/.cache/explainer-studio/brand.json`), so updates never overwrite it. Full walkthrough with limits, hook-writing tips and agent prompts: **[docs/CUSTOMIZE.md](docs/CUSTOMIZE.md)**.
+
+More customisation:
+
+| I want to... | Edit |
+|---|---|
+| add a diagram template | [docs/TEMPLATES.md](docs/TEMPLATES.md) (engine file, spec, skeleton, fixture) |
+| change colours or fonts | `engine/kit.js` (`C`), `assets/fonts/` |
+| change thresholds or limits | `scripts/validate_story.py` (`SPEC`), `scripts/evaluate.py` |
+
+The Reel uses Kokoro (offline, Apache-2.0) with the male voice `am_michael`; `am_onyx`, `bm_george` and others are available. Narration follows a fixed arc: question hook, stakes, answer, how, proof, takeaway, then a question or challenge to the viewer.
+
+## How it works
+
+```mermaid
+flowchart LR
+  S[Source<br/>URL, repo, text, file] --> I[ingest<br/>chunks + ids, secrets redacted]
+  I --> P[pick<br/>best template + skeleton]
+  P --> A[Agent writes story.json<br/>the only LLM step]
+  A --> C{check<br/>schema, grounding,<br/>metrics}
+  C -- fix list --> A
+  C -- OK --> B[build<br/>GIF / Reel / post]
+  B --> R{review<br/>deterministic gates<br/>+ contact sheets}
+  R -- failed gate --> A
+  R -- 100% --> V[Agent looks at the sheets<br/>writes attest.json]
+  V --> F[finalize<br/>final/ folder]
+```
+
+The model is used for exactly one thing: writing a compact `story.json` from the source. Everything else (ingest, template choice, validation, voice, rendering, measurement, review) is code, so the same input produces the same output.
+
+**Token budget.** The agent reads the source once, runs `pick` (about 250 tokens: template, limits, fill-in skeleton), writes only the content, and sees only failures from `check`/`review`. GIF-only runs skip the narration schema entirely. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Review gate
 
@@ -140,24 +220,38 @@ Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | pos
 
 At 100% it writes contact sheets. The reviewer opens them and confirms legibility, no clipping, fidelity to the source and arrow logic in `attest.json`. `finalize` refuses unless gates are 100% and the attestation token matches the current files. Metrics are lexical proxies for faithfulness, not proof of truth; the visual check is a look at stills. See [docs/EVALUATION.md](docs/EVALUATION.md).
 
-## Voice
-
-The Reel uses Kokoro (offline, Apache-2.0) with the male voice `am_michael`. Change `voice` and `speed` in [`config/brand.json`](skills/explainer-studio/config/brand.json); `am_onyx`, `bm_george` and others are available. Narration follows a fixed arc: question hook, stakes, answer, how, proof, takeaway, then a question or challenge to the viewer.
-
-## Customise
-
-| I want to... | Edit |
-|---|---|
-| change name, tagline, avatar, post CTA, voice | `skills/explainer-studio/config/brand.json`, `assets/` |
-| add a diagram template | [docs/TEMPLATES.md](docs/TEMPLATES.md) (engine file + spec + skeleton + fixture) |
-| change colours or fonts | `engine/kit.js` (`C`), `assets/fonts/` |
-| change thresholds or limits | `scripts/validate_story.py` (`SPEC`), `scripts/evaluate.py` |
-
 ## Security
 
 Source text is treated as untrusted data. URLs are fetched from public hosts only, secrets are redacted before anything is written, repo clones run without hooks and symlinks, and downloads are checksum-verified. Details and reporting: [SECURITY.md](SECURITY.md). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Verify
+## FAQ
+
+**Does it work offline?** Rendering, voice and checks run on your machine. Only fetching a URL or repo, and the one-time setup downloads, need the network.
+
+**Which agents does it work with?** Claude Code, Codex, Antigravity and Gemini CLI run the full pipeline. ChatGPT cannot usually download the browser and voice model, so use it for the story, validation and post, and build GIFs and Reels locally.
+
+**Can I use it on Windows?** Yes. GIF and post work out of the box. The Reel also needs [Git for Windows](https://git-scm.com/download/win) for its audio mux step; `doctor` tells you.
+
+**Is the output guaranteed true?** No. The accuracy metrics are lexical proxies that catch ungrounded names, numbers and claims, not proof of truth, and the visual check is a look at stills. Read the result before you post it.
+
+**How do I change the CTA or recreate a GIF?** See [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md).
+
+**Why a different diagram than I expected?** `studio.py pick work` shows the scores; you can ask the agent to use another template.
+
+## Documentation
+
+| Guide | What is in it |
+|---|---|
+| [CUSTOMIZE.md](docs/CUSTOMIZE.md) | change the CTA, hook, avatar and voice, then rebuild |
+| [TEMPLATES.md](docs/TEMPLATES.md) | every diagram, its fields and limits, how to add one |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | pipeline, folders, token budget |
+| [EVALUATION.md](docs/EVALUATION.md) | metrics, thresholds, layout checks, what they do not prove |
+| [SECURITY.md](SECURITY.md) | threat model, guardrails, reporting |
+| [CHANGELOG.md](CHANGELOG.md) | what changed in each version |
+
+## Contributing
+
+Issues and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); run the three test scripts below before you open a PR.
 
 ```bash
 python3 skills/explainer-studio/scripts/selftest.py          # all fixtures: ingest, check, pick, post
@@ -168,3 +262,5 @@ python3 skills/explainer-studio/tests/test_platform.py       # Windows/macOS/Lin
 ## Licence and credits
 
 MIT, see [LICENSE](LICENSE). Third-party notices: [CREDITS.md](CREDITS.md).
+
+If this saves you time, a star helps others find it.

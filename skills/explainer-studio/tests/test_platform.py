@@ -54,6 +54,19 @@ try:
     check(r.returncode == 0 and os.path.isfile(os.path.join(T, '.claude', 'skills', 'explainer-studio', 'SKILL.md')), 'install.py did not install SKILL.md: ' + r.stderr[-200:])
 finally: shutil.rmtree(T, ignore_errors=True)
 
+# 6a. `studio.py brand` validates lengths, saves outside the repo, and --reset removes it
+T2 = tempfile.mkdtemp()
+try:
+    import subprocess
+    e2 = dict(os.environ, EXPLAINER_HOME=T2); st = os.path.join(S, 'scripts', 'studio.py')
+    def br(*a): return subprocess.run([sys.executable, st, 'brand', *a], env=e2, capture_output=True, text=True, encoding='utf-8')
+    check(br('--tagline', 'x' * 60).returncode == 1, 'brand accepted a tagline that cannot fit the pill')
+    ok = br('--name', 'Test Person', '--follow', 'Join', '--cta', 'Repost this please', '--cta', 'Follow Test Person')
+    saved = json.load(open(os.path.join(T2, 'brand.json'), encoding='utf-8')) if os.path.exists(os.path.join(T2, 'brand.json')) else {}
+    check(ok.returncode == 0 and saved.get('follow') == 'Join' and len(saved.get('post_cta', [])) == 2, 'brand did not save the override: ' + ok.stderr[-200:])
+    br('--reset'); check(not os.path.exists(os.path.join(T2, 'brand.json')), 'brand --reset left the override behind')
+finally: shutil.rmtree(T2, ignore_errors=True)
+
 # 6. Python files parse on the oldest tested interpreter syntax
 for f in ('studio.py', 'setup.py'): ast.parse(open(os.path.join(S, 'scripts', f), encoding='utf-8').read())
 print('PLATFORM TESTS OK' if not fails else 'PLATFORM TESTS FAILED:\n  ' + '\n  '.join(fails)); sys.exit(1 if fails else 0)

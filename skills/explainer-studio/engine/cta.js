@@ -12,7 +12,7 @@ export function cta(parent, id, brand, { x, y, w, h, size = 26, bw = 4 }) {
     E(d, '', 'display:block', html, 'span'); d.dataset.id = id + suffix; d.dataset.text = text; return d;
   };
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  mk('-follow', `<span style="font-style:italic;font-weight:500">Follow </span><span style="font-style:italic;font-weight:800">${esc(brand.name)}</span>`, `Follow ${brand.name}`, '');
+  mk('-follow', `<span style="font-style:italic;font-weight:500">${esc(brand.follow || 'Follow')} </span><span style="font-style:italic;font-weight:800">${esc(brand.name)}</span>`, `${brand.follow || 'Follow'} ${brand.name}`, '');
   mk('-tag', `→ ${esc(brand.tagline)}`, `→ ${brand.tagline}`, `font-weight:500;font-size:${Math.round(size * .92)}px`);
   const ln = Math.round(h * .5);
   E(b, '', `width:${ln}px;height:${ln}px;border-radius:${Math.round(ln * .2)}px;background:${OR};color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font:800 ${Math.round(ln * .62)}px Inter,sans-serif;letter-spacing:-.04em;padding-bottom:${Math.round(ln * .04)}px`, 'in');
