@@ -2,7 +2,7 @@
 usage: mixvoice.py data.json voice_dir out.wav -> 48 kHz stereo, high-passed + gently compressed; loudness is set later by the mux step."""
 import sys, json, numpy as np, soundfile as sf, soxr
 from scipy.signal import butter, sosfilt
-d = json.load(open(sys.argv[1])); vd = sys.argv[2]; out = sys.argv[3]; SR = 48000
+d = json.load(open(sys.argv[1], encoding='utf-8')); vd = sys.argv[2]; out = sys.argv[3]; SR = 48000
 total = int((d['DUR'] + 0.5) * SR); mix = np.zeros(total, dtype=np.float64)
 for v in d['voice']:
     a, sr = sf.read(f"{vd}/{v['id']}.wav", dtype='float64')

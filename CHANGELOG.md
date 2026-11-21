@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+- Windows, macOS and Linux parity: `setup.py` and `install.py` replace the shell-only scripts (the `.sh` files remain as wrappers). Link fallback (symlink, junction, copy), resumable Python download, UTF-8 console and file handling, `py -3` interpreter discovery.
+- GIF encoding is now plain ffmpeg from Python (no `sh`); the Reel mux step finds Git for Windows' `sh.exe`, and `doctor` reports it.
+- Git clone hardening uses `os.devnull` (was `/dev/null`); `.gitattributes` pins LF endings so shell scripts survive a Windows checkout.
+- README badges, install matrix and platform notes; GitHub Actions CI on macOS, Windows and Ubuntu; `tests/test_platform.py`.
+
 ## 2.1.1
 - Rebuilt `ecosystem` and `framework` with measured text fitting (the browser measures each text, so sizes match the checks): no overflow, no empty cards, no overlapping boxes.
 - New Playwright checks on the final frame: `BOX-OVERLAP` (two boxes overlapping without nesting) and `EMPTY-CARD` (a card whose text leaves more than 32% of its height empty). Bands and section headers are marked `bg` and exempt.

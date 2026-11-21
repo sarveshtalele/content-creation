@@ -29,7 +29,7 @@ At 100% gates, the reviewer opens `out/review/*.png` and writes `attest.json` wi
 ## Known limits
 
 - A visual check by a model or person looking at stills can miss subtle issues in frames it did not sample.
-- Speech-to-text verification needs the optional ASR model (`sh scripts/setup.sh asr`); without it the speech gate fails rather than passing silently.
+- Speech-to-text verification needs the optional ASR model (`python3 scripts/setup.py asr`); without it the speech gate fails rather than passing silently.
 - Source fidelity depends on the source; the plugin does not fact-check the source itself.
 
 ## Layout checks on the final frame (GIF)

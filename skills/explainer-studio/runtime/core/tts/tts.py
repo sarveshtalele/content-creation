@@ -39,9 +39,9 @@ if espeak_dir and len(espeak_dir.encode('utf-8')) >= ESPEAK_LIMIT:
     short = os.path.realpath(os.path.join(os.path.expanduser('~'), '.cache', 'explainer-studio', 'espeak-ng-data'))
     if len(short.encode('utf-8')) < ESPEAK_LIMIT:
         stamp = os.path.join(short, '.source')
-        if not (os.path.isdir(short) and os.path.exists(stamp) and open(stamp).read() == espeak_dir):
+        if not (os.path.isdir(short) and os.path.exists(stamp) and open(stamp, encoding='utf-8').read() == espeak_dir):
             shutil.rmtree(short, ignore_errors=True); shutil.copytree(espeak_dir, short)
-            open(stamp, 'w').write(espeak_dir)
+            open(stamp, 'w', encoding='utf-8').write(espeak_dir)
         espeakng_loader.get_data_path = lambda: short
         espeak_dir = short
 if espeak_dir and len(espeak_dir.encode('utf-8')) >= ESPEAK_LIMIT:

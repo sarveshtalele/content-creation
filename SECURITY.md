@@ -14,7 +14,7 @@ The plugin ingests untrusted text (web pages, repos, files) and runs local tools
 | Malicious repos | clones are shallow, without hooks, file protocol or symlinks; the reader never follows links outside the repo; only README, docs, manifests, layout and one entry file are read |
 | Output injection | all text is set with `textContent` (no HTML injection); slugs are restricted to `[a-z0-9-]` |
 | Shell injection | subprocesses use argument lists, never `shell=True` |
-| Supply chain | the renderer's one npm dependency is pinned; voice models are verified by SHA-256 in `setup.sh` |
+| Supply chain | the renderer's one npm dependency is pinned; voice models are verified by SHA-256 in `setup.py` |
 | Unreviewed output | `finalize` is the only way to `final/`, and it needs 100% gates plus a matching attestation |
 | Unwanted commits | `.gitignore` excludes caches, `node_modules`, work dirs and archives; no Co-Authored-By trailers are added |
 

@@ -5,7 +5,7 @@ Thanks for building on explainer-studio.
 ## Setup
 ```bash
 git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation
-sh skills/explainer-studio/scripts/setup.sh && python3 skills/explainer-studio/scripts/studio.py doctor
+python3 skills/explainer-studio/scripts/setup.py && python3 skills/explainer-studio/scripts/studio.py doctor
 ```
 
 ## Before a pull request

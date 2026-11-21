@@ -207,7 +207,7 @@ def run(src, out_dir, max_chars=36000, text=None):
         if gp:
             tmp = tempfile.mkdtemp(prefix='es_repo_')
             try:
-                subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'protocol.file.allow=never', '-c', 'core.symlinks=false', 'clone', '--depth', '1', '--no-tags', '--single-branch', '--quiet', f'https://github.com/{gp[0]}/{gp[1]}.git', tmp], check=True, timeout=180, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                subprocess.run(['git', '-c', 'core.hooksPath=' + os.devnull, '-c', 'protocol.file.allow=never', '-c', 'core.symlinks=false', 'clone', '--depth', '1', '--no-tags', '--single-branch', '--quiet', f'https://github.com/{gp[0]}/{gp[1]}.git', tmp], check=True, timeout=180, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
                 title, parts = read_repo(tmp, f'{gp[0]}/{gp[1]}'); return build(title, parts, url, out_dir, max_chars)
             finally: shutil.rmtree(tmp, ignore_errors=True)
         m = re.match(r'https?://github\.com/([^/]+)/([^/]+)/blob/(.+)$', src)

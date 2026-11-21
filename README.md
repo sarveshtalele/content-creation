@@ -2,6 +2,16 @@
 
 # explainer-studio
 
+[![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/badge/version-2.2.0-D97757)](CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
+![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
+![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Antigravity%20%C2%B7%20Gemini%20CLI-5B8DEF)
+![Format](https://img.shields.io/badge/format-LinkedIn%201080%C3%971350-0A66C2?logo=linkedin&logoColor=white)
+![Security](https://img.shields.io/badge/security-SSRF%20guard%20%C2%B7%20secret%20redaction-brightgreen)
+
 **Paste a source. Get one grounded, on-brand LinkedIn diagram GIF. Ask for a Reel or a post only when you want one.**
 
 Works in Claude Code, Codex, Antigravity and Gemini CLI from one skill folder. ChatGPT is supported for the text steps only.
@@ -61,22 +71,36 @@ The model is used for exactly one thing: writing a compact `story.json` from the
 
 ## Install
 
-Needs `node >= 20`, `python >= 3.9`, `ffmpeg >= 7`, `git`.
+Needs `node >= 20` (with npm), `python` 3.11 to 3.13 (what CI tests), `git`. `ffmpeg >= 7` is downloaded for you when missing. Works the same on macOS, Windows and Linux: every step is a Python script, so there are no shell-only commands.
 
-```bash
-git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation
-sh install.sh [project-dir]                       # copies the skill to every supported agent location
-sh skills/explainer-studio/scripts/setup.sh       # one time: headless browser, voice model (checksum-verified), python packages
-python3 skills/explainer-studio/scripts/studio.py doctor     # must print READY
-```
+| | macOS / Linux | Windows (PowerShell) |
+|---|---|---|
+| Get it | `git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation` | `git clone https://github.com/sarveshtalele/content-creation.git; cd content-creation` |
+| Copy the skill to your agents | `python3 install.py [project-dir]` | `py -3 install.py [project-dir]` |
+| One-time setup | `python3 skills/explainer-studio/scripts/setup.py` | `py -3 skills\explainer-studio\scripts\setup.py` |
+| Check | `python3 skills/explainer-studio/scripts/studio.py doctor` | `py -3 skills\explainer-studio\scripts\studio.py doctor` |
+
+`doctor` must print `READY`. `sh install.sh` and `sh .../setup.sh` still work on macOS and Linux as thin wrappers.
 
 | Platform | Where the skill lives | How |
 |---|---|---|
-| **Claude Code** | `~/.claude/skills/` or as a plugin | `claude plugin marketplace add ./content-creation` then `/plugin install explainer-studio@explainer-studio-marketplace`, or `sh install.sh` |
-| **Codex** | `~/.agents/skills/` or `<repo>/.agents/skills/` | `sh install.sh /path/to/project`, restart Codex, say `$explainer-studio` or describe the task |
-| **Antigravity** | `~/.gemini/config/skills/`, `<workspace>/.agents/skills/`; CLI: `~/.gemini/antigravity-cli/skills/` | `sh install.sh /path/to/project` |
-| **Gemini CLI** | `~/.gemini/skills/` or `~/.agents/skills/`; workspace `.gemini/skills/` | `sh install.sh` or `gemini skills link ./content-creation/skills`; verify with `/skills list` |
-| **ChatGPT** | Skills > Create > Upload | `sh install.sh --zip`, upload `explainer-studio-skill.zip` |
+| **Claude Code** | `~/.claude/skills/` or as a plugin | `claude plugin marketplace add ./content-creation` then `/plugin install explainer-studio@explainer-studio-marketplace`, or `python3 install.py` |
+| **Codex** | `~/.agents/skills/` or `<repo>/.agents/skills/` | `python3 install.py /path/to/project`, restart Codex, say `$explainer-studio` or describe the task |
+| **Antigravity** | `~/.gemini/config/skills/`, `<workspace>/.agents/skills/`; CLI: `~/.gemini/antigravity-cli/skills/` | `python3 install.py /path/to/project` |
+| **Gemini CLI** | `~/.gemini/skills/` or `~/.agents/skills/`; workspace `.gemini/skills/` | `python3 install.py` or `gemini skills link ./content-creation/skills`; verify with `/skills list` |
+| **ChatGPT** | Skills > Create > Upload | `python3 install.py --zip`, upload `explainer-studio-skill.zip` |
+
+### Platform notes
+
+| Topic | macOS | Windows | Linux |
+|---|---|---|---|
+| GIF and post | supported | supported | supported |
+| Reel (narrated MP4) | supported | needs [Git for Windows](https://git-scm.com/download/win) (its `sh.exe` runs the audio mux step; `doctor` shows a `sh (Reel only)` row) | supported |
+| Cache folder | `~/.cache/explainer-studio` | `%USERPROFILE%\.cache\explainer-studio` | `~/.cache/explainer-studio` |
+| Links to shared node deps | symlink | symlink, else junction, else a copy (no admin rights needed) | symlink |
+| Override the cache | `EXPLAINER_HOME=/path` | `$env:EXPLAINER_HOME="D:\es"` | `EXPLAINER_HOME=/path` |
+
+Troubleshooting: `python` not found on Windows, use `py -3`. Voice install fails on Python 3.14, install 3.12 (setup picks it automatically when present). Browser download blocked by a proxy, set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary. Long Windows paths break the offline voice engine, keep the repository close to the drive root or set `EXPLAINER_HOME` to a short path.
 
 **ChatGPT limits.** Its sandbox usually cannot download the browser and voice model. Use it for the grounded story, validation, accuracy report and post; build GIFs and Reels in one of the local agents.
 
@@ -138,6 +162,7 @@ Source text is treated as untrusted data. URLs are fetched from public hosts onl
 ```bash
 python3 skills/explainer-studio/scripts/selftest.py          # all fixtures: ingest, check, pick, post
 python3 skills/explainer-studio/tests/test_security.py       # SSRF, secret redaction, symlinks
+python3 skills/explainer-studio/tests/test_platform.py       # Windows/macOS/Linux portability rules (runs in CI on all three)
 ```
 
 ## Licence and credits

@@ -13,15 +13,19 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
 import ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
 
+for _st in (sys.stdout, sys.stderr):   # Windows consoles default to a legacy code page that cannot print arrows or accents
+    try: _st.reconfigure(encoding='utf-8', errors='replace')
+    except Exception: pass
 WIN = os.name == 'nt'
+SETUP = 'python scripts/setup.py' if WIN else 'python3 scripts/setup.py'
 def home(): return os.path.expanduser('~')
 EH = os.environ.get('EXPLAINER_HOME') or os.path.join(home(), '.cache', 'explainer-studio')
 RT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime'))
 def find_lib():
     nm, shared = os.path.join(RT, 'node_modules'), os.path.join(EH, 'node', 'node_modules')
     if not os.path.exists(nm) and os.path.isdir(shared):          # another installed copy ran setup: reuse its node deps
-        try: os.symlink(shared, nm)
-        except OSError: pass
+        try: import setup as _S; _S.link(shared, nm)
+        except Exception: pass
     return RT if os.path.isfile(os.path.join(RT, 'core', 'render', 'video.mjs')) else None
 def lib_py(lib=None):
     for r in (('venv', 'bin', 'python'), ('venv', 'Scripts', 'python.exe')):
@@ -31,15 +35,24 @@ def lib_py(lib=None):
 def ff_dir():
     d = os.path.join(EH, 'bin')
     return d if os.path.exists(os.path.join(d, 'ffmpeg' + ('.exe' if WIN else ''))) else None
+def sh_exe():
+    """A POSIX shell for the Reel mux step. macOS/Linux: sh. Windows: the one that ships with Git for Windows."""
+    p = shutil.which('sh')
+    if p or not WIN: return p
+    for base in (os.environ.get('ProgramFiles'), os.environ.get('ProgramFiles(x86)'), os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Programs')):
+        for rel in (('Git', 'bin', 'sh.exe'), ('Git', 'usr', 'bin', 'sh.exe')):
+            c = os.path.join(base or '', *rel)
+            if os.path.isfile(c): return c
+    return None
 def ffver(exe):
-    try: m = re.search(r'ffmpeg version n?(\d+)', subprocess.run([exe, '-version'], capture_output=True, text=True).stdout); return int(m.group(1)) if m else 0
+    try: m = re.search(r'ffmpeg version n?(\d+)', subprocess.run([exe, '-version'], capture_output=True, text=True, encoding='utf-8', errors='replace').stdout); return int(m.group(1)) if m else 0
     except Exception: return 0
 def env_for(lib):
     e = dict(os.environ); d = ff_dir()
     if d and (ffver(shutil.which('ffmpeg') or 'ffmpeg') < 7): e['PATH'] = d + os.pathsep + e['PATH']
     return e
 def run(cmd, cwd=None, env=None, quiet=False):
-    r = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True)
+    r = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace')
     if r.returncode and not quiet: sys.stderr.write((r.stdout + r.stderr)[-1800:])
     return r
 
@@ -49,17 +62,18 @@ def doctor(a):
     def row(name, good, info, need=True):
         nonlocal ok; rows.append(f'{"OK " if good else ("-- " if not need else "BAD")} {name:<22} {info}'); ok &= good or not need
     v = sys.version_info; row('python >= 3.9', v >= (3, 9), f'{v.major}.{v.minor}')
-    nd = shutil.which('node'); nv = subprocess.run([nd, '-v'], capture_output=True, text=True).stdout.strip() if nd else ''
+    nd = shutil.which('node'); nv = subprocess.run([nd, '-v'], capture_output=True, text=True, encoding='utf-8', errors='replace').stdout.strip() if nd else ''
     row('node >= 20', bool(nd) and int(nv.lstrip('v').split('.')[0]) >= 20, nv or 'missing')
     lib = find_lib(); row('bundled runtime', bool(lib), lib or 'missing runtime/ folder (re-clone the repository)')
     if lib:
         env = env_for(lib); fx = shutil.which('ffmpeg', path=env['PATH']); fv = ffver(fx) if fx else 0
-        row('ffmpeg >= 7', fv >= 7, f'{fx} (v{fv})' if fx else 'missing -> sh scripts/setup.sh')
-        row('voice model', os.path.exists(os.path.join(EH, 'models', 'kokoro-v1.0.onnx')) and os.path.exists(os.path.join(EH, 'models', 'voices-v1.0.bin')), os.path.join(EH, 'models') + ' (sh scripts/setup.sh)')
-        py = lib_py(); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0, py + ('' if r.returncode == 0 else ' (run: sh scripts/setup.sh)'))
-        row('node deps (playwright)', os.path.isdir(os.path.join(lib, 'node_modules', 'playwright-core')), 'runtime/node_modules (sh scripts/setup.sh)')
+        row('ffmpeg >= 7', fv >= 7, f'{fx} (v{fv})' if fx else 'missing -> ' + SETUP)
+        row('voice model', os.path.exists(os.path.join(EH, 'models', 'kokoro-v1.0.onnx')) and os.path.exists(os.path.join(EH, 'models', 'voices-v1.0.bin')), os.path.join(EH, 'models') + ' (' + SETUP + ')')
+        py = lib_py(); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0, py + ('' if r.returncode == 0 else ' (run: ' + SETUP + ')'))
+        if WIN: row('sh (Reel only)', bool(sh_exe()), sh_exe() or 'install Git for Windows to build Reels; GIF and post work without it', need=False)
+        row('node deps (playwright)', os.path.isdir(os.path.join(lib, 'node_modules', 'playwright-core')), 'runtime/node_modules (' + SETUP + ')')
         r = run([py, '-c', 'import sherpa_onnx'], quiet=True); row('speech check (optional)', r.returncode == 0 and os.path.isdir(os.path.join(EH, 'asr')), 'verifies the audio says the script; skipped if absent', need=False)
-    print('\n'.join(rows)); print('READY' if ok else 'NOT READY: fix the BAD rows (sh scripts/setup.sh does most of it)'); return 0 if ok else 1
+    print('\n'.join(rows)); print('READY' if ok else f'NOT READY: fix the BAD rows ({SETUP} does most of it)'); return 0 if ok else 1
 
 def spec(a):
     if a.icons: print(' '.join(icon_names())); return 0
@@ -119,6 +133,12 @@ def tts(story, work, lib, env):
     for i, t in spoken.items(): dur[i] = load(os.path.join(cache, key(t) + '.json'))['dur']
     return spoken, dur, {i: os.path.join(cache, key(t) + '.wav') for i, t in spoken.items()}
 
+def make_gif(vid, fin, width, fps, colors, env):
+    """flat-colour palette GIF that loops forever (pure ffmpeg, no shell script, so it behaves the same on every OS)"""
+    vf = f'fps={fps},scale={width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors={colors}:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle'
+    r = run(['ffmpeg', '-y', '-v', 'error', '-i', vid, '-vf', vf, '-loop', '0', fin], env=env)
+    if r.returncode: sys.exit('gif encode failed (is ffmpeg >= 7 installed? run: studio.py doctor)')
+
 # ───────────────────────── staging / render ─────────────────────────
 def stage(work, name, data):
     d = os.path.join(work, name); shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
@@ -171,7 +191,9 @@ def build_reel(work, story, lib, env, out, slug):
     r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', '1080x1920', '--fps', '30', '--workers', workers(), '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('render failed')
     fin = os.path.join(out, f'{slug}-reel.mp4'); e2 = dict(env); e2['ES_COLOR'] = 'bt709'
-    r = run(['sh', os.path.join(lib, 'core/render/mux.sh'), vid, mix, fin, '30', '0'], cwd=lib, env=e2)
+    sh = sh_exe()
+    if not sh: sys.exit('The Reel needs a POSIX shell for the audio mux step. On Windows install Git for Windows (it includes sh.exe), then re-run. The GIF and post do not need it.')
+    r = run([sh, os.path.join(lib, 'core', 'render', 'mux.sh').replace(os.sep, '/'), vid.replace(os.sep, '/'), mix.replace(os.sep, '/'), fin.replace(os.sep, '/'), '30', '0'], cwd=lib, env=e2)
     if r.returncode: sys.exit('mux failed')
     os.remove(vid); poster = os.path.join(out, f'{slug}-poster.jpg')
     run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', str(round(D['scenes'][min(2, len(D['scenes']) - 1)]['t0'] + 2.0, 2)), '-i', fin, '-frames:v', '1', '-q:v', '2', poster], env=env)
@@ -198,9 +220,9 @@ def build_gif(work, story, lib, env, out, slug):
     os.makedirs(out, exist_ok=True); vid = os.path.join(out, 'gif_video.mp4'); print('[gif] rendering...')
     r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', size, '--fps', '10', '--workers', workers(), '--q', 'mode=gif', '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('gif render failed')
-    fin = os.path.join(out, f'{slug}-linkedin.gif'); mk = os.path.join(SKILL, 'engine', 'make_gif.sh')
+    fin = os.path.join(out, f'{slug}-linkedin.gif')
     for w, c in ((1080, 128), (900, 128), (800, 96), (720, 96), (640, 64)):  # always 4:5 portrait; width only shrinks to fit 5 MB
-        run(['sh', mk, vid, fin, str(w), '10', str(c)], env=env)
+        make_gif(vid, fin, w, 10, c, env)
         if os.path.getsize(fin) <= 5 * 1048576: break
     os.remove(vid); mb = os.path.getsize(fin) / 1048576; print(f'[gif] done -> {fin} ({w}px, {mb:.1f} MB)')
     return {'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
@@ -219,7 +241,7 @@ def build(a):
         os.makedirs(out, exist_ok=True); open(os.path.join(out, f'{slug}-linkedin-post.txt'), 'w', encoding='utf-8').write(txt); print(f'[post] -> out/{slug}-linkedin-post.txt ({len(txt)} chars)'); res['post'] = len(txt)
     if arts & {'reel', 'gif'}:
         lib = find_lib()
-        if not lib: sys.exit('Runtime not set up. Run: sh scripts/setup.sh   (then: studio.py doctor)')
+        if not lib: sys.exit('Runtime not set up. Run: ' + SETUP + '   (then: studio.py doctor)')
         env = env_for(lib)
         if 'gif' in arts:
             if 'gif' not in story: sys.exit('story.json has no "gif" section')

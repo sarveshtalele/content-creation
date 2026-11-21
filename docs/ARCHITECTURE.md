@@ -21,7 +21,7 @@ skills/explainer-studio/
     validate_story.py   SPEC (all limits) + validators
     evaluate.py         grounding metrics
     tts_norm.py, timeline.py, mixvoice.py, asr_check.py, post.py
-    setup.sh            one-time install of browser, voice model (checksummed), python deps
+    setup.py            one-time install of browser, voice model (checksummed), python deps (setup.sh is a wrapper)
   engine/               browser-side renderer (plain ES modules)
     kit.js              palette, icons, DOM + animation helpers
     gif_common.js       header, footer, flow arrows (travelling dots), nodes

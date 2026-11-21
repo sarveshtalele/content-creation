@@ -45,7 +45,7 @@ export async function openDemo(dir, { w = 1920, h = 1080, q = '', warnings = fal
     if (!EXE && /Executable doesn't exist|playwright install/i.test(String(e.message))) {
       const v = createRequire(import.meta.url)('playwright-core/package.json').version;
       console.error(`the headless browser for playwright-core ${v} is not installed. From the library root run\n` +
-        `  sh scripts/setup.sh\n  (or: node node_modules/playwright-core/cli.js install chromium-headless-shell; not npx playwright install,\n` +
+        `  python3 scripts/setup.py   (Windows: python scripts/setup.py)\n  (or: node node_modules/playwright-core/cli.js install chromium-headless-shell; not npx playwright install,\n` +
         `  which installs the browser of another playwright version). Or point PLAYWRIGHT_CHROME at a chrome-headless-shell.`);
       process.exit(1);
     }

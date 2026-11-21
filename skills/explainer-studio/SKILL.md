@@ -14,7 +14,7 @@ You write ONE compact `story.json`; scripts do the rest. S = this skill folder, 
 
 ## Run
 ```
-python3 S/scripts/studio.py doctor                 # once; if not READY: sh S/scripts/setup.sh
+python3 S/scripts/studio.py doctor                 # once; if not READY: python3 S/scripts/setup.py
 python3 S/scripts/studio.py ingest SRC --out W     # URL | owner/repo | file | dir | -
 python3 S/scripts/studio.py pick W                 # best template + limits + skeleton (GIF)
 # read W/source.md once; write W/story.json from the skeleton (only what was requested)
