@@ -143,7 +143,8 @@ def tts(story, work, lib, env):
 def make_gif(vid, fin, width, fps, colors, env):
     """flat-colour palette GIF that loops forever (pure ffmpeg, no shell script, so it behaves the same on every OS)"""
     vf = f'fps={fps},scale={width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors={colors}:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle'
-    r = run(['ffmpeg', '-y', '-v', 'error', '-i', vid, '-vf', vf, '-loop', '0', fin], env=env)
+    ff = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'   # Windows looks a bare name up in the parent's PATH, not env's: pass the full path
+    r = run([ff, '-y', '-v', 'error', '-i', vid, '-vf', vf, '-loop', '0', fin], env=env)
     if r.returncode: sys.exit('gif encode failed (is ffmpeg >= 7 installed? run: studio.py doctor)')
 
 # ───────────────────────── staging / render ─────────────────────────

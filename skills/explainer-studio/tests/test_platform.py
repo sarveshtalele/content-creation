@@ -22,6 +22,7 @@ for f in ('studio.py', 'ingest.py', 'setup.py', 'selftest.py'):
     t = open(os.path.join(S, 'scripts', f), encoding='utf-8').read()
     check('/dev/null' not in t, f'{f}: use os.devnull')
     check(not re.search(r"""\[\s*['"]sh['"]\s*,""", t), f'{f}: calls sh directly (use sh_exe())')
+    check(not re.search(r"run\(\[\s*'(ffmpeg|ffprobe)'", t), f'{f}: run ffmpeg by full path (shutil.which with env PATH), a bare name ignores env on Windows')
     check('shell=True' not in t, f'{f}: shell=True')
 
 # 3. shell scripts that must stay LF are pinned by .gitattributes, and none contains CRLF
