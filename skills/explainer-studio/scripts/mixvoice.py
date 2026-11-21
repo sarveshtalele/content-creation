@@ -12,7 +12,13 @@ for v in d['voice']:
     if fi: a[:fi] *= np.linspace(0, 1, fi)
     if fo: a[n - fo:n] *= np.linspace(1, 0, fo)
     mix[i:i + n] += a[:n]
-mix = sosfilt(butter(2, 70, 'hp', fs=SR, output='sos'), mix)
+def peak(f0, db, q):   # RBJ peaking biquad
+    A = 10 ** (db / 40); w = 2 * np.pi * f0 / SR; al = np.sin(w) / (2 * q); c = np.cos(w)
+    b = np.array([1 + al * A, -2 * c, 1 - al * A]); a = np.array([1 + al / A, -2 * c, 1 - al / A]); return np.concatenate([b / a[0], a / a[0]])[None, :]
+mix = sosfilt(butter(2, 80, 'hp', fs=SR, output='sos'), mix)      # rumble
+mix = sosfilt(peak(280, -2.0, 1.0), mix)                          # less boxiness
+mix = sosfilt(peak(3200, 3.0, 0.9), mix)                          # consonant clarity (presence)
+mix = sosfilt(peak(6800, -2.5, 2.0), mix)                         # tame sibilance
 env = np.maximum.reduce([np.abs(mix)]); k = np.exp(-1 / (0.02 * SR)); g = np.zeros_like(env); acc = 0.0
 for i in range(0, len(env), 48):
     acc = max(env[i:i + 48].max(), acc * (k ** 48)); g[i:i + 48] = acc

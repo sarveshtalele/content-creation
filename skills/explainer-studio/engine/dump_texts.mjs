@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'url'; import path from 'path';
-const LIB = process.env.LEMO_OPUSCAR_HOME;
+import { fileURLToPath } from 'url'; const LIB = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../runtime');
 const { openDemo, closeServer } = await import(pathToFileURL(path.join(LIB, 'core/render/page.mjs')).href);
 import fs from 'fs';
 const [dir, mode, w, h, out] = process.argv.slice(2);

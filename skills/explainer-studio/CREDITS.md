@@ -1,1 +1,2 @@
-Fonts: bundled under SIL OFL 1.1 (assets/fonts/OFL-1.1.txt). Voice: Kokoro (Apache-2.0), fetched at setup. Renderer: Lemo-Opuscar (MIT), cloned at setup, not bundled. ffmpeg (LGPL/GPL, user-installed). Optional ASR: sherpa-onnx + Whisper (MIT). Avatar: supplied by Sarvesh Talele.
+Fonts: bundled under SIL OFL 1.1 (assets/fonts/OFL-1.1.txt). Voice: Kokoro (Apache-2.0), fetched at setup. Headless Chromium via playwright-core (Apache-2.0), installed at setup. ffmpeg (LGPL/GPL, user-installed or ffmpeg-static). Optional speech check: sherpa-onnx + Whisper (MIT). Avatar: supplied by Sarvesh Talele.
+The render helpers in runtime/ are adapted from an MIT-licensed open-source project; its copyright and permission notice is kept in runtime/LICENSE as the license requires.

@@ -1,0 +1,75 @@
+{
+ "meta": {
+  "title": "How a request travels through an API gateway",
+  "slug": "api-gateway-request"
+ },
+ "gif": {
+  "template": "pipeline",
+  "title": "Request through a gateway",
+  "subtitle": "One front door, the same path every time",
+  "pipeline": {
+   "start": {
+    "title": "Client request",
+    "sub": "A client app calls the API gateway",
+    "icon": "laptop"
+   },
+   "stages": [
+    {
+     "label": "AT THE GATEWAY",
+     "group": "blue",
+     "nodes": [
+      {
+       "title": "Authenticate",
+       "sub": "Checks the token"
+      },
+      {
+       "title": "Rate limit",
+       "sub": "Counts requests per client"
+      },
+      {
+       "title": "Route",
+       "sub": "Matches the path to a service"
+      }
+     ]
+    },
+    {
+     "label": "IN THE SERVICE",
+     "group": "green",
+     "nodes": [
+      {
+       "title": "Backend service",
+       "sub": "Orders or payments"
+      },
+      {
+       "title": "Database",
+       "sub": "Reads or writes"
+      },
+      {
+       "title": "Response",
+       "sub": "Builds the response"
+      }
+     ]
+    },
+    {
+     "label": "ON THE WAY BACK",
+     "group": "clay",
+     "nodes": [
+      {
+       "title": "Log",
+       "sub": "Request and response time"
+      },
+      {
+       "title": "Return",
+       "sub": "Returns the response to the client"
+      }
+     ]
+    }
+   ],
+   "result": {
+    "title": "Response to the client",
+    "sub": "Every request follows the same path",
+    "icon": "check"
+   }
+  }
+ }
+}

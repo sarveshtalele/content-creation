@@ -1,0 +1,105 @@
+{
+ "meta": {
+  "title": "Northwind Cloud at a glance",
+  "slug": "northwind-cloud"
+ },
+ "gif": {
+  "template": "columns",
+  "title": "Northwind Cloud",
+  "subtitle": "Four service families, one console",
+  "hub": {
+   "title": "Northwind Cloud",
+   "tagline": "One console, one billing account"
+  },
+  "columns": [
+   {
+    "label": "Compute",
+    "icon": "chip",
+    "group": "blue",
+    "items": [
+     {
+      "title": "Northwind VM",
+      "sub": "Full virtual machines",
+      "icon": "laptop"
+     },
+     {
+      "title": "Functions",
+      "sub": "Runs short code on demand",
+      "icon": "bolt"
+     },
+     {
+      "title": "Containers",
+      "sub": "Runs packaged apps",
+      "icon": "layers"
+     }
+    ]
+   },
+   {
+    "label": "Storage",
+    "icon": "folder",
+    "group": "green",
+    "items": [
+     {
+      "title": "Object Store",
+      "sub": "Holds files of any size",
+      "icon": "file"
+     },
+     {
+      "title": "Block Volumes",
+      "sub": "Attach disks to machines",
+      "icon": "plug"
+     },
+     {
+      "title": "Archive",
+      "sub": "Rarely used data at the lowest cost",
+      "icon": "rewind"
+     }
+    ]
+   },
+   {
+    "label": "Data",
+    "icon": "book",
+    "group": "clay",
+    "items": [
+     {
+      "title": "SQL Database",
+      "sub": "Managed relational tables",
+      "icon": "list"
+     },
+     {
+      "title": "Cache",
+      "sub": "Hot data in memory",
+      "icon": "bolt"
+     },
+     {
+      "title": "Search",
+      "sub": "Indexes text to find it quickly",
+      "icon": "search"
+     }
+    ]
+   },
+   {
+    "label": "Networking",
+    "icon": "globe",
+    "group": "blue",
+    "items": [
+     {
+      "title": "Load Balancer",
+      "sub": "Spreads traffic across servers",
+      "icon": "branch"
+     },
+     {
+      "title": "DNS",
+      "sub": "Maps names to addresses",
+      "icon": "globe"
+     },
+     {
+      "title": "CDN",
+      "sub": "Serves content close to users",
+      "icon": "cloud"
+     }
+    ]
+   }
+  ]
+ }
+}

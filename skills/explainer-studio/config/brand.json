@@ -1,11 +1,11 @@
 {
-  "name": "Sarvesh Talele",
-  "tagline": "AI for Everyday life, Simplified",
-  "avatar": "assets/avatar.png",
-  "post_cta": [
-    "♻️ Repost this to bring more people into the conversation.",
-    "➕ Follow Sarvesh Talele for more AI engineering, Claude, and practical AI insights."
-  ],
-  "voice": "am_michael",
-  "speed": 1.05
+ "name": "Sarvesh Talele",
+ "tagline": "AI for Everyday life, Simplified",
+ "avatar": "assets/avatar.png",
+ "post_cta": [
+  "♻️ Repost this to bring more people into the conversation.",
+  "➕ Follow Sarvesh Talele for more AI engineering, Claude, and practical AI insights."
+ ],
+ "voice": "af_heart",
+ "speed": 0.96
 }

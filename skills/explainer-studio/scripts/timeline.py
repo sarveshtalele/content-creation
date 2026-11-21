@@ -1,7 +1,7 @@
 """timeline: story + TTS durations -> data.json for the engine (scene windows, per-part appear times, caption chunks). Deterministic."""
 import re
 from common import *
-LEAD, GAP, SCENE_GAP, FIRST_PAD = 0.55, 0.32, 0.42, 0.3
+LEAD, GAP, SCENE_GAP, FIRST_PAD = 0.6, 0.4, 0.45, 0.3
 def parts(sc):
     t, p = sc['type'], sc.get('p', {})
     return {'hook': 1 + bool(p.get('sub')) + len(p.get('chips', [])), 'flow': len(p.get('steps', [])) + bool(p.get('loop')), 'map': 1 + len(p.get('items', [])),

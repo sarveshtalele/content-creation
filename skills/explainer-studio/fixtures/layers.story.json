@@ -1,0 +1,96 @@
+{
+ "meta": {
+  "title": "The layers of a web application",
+  "slug": "web-app-layers"
+ },
+ "gif": {
+  "template": "lanes",
+  "title": "Layers of a web application",
+  "subtitle": "Each layer has one job",
+  "lanes": {
+   "hub": {
+    "title": "Web application",
+    "sub": "Built in layers",
+    "icon": "layers"
+   },
+   "lanes": [
+    {
+     "label": "Presentation",
+     "icon": "laptop",
+     "group": "blue",
+     "items": [
+      {
+       "title": "Browser",
+       "sub": "What users see"
+      },
+      {
+       "title": "HTML and CSS",
+       "sub": "Structure and style"
+      },
+      {
+       "title": "JavaScript",
+       "sub": "Interaction"
+      }
+     ]
+    },
+    {
+     "label": "Application",
+     "icon": "code",
+     "group": "green",
+     "items": [
+      {
+       "title": "API",
+       "sub": "Holds the logic"
+      },
+      {
+       "title": "Business rules",
+       "sub": "Holds the logic"
+      },
+      {
+       "title": "Authentication",
+       "sub": "Who the user is"
+      }
+     ]
+    },
+    {
+     "label": "Data",
+     "icon": "folder",
+     "group": "clay",
+     "items": [
+      {
+       "title": "Database",
+       "sub": "Stores information"
+      },
+      {
+       "title": "Cache",
+       "sub": "Fast reads"
+      },
+      {
+       "title": "Queue",
+       "sub": "Background work"
+      }
+     ]
+    },
+    {
+     "label": "Infrastructure",
+     "icon": "cloud",
+     "group": "sand",
+     "items": [
+      {
+       "title": "Servers",
+       "sub": "Runs everything"
+      },
+      {
+       "title": "Containers",
+       "sub": "Runs everything"
+      },
+      {
+       "title": "Network",
+       "sub": "Runs everything"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

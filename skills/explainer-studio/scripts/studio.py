@@ -1,36 +1,36 @@
 #!/usr/bin/env python3
-"""explainer-studio orchestrator. Pure standard library; heavy steps run through the Lemo-Opuscar toolkit (node + its python).
+"""explainer-studio orchestrator. Pure standard library; heavy steps run through the bundled runtime (node + python voice env).
   studio.py doctor                      environment check (exit 0 = ready for the artifacts you can build)
   studio.py spec [--icons]              compact story.json limits (agent reads this instead of long docs)
   studio.py ingest SRC --out DIR        URL | GitHub repo | file | dir | '-' (stdin)  ->  DIR/source.md (cite chunk ids)
   studio.py check DIR                   validate story.json + accuracy metrics; prints only what must be fixed
   studio.py build DIR [--artifacts reel,gif,post|all]
-  studio.py post DIR | eval DIR"""
+  studio.py post DIR | eval DIR | pick DIR (best GIF template)
+  studio.py review DIR                  deterministic gates + contact sheets; prints the token to attest
+  studio.py finalize DIR                copies to DIR/final only when every gate is 100% and the visual attestation matches"""
 import argparse, hashlib, json, os, re, shutil, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
-import ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm
+import ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
 
 WIN = os.name == 'nt'
 def home(): return os.path.expanduser('~')
-def find_lib():
-    for p in (os.environ.get('LEMO_OPUSCAR_HOME'), os.path.join(home(), 'lemo-opuscar')):
-        if p and os.path.isfile(os.path.join(p, 'core', 'render', 'video.mjs')): return os.path.abspath(p)
-    return None
-def lib_py(lib):
-    for r in (('.venv', 'bin', 'python'), ('.venv', 'Scripts', 'python.exe')):
-        p = os.path.join(lib, *r)
+EH = os.environ.get('EXPLAINER_HOME') or os.path.join(home(), '.cache', 'explainer-studio')
+RT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime'))
+def find_lib(): return RT if os.path.isfile(os.path.join(RT, 'core', 'render', 'video.mjs')) else None
+def lib_py(lib=None):
+    for r in (('venv', 'bin', 'python'), ('venv', 'Scripts', 'python.exe')):
+        p = os.path.join(EH, *r)
         if os.path.exists(p): return p
     return sys.executable
 def ff_dir():
-    for d in (os.environ.get('EXPLAINER_FFMPEG_DIR'), os.path.join(home(), '.cache', 'explainer-studio', 'bin')):
-        if d and os.path.exists(os.path.join(d, 'ffmpeg' + ('.exe' if WIN else ''))): return d
-    return None
+    d = os.path.join(EH, 'bin')
+    return d if os.path.exists(os.path.join(d, 'ffmpeg' + ('.exe' if WIN else ''))) else None
 def ffver(exe):
     try: m = re.search(r'ffmpeg version n?(\d+)', subprocess.run([exe, '-version'], capture_output=True, text=True).stdout); return int(m.group(1)) if m else 0
     except Exception: return 0
 def env_for(lib):
-    e = dict(os.environ); e['LEMO_OPUSCAR_HOME'] = lib; d = ff_dir()
+    e = dict(os.environ); d = ff_dir()
     if d and (ffver(shutil.which('ffmpeg') or 'ffmpeg') < 7): e['PATH'] = d + os.pathsep + e['PATH']
     return e
 def run(cmd, cwd=None, env=None, quiet=False):
@@ -46,18 +46,14 @@ def doctor(a):
     v = sys.version_info; row('python >= 3.9', v >= (3, 9), f'{v.major}.{v.minor}')
     nd = shutil.which('node'); nv = subprocess.run([nd, '-v'], capture_output=True, text=True).stdout.strip() if nd else ''
     row('node >= 20', bool(nd) and int(nv.lstrip('v').split('.')[0]) >= 20, nv or 'missing')
-    lib = find_lib(); row('Lemo-Opuscar toolkit', bool(lib), lib or 'missing -> sh scripts/setup.sh')
+    lib = find_lib(); row('bundled runtime', bool(lib), lib or 'missing runtime/ folder (re-clone the repository)')
     if lib:
         env = env_for(lib); fx = shutil.which('ffmpeg', path=env['PATH']); fv = ffver(fx) if fx else 0
         row('ffmpeg >= 7', fv >= 7, f'{fx} (v{fv})' if fx else 'missing -> sh scripts/setup.sh')
-        row('Kokoro voice model', os.path.exists(os.path.join(lib, 'core/tts/kokoro-v1.0.onnx')), 'core/tts/kokoro-v1.0.onnx')
-        py = lib_py(lib); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0, py + ('' if r.returncode == 0 else ' (run: sh scripts/setup.sh)'))
-        row('node deps (playwright)', os.path.isdir(os.path.join(lib, 'node_modules', 'playwright-core')), 'node_modules/playwright-core')
-        try:
-            out = run([nd, '-e', f"import('file://{lib}/core/render/browser.mjs').then(m=>console.log(Object.keys(m).join()))"], cwd=lib, quiet=True)
-            row('headless chromium', True, 'checked at first render', need=False)
-        except Exception: pass
-        r = run([sys.executable, '-c', 'import sherpa_onnx'], quiet=True); row('ASR check (optional)', r.returncode == 0 and os.path.isdir(os.path.expanduser('~/.cache/explainer-studio/asr')) or bool(os.environ.get('EXPLAINER_ASR_MODEL')), 'speech-to-text verification; skipped if absent', need=False)
+        row('voice model', os.path.exists(os.path.join(EH, 'models', 'kokoro-v1.0.onnx')) and os.path.exists(os.path.join(EH, 'models', 'voices-v1.0.bin')), os.path.join(EH, 'models') + ' (sh scripts/setup.sh)')
+        py = lib_py(); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0, py + ('' if r.returncode == 0 else ' (run: sh scripts/setup.sh)'))
+        row('node deps (playwright)', os.path.isdir(os.path.join(lib, 'node_modules', 'playwright-core')), 'runtime/node_modules (sh scripts/setup.sh)')
+        r = run([py, '-c', 'import sherpa_onnx'], quiet=True); row('speech check (optional)', r.returncode == 0 and os.path.isdir(os.path.join(EH, 'asr')), 'verifies the audio says the script; skipped if absent', need=False)
     print('\n'.join(rows)); print('READY' if ok else 'NOT READY: fix the BAD rows (sh scripts/setup.sh does most of it)'); return 0 if ok else 1
 
 def spec(a):
@@ -92,7 +88,9 @@ def do_check(work, quiet=False):
     if not quiet:
         for e in fails: print('FIX  ', e)
         for w in warn + (rep['warns'] if rep else []): print('warn ', w)
-        if rep: print(f'metrics: support {rep["claim_support"]} | overlap {rep["overlap_mean"]} (min {rep["overlap_min"]}) | recall@1/3/5 {rep["recall@1"]}/{rep["recall@3"]}/{rep["recall@5"]} | P@3 {rep["precision@3"]} | MRR {rep["mrr"]} | coverage {rep["coverage"]}')
+        if rep:
+            lab = [('claim_support', 'support'), ('overlap_mean', 'overlap'), ('recall@3', 'recall@3'), ('precision@3', 'P@3'), ('mrr', 'MRR'), ('coverage', 'coverage'), ('gif_text_support', 'gif text support'), ('gif_coverage', 'gif coverage')]
+            print('metrics: ' + ' | '.join(f'{n} {rep[k]}' for k, n in lab if rep.get(k) is not None))
         print('CHECK OK' if not fails else f'CHECK FAILED: {len(fails)} item(s) to fix in story.json, then re-run check')
     return (not fails), story, chunks, rep
 
@@ -155,6 +153,7 @@ def build_reel(work, story, lib, env, out, slug):
                 if sid: tails[sid] = round(tails.get(sid, 0) + deficit + .15, 2)
         print(f'[reel] hold-time adjust #{it + 1}: {len(bad)} text(s) lengthened')
     else: print('[reel] WARN: hold times still short; shorten on-screen text'); 
+    if D['DUR'] > 90.0: sys.exit(f'[reel] {D["DUR"]:.1f}s is over the 90 s Reel limit. Shorten the narration (fewer or shorter beats) in story.json, then re-run build.')
     ok, issues = validate_layout(lib, env, film, '1080x1920', None, 240, 1600, 40)
     if not ok:
         print('[reel] LAYOUT ERRORS (edit story.json props, then re-run build):'); [print('   ', l) for l in issues[:14]]; return None
@@ -166,7 +165,7 @@ def build_reel(work, story, lib, env, out, slug):
     vid = os.path.join(out, 'reel_video.mp4'); print('[reel] rendering', round(D['DUR'], 1), 's ...')
     r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', '1080x1920', '--fps', '30', '--workers', workers(), '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('render failed')
-    fin = os.path.join(out, f'{slug}-reel.mp4'); e2 = dict(env); e2['LEMO_COLOR'] = 'bt709'
+    fin = os.path.join(out, f'{slug}-reel.mp4'); e2 = dict(env); e2['ES_COLOR'] = 'bt709'
     r = run(['sh', os.path.join(lib, 'core/render/mux.sh'), vid, mix, fin, '30', '0'], cwd=lib, env=e2)
     if r.returncode: sys.exit('mux failed')
     os.remove(vid); poster = os.path.join(out, f'{slug}-poster.jpg')
@@ -174,15 +173,14 @@ def build_reel(work, story, lib, env, out, slug):
     # ASR (optional)
     items = [{'id': i, 'text': t, **({'asr': x['asr']} if x.get('asr') else {})} for x in story['beats'] for i, t in [(x['id'], spoken[x['id']])]]
     ij = os.path.join(work, '.cache', 'asr_in.json'); dump(items, ij)
-    r = run([sys.executable, os.path.join(HERE, 'asr_check.py'), ij, voice, os.path.join(out, 'asr.json')], env=env, quiet=True)
+    r = run([lib_py(), os.path.join(HERE, 'asr_check.py'), ij, voice, os.path.join(out, 'asr.json')], env=env, quiet=True)
     asr = {0: 'all lines verified by speech-to-text', 1: 'SOME LINES DIFFER (see out/asr.json; fix spelling or add "tts"/"asr")', 3: 'skipped (ASR model not installed)'}.get(r.returncode, 'error')
     print(f'[reel] done in {time.time() - t0:.0f}s -> {fin}\n[reel] speech check: {asr}')
-    return {'file': fin, 'duration': D['DUR'], 'asr': asr, 'tails': tails}
+    return {'file': fin, 'duration': D['DUR'], 'asr': asr, 'tails': tails, 'gates': {'readcheck': not bad, 'layout': True, 'duration<=90s': D['DUR'] <= 90.0, 'speech': {0: 'verified', 1: 'FAILED', 3: 'skipped'}.get(r.returncode, 'FAILED')}}
 
 def build_gif(work, story, lib, env, out, slug):
-    b = brand(); g = story['gif']; N = len(g['cards']); H = TL.gif_height(N, bool(g['hub'].get('tagline'))); size = f'1080x{H}'; hold = 5.4; assert H == 1350
-    url = story['meta'].get('url', ''); g = dict(g); g['H'] = H
-    g['source'] = {'label': g['source']['label'], 'url': re.sub(r'^https?://(www\.)?', '', url).rstrip('/')[:44] if url else g['source'].get('url', '')}
+    b = brand(); g = dict(story['gif']); g['template'] = g.get('template', 'hub'); g['H'] = H = 1350; size = f'1080x{H}'; hold = 5.4
+    g.pop('source', None)
     for it in range(5):
         g['hold'] = hold; film = stage(work, '.film-gif', {'brand': {'name': b['name'], 'tagline': b['tagline'], 'avatar': 'assets/avatar.png'}, 'logo': has_claude(work), 'gif': g})
         bad, txt, rc = readcheck(lib, env, film, size, 'mode=gif')
@@ -200,7 +198,7 @@ def build_gif(work, story, lib, env, out, slug):
         run(['sh', mk, vid, fin, str(w), '10', str(c)], env=env)
         if os.path.getsize(fin) <= 5 * 1048576: break
     os.remove(vid); mb = os.path.getsize(fin) / 1048576; print(f'[gif] done -> {fin} ({w}px, {mb:.1f} MB)')
-    return {'file': fin, 'mb': round(mb, 2), 'width': w}
+    return {'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
 
 def build(a):
     work = os.path.abspath(a.dir); ok, story, chunks, rep = do_check(work, quiet=False)
@@ -216,29 +214,112 @@ def build(a):
         os.makedirs(out, exist_ok=True); open(os.path.join(out, f'{slug}-linkedin-post.txt'), 'w', encoding='utf-8').write(txt); print(f'[post] -> out/{slug}-linkedin-post.txt ({len(txt)} chars)'); res['post'] = len(txt)
     if arts & {'reel', 'gif'}:
         lib = find_lib()
-        if not lib: sys.exit('Lemo-Opuscar toolkit not found. Run: sh scripts/setup.sh   (then: studio.py doctor)')
+        if not lib: sys.exit('Runtime not set up. Run: sh scripts/setup.sh   (then: studio.py doctor)')
         env = env_for(lib)
         if 'gif' in arts:
             if 'gif' not in story: sys.exit('story.json has no "gif" section')
             res['gif'] = build_gif(work, story, lib, env, out, slug)
         if 'reel' in arts: res['reel'] = build_reel(work, story, lib, env, out, slug)
-    dump({'artifacts': {k: v for k, v in res.items()}, 'eval': {k: rep[k] for k in ('claim_support', 'overlap_mean', 'recall@3', 'precision@3', 'mrr', 'coverage', 'pass')}}, os.path.join(out, 'build.json'))
-    print('BUILD COMPLETE'); [print(' ', k, '->', (v or {}).get('file', v) if isinstance(v, dict) else v) for k, v in res.items()]; print('  accuracy report -> out/eval.md'); return 0 if all(res.values()) else 1
+    bj = os.path.join(out, 'build.json'); prev = load(bj) if os.path.exists(bj) else {'artifacts': {}}
+    prev['artifacts'].update({k: v for k, v in res.items() if v}); prev['eval'] = {k: rep[k] for k in ('claim_support', 'overlap_mean', 'recall@3', 'precision@3', 'mrr', 'coverage', 'gif_text_support', 'gif_coverage', 'pass')}; dump(prev, bj)
+    print('BUILD COMPLETE' if all(res.values()) else 'BUILD INCOMPLETE (see errors above)'); [print(' ', k, '->', (v or {}).get('file', v) if isinstance(v, dict) else v) for k, v in res.items()]; print('  accuracy report -> out/eval.md'); return 0 if all(res.values()) else 1
+
+
+# ───────────────────────── review gate ─────────────────────────
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as f:
+        for c in iter(lambda: f.read(1 << 20), b''): h.update(c)
+    return h.hexdigest()
+def probe(env, f, entries):
+    r = run(['ffprobe', '-v', 'error', '-show_entries', entries, '-of', 'json', f], env=env, quiet=True)
+    try: return json.loads(r.stdout)
+    except Exception: return {}
+def frame_hash(env, f, t, tmp):
+    run(['ffmpeg', '-y', '-v', 'error', '-ss', str(t), '-i', f, '-frames:v', '1', tmp], env=env, quiet=True)
+    return sha(tmp) if os.path.exists(tmp) else None
+def sheet(env, f, times, out, w):
+    tmps = []
+    for i, t in enumerate(times):
+        tp = out + f'.{i}.png'; run(['ffmpeg', '-y', '-v', 'error', '-ss', str(t), '-i', f, '-frames:v', '1', '-vf', f'scale={w}:-1', tp], env=env, quiet=True)
+        if os.path.exists(tp): tmps.append(tp)
+    if len(tmps) >= 2: run(['ffmpeg', '-y', '-v', 'error'] + sum([['-i', t] for t in tmps], []) + ['-filter_complex', f'hstack=inputs={len(tmps)}', out], env=env, quiet=True)
+    elif tmps: shutil.copy(tmps[0], out)
+    for t in tmps: os.remove(t)
+
+def review(a):
+    """Every gate is deterministic. Prints only what failed, plus the token the agent must attest after LOOKING at the contact sheets."""
+    work = os.path.abspath(a.dir); out = os.path.join(work, 'out'); bj = os.path.join(out, 'build.json')
+    if not os.path.exists(bj): sys.exit('no build yet: run studio.py build first')
+    ok, story, chunks, rep = do_check(work, quiet=True); B = load(bj)['artifacts']; env = env_for(find_lib() or RT); G = {}; rd = os.path.join(out, 'review'); os.makedirs(rd, exist_ok=True)
+    G['story_check'] = ok; G['accuracy_eval'] = bool(rep and rep['pass'])
+    files = []
+    if 'gif' in B:
+        f = B['gif']['file']; files.append(f); info = probe(env, f, 'stream=width,height,nb_frames:format=duration,size')
+        st = (info.get('streams') or [{}])[0]; w, h = st.get('width', 0), st.get('height', 0); dur = float(info.get('format', {}).get('duration', 0) or 0)
+        G['gif.portrait_4x5'] = bool(w) and abs(w / h - .8) < .002; G['gif.size<=5MB'] = os.path.getsize(f) <= 5 * 1048576; G['gif.layout+readable'] = all(B['gif']['gates'].values())
+        late = max(1.0, dur - 2.5); fh = [frame_hash(env, f, late + d, os.path.join(rd, '_h.png')) for d in (0, .3, .6)]
+        G['gif.arrows_animating'] = len({x for x in fh if x}) >= 2
+        sheet(env, f, [round(dur * x, 2) for x in (.12, .35, .6, .88)], os.path.join(rd, 'gif_sheet.png'), 405)
+    if 'reel' in B:
+        f = B['reel']['file']; files.append(f); info = probe(env, f, 'stream=codec_type,width,height:format=duration'); sts = info.get('streams', [])
+        v = next((x for x in sts if x.get('codec_type') == 'video'), {}); au = any(x.get('codec_type') == 'audio' for x in sts); dur = float(info.get('format', {}).get('duration', 0) or 0)
+        G['reel.1080x1920'] = (v.get('width'), v.get('height')) == (1080, 1920); G['reel.has_audio'] = au; G['reel.duration<=90s'] = 3 < dur <= 90.5
+        r = run(['ffmpeg', '-nostats', '-i', f, '-af', 'ebur128=peak=true', '-f', 'null', '-'], env=env, quiet=True); t = r.stderr[r.stderr.rfind('Summary:'):]
+        mi = re.search(r'I:\s+(-?[\d.]+) LUFS', t); mp = re.search(r'Peak:\s+(-?[\d.]+) dBFS', t)
+        G['reel.loudness_-16..-12_LUFS'] = bool(mi) and -16.5 <= float(mi.group(1)) <= -12.0; G['reel.true_peak<=-1dBFS'] = bool(mp) and float(mp.group(1)) <= -0.9
+        G['reel.layout+readable'] = B['reel']['gates']['readcheck'] and B['reel']['gates']['layout']; sp = B['reel']['gates']['speech']
+        G['reel.speech_matches_script'] = sp == 'verified'
+        times = [round(dur * x, 2) for x in (.06, .2, .35, .5, .65, .8, .95)]; sheet(env, f, times, os.path.join(rd, 'reel_sheet.png'), 270)
+    if 'post' in B: pf = os.path.join(out, f'{story["meta"]["slug"]}-linkedin-post.txt'); files.append(pf); G['post.exact_cta_lines'] = all(l in open(pf, encoding='utf-8').read() for l in brand()['post_cta'])
+    token = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
+    bad = [k for k, v in G.items() if v is not True]; pct = round(100 * (len(G) - len(bad)) / max(1, len(G)))
+    rep_ = {'gates': G, 'passed': len(G) - len(bad), 'total': len(G), 'confidence_pct': pct, 'token': token, 'sheets': [x for x in ('gif_sheet.png', 'reel_sheet.png') if os.path.exists(os.path.join(rd, x))]}; dump(rep_, os.path.join(rd, 'gates.json'))
+    for k in bad: print('GATE FAILED:', k)
+    if 'reel.speech_matches_script' in bad and B.get('reel', {}).get('gates', {}).get('speech') == 'skipped': print('  (speech check was skipped: run  sh scripts/setup.sh asr  to enable it, then rebuild the Reel)')
+    print(f'gates {rep_["passed"]}/{rep_["total"]} ({pct}%)  token {token}')
+    if pct == 100: print('NEXT: open ' + ', '.join('out/review/' + x for x in rep_['sheets']) + ' and LOOK at them. Then write out/review/attest.json:\n  {"token":"' + token + '","checked":{"text_legible":true,"nothing_overlaps_or_clipped":true,"matches_source":true,"arrows_follow_the_logic":true},"notes":""}\n  then run: studio.py finalize ' + a.dir)
+    else: print('Fix the failed gates (edit story.json, rebuild) and run review again.')
+    return 0 if pct == 100 else 1
+
+def finalize(a):
+    work = os.path.abspath(a.dir); out = os.path.join(work, 'out'); gj = os.path.join(out, 'review', 'gates.json'); at = os.path.join(out, 'review', 'attest.json')
+    if not os.path.exists(gj): sys.exit('run studio.py review first')
+    R = load(gj)
+    if R['confidence_pct'] != 100: print('REFUSED: gates not at 100%'); return 1
+    if not os.path.exists(at): print('REFUSED: out/review/attest.json missing (look at the sheets, then write it)'); return 1
+    A = load(at); need = ('text_legible', 'nothing_overlaps_or_clipped', 'matches_source', 'arrows_follow_the_logic')
+    story = load(os.path.join(work, 'story.json')); B = load(os.path.join(out, 'build.json'))['artifacts']
+    files = [x['file'] for x in B.values() if isinstance(x, dict) and 'file' in x]; slug = story['meta']['slug']; pf = os.path.join(out, f'{slug}-linkedin-post.txt')
+    if 'post' in B: files.append(pf)
+    cur = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
+    if cur != R['token']: print('REFUSED: outputs changed since review; run studio.py review again'); return 1
+    if A.get('token') != R['token']: print('REFUSED: attest.json token does not match the current review token ' + R['token']); return 1
+    if not all(A.get('checked', {}).get(k) is True for k in need): print('REFUSED: every attest "checked" item must be true: ' + ', '.join(need) + '. Fix the problem and rebuild instead of ticking it.'); return 1
+    fin = os.path.join(work, 'final'); shutil.rmtree(fin, ignore_errors=True); os.makedirs(fin)
+    extra = [os.path.join(out, f'{slug}-subtitles.srt'), os.path.join(out, f'{slug}-poster.jpg')]
+    for f in files + [x for x in extra if os.path.exists(x)]: shutil.copy(f, fin)
+    dump({'confidence_pct': 100, 'gates': R['gates'], 'token': cur, 'files': {os.path.basename(f): sha(os.path.join(fin, os.path.basename(f))) for f in os.listdir(fin) for f in [os.path.join(fin, f)]}}, os.path.join(fin, 'MANIFEST.json'))
+    print('FINAL (all gates 100%, visual review attested):'); [print('  ', os.path.join(fin, f)) for f in sorted(os.listdir(fin))]; return 0
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
-    for n in ('check', 'eval', 'post'): sp.add_parser(n).add_argument('dir')
+    for n in ('check', 'eval', 'post', 'pick', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
     b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default='all')
     a = ap.parse_args()
     if a.cmd == 'doctor': return doctor(a)
     if a.cmd == 'spec': return spec(a)
     if a.cmd == 'ingest': m = ING.run(a.src, a.out, a.max_chars); print(json.dumps(m, ensure_ascii=False)); print('-> read', os.path.join(a.out, 'source.md'), 'once; cite chunk ids [cNN]'); return 0
+    if a.cmd == 'pick':
+        w = os.path.abspath(a.dir); r = PICK.pick(open(os.path.join(w, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(w, 'source.meta.json'))); print(json.dumps(r, indent=1)); print('shape of gif.' + r['template'] + ':', VS.SPEC['gif_templates'][r['template']]); return 0
     if a.cmd in ('check', 'eval'): return 0 if do_check(os.path.abspath(a.dir))[0] else 1
     if a.cmd == 'post':
         ok, story, *_ = do_check(os.path.abspath(a.dir), quiet=True)
         if not ok: return 2
         print(POST.build(story, brand())); return 0
+    if a.cmd == 'review': return review(a)
+    if a.cmd == 'finalize': return finalize(a)
     if a.cmd == 'build': return build(a)
 if __name__ == '__main__': sys.exit(main())

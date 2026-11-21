@@ -1,6 +1,6 @@
 // Layout / text-leakage validator. usage: node validate.mjs <project> --size WxH [--q mode=reel] [--step 0.1] [--top 230] [--bottom 1470] [--side 40]
 import { pathToFileURL } from 'url'; import path from 'path';
-const LIB = process.env.LEMO_OPUSCAR_HOME; if (!LIB) { console.error('set LEMO_OPUSCAR_HOME'); process.exit(2); }
+import { fileURLToPath } from 'url'; const LIB = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../runtime');
 const { openDemo, closeServer, takeSize } = await import(pathToFileURL(path.join(LIB, 'core/render/page.mjs')).href);
 const args = process.argv.slice(2), { w: VW, h: VH } = takeSize(args), opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const dir = args[0], Q = opt('--q', ''), STEP = +opt('--step', 0.1), TOP = +opt('--top', 0), BOT = +opt('--bottom', VH), SIDE = +opt('--side', 40);
