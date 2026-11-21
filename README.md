@@ -20,7 +20,7 @@ Then, in your agent, say: *"Make a Reel, GIF and LinkedIn post from <paste or li
 | **Codex** (CLI/app) | `~/.agents/skills/` (user) or `<repo>/.agents/skills/` | `sh install.sh /path/to/project`; restart Codex; invoke with `$explainer-studio` or just describe the task |
 | **Antigravity** (IDE) | `~/.gemini/config/skills/` global, `<workspace>/.agents/skills/` | `sh install.sh /path/to/project`; Antigravity CLI global path is `~/.gemini/antigravity-cli/skills/` (installed if `~/.gemini` exists) |
 | **Gemini CLI** | `~/.gemini/skills/` or `~/.agents/skills/` (user); `.gemini/skills/` or `.agents/skills/` (workspace) | `sh install.sh` (uses `~/.agents/skills`) or `gemini skills link ./content-creation/skills`; check with `/skills list` |
-| **ChatGPT** | Skills > Create > Upload from your computer | `sh install.sh --zip`, upload the created `skills/explainer-studio-skill.zip`. See limits below |
+| **ChatGPT** | Skills > Create > Upload from your computer | `sh install.sh --zip`, upload the created `explainer-studio-skill.zip` (repo root). See limits below |
 
 ## ChatGPT limits (read this)
 ChatGPT skills (Business, Enterprise, Edu and similar plans, admin must enable skill upload) run in a sandbox. Rendering needs a headless browser, ffmpeg 7+, the Kokoro voice model and a clone of the renderer, which ChatGPT's sandbox typically cannot download. In ChatGPT use it for the grounded `story.json`, validation, accuracy report and the LinkedIn post. Run the video and GIF build in Codex, Claude Code, Antigravity or Gemini CLI on your machine.
