@@ -1,0 +1,115 @@
+{
+ "meta": {
+  "title": "The modern data platform ecosystem",
+  "slug": "data-platform-ecosystem"
+ },
+ "gif": {
+  "template": "ecosystem",
+  "title": "The modern data platform",
+  "subtitle": "One core, five sections, and a clear job for each",
+  "ecosystem": {
+   "hub": {
+    "title": "Data platform",
+    "sub": "Fans out in five",
+    "icon": "layers"
+   },
+   "sections": [
+    {
+     "label": "Sources",
+     "icon": "globe",
+     "group": "blue",
+     "items": [
+      {
+       "title": "Applications",
+       "sub": "Emit events and logs"
+      },
+      {
+       "title": "Databases",
+       "sub": "Hold transactions"
+      },
+      {
+       "title": "Partner APIs",
+       "sub": "Deliver external files"
+      }
+     ]
+    },
+    {
+     "label": "Ingestion",
+     "icon": "plug",
+     "group": "green",
+     "items": [
+      {
+       "title": "Streaming brokers",
+       "sub": "Carry events in real time"
+      },
+      {
+       "title": "Batch loaders",
+       "sub": "Copy tables on a schedule"
+      },
+      {
+       "title": "Connectors",
+       "sub": "Pull from partner APIs"
+      }
+     ]
+    },
+    {
+     "label": "Storage",
+     "icon": "database",
+     "group": "clay",
+     "items": [
+      {
+       "title": "Data lake",
+       "sub": "Holds raw files cheaply"
+      },
+      {
+       "title": "Warehouse",
+       "sub": "Holds clean tables"
+      },
+      {
+       "title": "Feature store",
+       "sub": "Keeps ready inputs"
+      }
+     ]
+    },
+    {
+     "label": "Processing",
+     "icon": "gear",
+     "group": "sand",
+     "items": [
+      {
+       "title": "Transformation jobs",
+       "sub": "Clean and join tables"
+      },
+      {
+       "title": "Stream processors",
+       "sub": "React to events"
+      },
+      {
+       "title": "Orchestrator",
+       "sub": "Runs every job in order"
+      }
+     ]
+    },
+    {
+     "label": "Serving and governance",
+     "icon": "shield",
+     "group": "blue",
+     "items": [
+      {
+       "title": "Dashboards",
+       "sub": "Show metrics to teams"
+      },
+      {
+       "title": "Access catalog",
+       "sub": "Records who owns what"
+      },
+      {
+       "title": "Quality checks",
+       "sub": "Block bad data"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

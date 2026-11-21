@@ -1,0 +1,181 @@
+{
+ "meta": {
+  "title": "A framework for safe software releases",
+  "slug": "safe-release-framework"
+ },
+ "gif": {
+  "template": "framework",
+  "title": "A release framework",
+  "subtitle": "Build it once, reuse it for every new service",
+  "framework": {
+   "cards": [
+    {
+     "title": "Service inventory",
+     "icon": "clipboard",
+     "group": "blue",
+     "body": "List every service in one catalog with a named owner.",
+     "caption": "One catalog, named owners",
+     "viz": {
+      "type": "table",
+      "items": [
+       "Service|Owner",
+       "Catalog|Named"
+      ]
+     }
+    },
+    {
+     "title": "Risk tiers",
+     "icon": "scale",
+     "group": "clay",
+     "body": "Classify each service by impact. The tier decides how strict the controls must be.",
+     "caption": "Risk level sets the controls",
+     "viz": {
+      "type": "stack",
+      "items": [
+       "Minimal",
+       "Limited",
+       "High risk"
+      ]
+     }
+    },
+    {
+     "title": "Ownership",
+     "icon": "users",
+     "group": "blue",
+     "body": "Assign clear owners across engineering and security so nothing falls through gaps.",
+     "caption": "Every service has an owner",
+     "viz": {
+      "type": "tree",
+      "items": [
+       "Product",
+       "Security",
+       "Platform"
+      ],
+      "root": "Release board"
+     }
+    },
+    {
+     "title": "Policies and standards",
+     "icon": "book",
+     "group": "sand",
+     "body": "Turn principles into written rules and testable checks.",
+     "caption": "Principles to checks",
+     "viz": {
+      "type": "steps",
+      "items": [
+       "Principles",
+       "Policies",
+       "Checks"
+      ]
+     }
+    },
+    {
+     "title": "Approval workflow",
+     "icon": "check",
+     "group": "green",
+     "body": "Route each change through intake, review, and sign-off before production.",
+     "caption": "No sign-off, no release",
+     "viz": {
+      "type": "steps",
+      "items": [
+       "Intake",
+       "Review",
+       "Sign-off",
+       "Deploy"
+      ]
+     }
+    },
+    {
+     "title": "Controls and testing",
+     "icon": "wrench",
+     "group": "sand",
+     "body": "Validate every build for bugs, performance, and security before release.",
+     "caption": "Build to tests to release",
+     "viz": {
+      "type": "fan",
+      "items": [
+       "Bug tests",
+       "Speed tests",
+       "Security tests"
+      ],
+      "root": "Build"
+     }
+    },
+    {
+     "title": "Monitoring",
+     "icon": "chart",
+     "group": "blue",
+     "body": "Track errors, latency, and usage and alert when a metric crosses its threshold.",
+     "caption": "Alert at the threshold",
+     "viz": {
+      "type": "chips",
+      "items": [
+       "Errors",
+       "Latency",
+       "Usage",
+       "Alerts"
+      ],
+      "root": "Metrics"
+     }
+    },
+    {
+     "title": "Audit trails",
+     "icon": "list",
+     "group": "clay",
+     "body": "Log who changed what, when, and in which version.",
+     "caption": "Who did what, and when",
+     "viz": {
+      "type": "table",
+      "items": [
+       "Who|What|When",
+       "Owner|Change|Version"
+      ]
+     }
+    },
+    {
+     "title": "Compliance mapping",
+     "icon": "globe",
+     "group": "green",
+     "body": "Link each control to the standards that apply. One control set serves many frameworks.",
+     "caption": "One control set, many rules",
+     "viz": {
+      "type": "fan",
+      "items": [
+       "Standard A",
+       "Standard B",
+       "Regulation"
+      ],
+      "root": "Controls"
+     }
+    }
+   ],
+   "takeaways": [
+    {
+     "title": "Inventory and owners",
+     "body": "Make every service visible, owned.",
+     "icon": "clipboard"
+    },
+    {
+     "title": "Policies and gates",
+     "body": "Stop risky changes before release.",
+     "icon": "lock"
+    },
+    {
+     "title": "Testing",
+     "body": "Turn policy into evidence.",
+     "icon": "check"
+    },
+    {
+     "title": "Monitoring and audit",
+     "body": "Catch drift and trace decisions.",
+     "icon": "eye"
+    },
+    {
+     "title": "One control library",
+     "body": "Build once, reuse for every service.",
+     "icon": "layers"
+    }
+   ]
+  }
+ }
+}

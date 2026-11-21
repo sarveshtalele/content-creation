@@ -4,7 +4,7 @@
   studio.py spec [--icons]              compact story.json limits (agent reads this instead of long docs)
   studio.py ingest SRC --out DIR        URL | GitHub repo | file | dir | '-' (stdin)  ->  DIR/source.md (cite chunk ids)
   studio.py check DIR                   validate story.json + accuracy metrics; prints only what must be fixed
-  studio.py build DIR [--artifacts reel,gif,post|all]
+  studio.py build DIR [--artifacts gif|reel|post|all]   (default: gif only; reel/post only when the user asked)
   studio.py post DIR | eval DIR | pick DIR (best GIF template)
   studio.py review DIR                  deterministic gates + contact sheets; prints the token to attest
   studio.py finalize DIR                copies to DIR/final only when every gate is 100% and the visual attestation matches"""
@@ -17,7 +17,12 @@ WIN = os.name == 'nt'
 def home(): return os.path.expanduser('~')
 EH = os.environ.get('EXPLAINER_HOME') or os.path.join(home(), '.cache', 'explainer-studio')
 RT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime'))
-def find_lib(): return RT if os.path.isfile(os.path.join(RT, 'core', 'render', 'video.mjs')) else None
+def find_lib():
+    nm, shared = os.path.join(RT, 'node_modules'), os.path.join(EH, 'node', 'node_modules')
+    if not os.path.exists(nm) and os.path.isdir(shared):          # another installed copy ran setup: reuse its node deps
+        try: os.symlink(shared, nm)
+        except OSError: pass
+    return RT if os.path.isfile(os.path.join(RT, 'core', 'render', 'video.mjs')) else None
 def lib_py(lib=None):
     for r in (('venv', 'bin', 'python'), ('venv', 'Scripts', 'python.exe')):
         p = os.path.join(EH, *r)
@@ -307,13 +312,13 @@ def main():
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
     for n in ('check', 'eval', 'post', 'pick', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
-    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default='all')
+    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default='gif')
     a = ap.parse_args()
     if a.cmd == 'doctor': return doctor(a)
     if a.cmd == 'spec': return spec(a)
     if a.cmd == 'ingest': m = ING.run(a.src, a.out, a.max_chars); print(json.dumps(m, ensure_ascii=False)); print('-> read', os.path.join(a.out, 'source.md'), 'once; cite chunk ids [cNN]'); return 0
     if a.cmd == 'pick':
-        w = os.path.abspath(a.dir); r = PICK.pick(open(os.path.join(w, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(w, 'source.meta.json'))); print(json.dumps(r, indent=1)); print('shape of gif.' + r['template'] + ':', VS.SPEC['gif_templates'][r['template']]); return 0
+        w = os.path.abspath(a.dir); r = PICK.pick(open(os.path.join(w, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(w, 'source.meta.json'))); print(json.dumps(r, indent=1)); print('limits:', VS.SPEC['gif_templates'][r['template']]); print('skeleton:', PICK.SKELETON[r['template']]); return 0
     if a.cmd in ('check', 'eval'): return 0 if do_check(os.path.abspath(a.dir))[0] else 1
     if a.cmd == 'post':
         ok, story, *_ = do_check(os.path.abspath(a.dir), quiet=True)

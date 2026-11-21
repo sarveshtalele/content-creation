@@ -8,7 +8,7 @@ NEED_CITE = {'stakes', 'answer', 'how', 'proof'}
 S = lambda lo, hi: ('str', lo, hi)
 ITEM = lambda **kw: ('obj', kw)
 SPEC = {
-  'narration': {'lines': [7, 15], 'words_per_line': [6, 30], 'max_sentence_words': 22, 'total_words': [90, 215], 'reel_seconds': [40, 90], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
+  'narration': {'lines': [7, 15], 'words_per_line': [6, 30], 'max_sentence_words': 22, 'total_words': [90, 170], 'reel_seconds': [40, 90], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
   'reel_scenes': {
     'hook':   {'q': S(10, 130), 'sub': S(0, 110), 'chips': ('list', 0, 4, S(2, 24))},
     'flow':   {'title': S(0, 48), 'steps': ('list', 2, 4, ITEM(label=S(2, 22), sub=S(0, 34), icon='icon')), 'loop': 'bool'},
@@ -24,11 +24,13 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'hub | columns | pipeline | lanes   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'hub | columns | pipeline | lanes | ecosystem | framework   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
     'columns': 'catalogue by category: gif.hub{title,sub?,tagline}, gif.columns[3-4]{label,icon,group,items[2-3]{title<=22,sub<=60,icon}}',
     'pipeline': 'top-down workflow: gif.pipeline{start{title,sub?,icon},stages[2-4]{label,group,link?,nodes[2-4]{title<=24,sub<=44}},result{title,sub?,icon}}',
     'lanes': 'layers of a stack/ecosystem: gif.lanes{hub{title,sub?,icon},lanes[3-5]{label<=22,icon,group,items[2-3]{title<=22,sub<=50}}}',
+    'ecosystem': 'one core fanning out to 3-5 sections with rails: gif.ecosystem{hub{title<=22,sub?<=24,icon?},sections[3-5]{label<=22,icon,group,items[2-3]{title<=24,sub<=50}}}',
+    'framework': 'a framework as 6|9 mini-diagram cards + takeaways: gif.framework{takeaways_title?,cards[6|9]{title<=26,body<=96,icon,group,caption?<=40,viz{type,root?,items}},takeaways[3-5]{title<=24,body<=44,icon}}; viz.type steps(2-4,<=14) stack(2-4,<=18) tree(root+2-4,<=10) fan(root<=12+2-4,<=22) table(2-4 rows "a|b|c",<=10 per cell) chips(root<=14+2-4,<=12)',
   },
   'post': {'hook': S(15, 150), 'bullets': [3, 6], 'bullet_chars': [20, 150], 'max_chars': 1100},
   'thresholds': {'claim_support': 1.0, 'overlap_min': 0.40, 'overlap_warn': 0.55, 'recall@3': 0.9, 'mrr': 0.7, 'coverage': 0.5, 'ungrounded_entities': 0},
@@ -128,7 +130,7 @@ def validate(story, chunks, full_text):
         if beats[0].get('role') != 'hook' or not beats[0].get('say', '').strip().endswith('?'): v.e('beats[0]: must be role "hook" and a question ending with "?"')
         if not any(b.get('role') == 'takeaway' for b in beats): v.e('need a beat with role "takeaway" before the engage beat')
         if not any(b.get('role') == 'answer' for b in beats): v.e('need a beat with role "answer"')
-    if beats and not N['total_words'][0] <= tw <= N['total_words'][1]: v.e(f'narration total {tw} words, allowed {N["total_words"][0]}-{N["total_words"][1]} (≈ {tw/2.6:.0f}s)')
+    if beats and not N['total_words'][0] <= tw <= N['total_words'][1]: v.e(f'narration total {tw} words, allowed {N["total_words"][0]}-{N["total_words"][1]} (≈ {tw/1.9:.0f}s with the male voice; the Reel must stay <= 90 s)')
     # ── scenes ──
     seen = []; types = SPEC['reel_scenes']
     for i, sc in enumerate(scenes):
@@ -186,12 +188,46 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
+TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework')
+VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 4, 18, False), 'tree': (2, 4, 10, True), 'fan': (2, 4, 22, True), 'table': (2, 4, 30, False), 'chips': (2, 4, 12, True)}
+def v_framework(v, g, icons):
+    F = g.get('framework', {})
+    if F.get('takeaways_title') is not None: _S(v, 'gif.framework.takeaways_title', F['takeaways_title'], 4, 24)
+    cards = F.get('cards', [])
+    if len(cards) not in (6, 9): v.e(f'gif.framework.cards: {len(cards)}; must be 6 or 9'); return
+    for i, c in enumerate(cards):
+        w = f'gif.framework.cards[{i}]'; _S(v, w + '.title', c.get('title'), 3, 26); _S(v, w + '.body', c.get('body'), 20, 96); _ic(v, w + '.icon', c.get('icon'), icons); _grp(v, w + '.group', c.get('group'))
+        if c.get('caption') is not None: _S(v, w + '.caption', c['caption'], 4, 40)
+        z = c.get('viz') or {}; t = z.get('type')
+        if t not in VIZ: v.e(f'{w}.viz.type must be ' + '|'.join(VIZ)); continue
+        lo, hi, mx, root = VIZ[t]; it = _list(v, w + '.viz.items', z.get('items'), lo, hi)
+        if root: _S(v, w + '.viz.root', z.get('root'), 2, {'tree': 22, 'fan': 12, 'chips': 14}[t])
+        if t == 'table':
+            cols = {len(str(r).split('|')) for r in it}
+            if len(cols) != 1 or not cols <= {2, 3}: v.e(f'{w}.viz.items: every row needs the same 2-3 cells separated by |')
+            for r in it:
+                for cell in str(r).split('|'):
+                    if not 1 <= len(cell.strip()) <= 10: v.e(f'{w}.viz.items: table cell "{cell.strip()}" must be 1-10 chars')
+            continue
+        lim = 14 if t == 'tree' and len(it) <= 3 else 12 if t == 'steps' and len(it) == 4 else mx
+        for j, x in enumerate(it): _S(v, f'{w}.viz.items[{j}]', x, 2, lim)
+    tk = _list(v, 'gif.framework.takeaways', F.get('takeaways'), 3, 5)
+    for i, k in enumerate(tk):
+        w = f'gif.framework.takeaways[{i}]'; _S(v, w + '.title', k.get('title'), 3, 24); _S(v, w + '.body', k.get('body'), 8, 44 if len(tk) <= 4 else 36); _ic(v, w + '.icon', k.get('icon'), icons)
+def v_ecosystem(v, g, icons):
+    E = g.get('ecosystem', {}); h = E.get('hub', {}); _S(v, 'gif.ecosystem.hub.title', h.get('title'), 2, 22); _ic(v, 'gif.ecosystem.hub.icon', h.get('icon'), icons, False)
+    if h.get('sub') is not None: _S(v, 'gif.ecosystem.hub.sub', h['sub'], 3, 24)
+    for i, s_ in enumerate(_list(v, 'gif.ecosystem.sections', E.get('sections'), 3, 5)):
+        w = f'gif.ecosystem.sections[{i}]'; _S(v, w + '.label', s_.get('label'), 3, 22); _ic(v, w + '.icon', s_.get('icon'), icons); _grp(v, w + '.group', s_.get('group'))
+        for j, x in enumerate(_list(v, w + '.items', s_.get('items'), 2, 3)): _S(v, f'{w}.items[{j}].title', x.get('title'), 3, 24); _S(v, f'{w}.items[{j}].sub', x.get('sub'), 8, 50)
 def v_gif(v, g, icons):
     G = SPEC['gif']; tpl = g.get('template', 'hub')
-    if tpl not in ('hub', 'columns', 'pipeline', 'lanes'): v.e('gif.template must be hub|columns|pipeline|lanes'); return
+    if tpl not in TEMPLATES: v.e('gif.template must be ' + '|'.join(TEMPLATES)); return
     g['template'] = tpl
     for k in ('title', 'subtitle'): chk_val(v, 'gif.' + k, g.get(k), G[k], icons)
     if 'source' in g: v.w('gif.source is ignored: the GIF no longer shows a source line')
+    if tpl == 'framework': return v_framework(v, g, icons)
+    if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
     if tpl == 'columns':
         h = g.get('hub', {}); _S(v, 'gif.hub.title', h.get('title'), 2, 22); _S(v, 'gif.hub.tagline', h.get('tagline'), 4, 34)
         if h.get('sub') is not None: _S(v, 'gif.hub.sub', h['sub'], 4, 40)

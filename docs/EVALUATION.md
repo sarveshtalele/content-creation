@@ -1,0 +1,33 @@
+# Evaluation and accuracy
+
+What is measured, what is enforced, and what the numbers mean.
+
+## Story checks (`studio.py check`)
+
+| Metric | Meaning | Gate |
+|---|---|---|
+| claim_support | share of beats whose cited quote is verbatim in the cited chunk | threshold in `evaluate.py` |
+| overlap | lexical overlap between each beat and its cited chunk | mean threshold |
+| recall@k | BM25 retrieval of the cited chunk for each claim, top k | threshold |
+| precision@k | share of retrieved top-k chunks that are cited | reported |
+| MRR | mean reciprocal rank of the cited chunk | threshold |
+| coverage | share of the source's most salient chunks that the story uses | threshold |
+| entity groundedness | names, numbers, versions in the story that appear in the source | no ungrounded terms |
+| gif_text_support | share of GIF words found in the source | at least 0.75 |
+| gif_coverage | salient source chunks reflected in the GIF | reported |
+
+These are lexical proxies. They catch invented names, numbers and unsupported wording; they cannot prove that a paraphrase is true.
+
+## Review gates (`studio.py review`)
+
+Story check, accuracy report, GIF 4:5 / size / layout / readability / animation, Reel 1080x1920 / audio / duration / loudness / true peak / speech-to-text match, post CTA lines. Any failure blocks `finalize`.
+
+## Attestation
+
+At 100% gates, the reviewer opens `out/review/*.png` and writes `attest.json` with the token printed by `review` and four true/false checks: text legible, nothing overlaps or is clipped, matches the source, arrows follow the logic. `finalize` verifies the token against the current file hashes, so any rebuild after review requires a new review.
+
+## Known limits
+
+- A visual check by a model or person looking at stills can miss subtle issues in frames it did not sample.
+- Speech-to-text verification needs the optional ASR model (`sh scripts/setup.sh asr`); without it the speech gate fails rather than passing silently.
+- Source fidelity depends on the source; the plugin does not fact-check the source itself.
