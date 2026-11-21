@@ -1,0 +1,353 @@
+{
+ "meta": {
+  "title": "How HTTPS keeps your connection private",
+  "slug": "https-explained",
+  "source_label": "Source: How HTTPS keeps your connection private"
+ },
+ "beats": [
+  {
+   "id": "b1",
+   "role": "hook",
+   "say": "Is the padlock in your browser really protecting you?"
+  },
+  {
+   "id": "b2",
+   "role": "stakes",
+   "say": "Because on the open network, anyone on the path could read or change plain HTTP traffic.",
+   "cite": [
+    [
+     "c01",
+     "Anyone on the path, such as a public Wi-Fi operator, could read or change plain HTTP traffic."
+    ]
+   ]
+  },
+  {
+   "id": "b3",
+   "role": "answer",
+   "say": "HTTPS fixes this by wrapping HTTP inside TLS, which gives you encryption, integrity, and authentication.",
+   "cite": [
+    [
+     "c02",
+     "HTTPS fixes this by wrapping HTTP inside TLS."
+    ]
+   ]
+  },
+  {
+   "id": "b4",
+   "role": "how",
+   "say": "Every connection starts with a handshake. Your browser lists what it supports, and the server replies with its choice and its certificate.",
+   "cite": [
+    [
+     "c03",
+     "The server replies with its choice and its certificate."
+    ]
+   ]
+  },
+  {
+   "id": "b5",
+   "role": "how",
+   "say": "The certificate is a signed statement that a public key belongs to a domain. If the signature or the name does not match, the browser warns you.",
+   "cite": [
+    [
+     "c04",
+     "If the signature does not verify, or the name does not match the site, the browser shows a warning."
+    ]
+   ]
+  },
+  {
+   "id": "b6",
+   "role": "how",
+   "say": "Next, both sides agree on a shared secret using ephemeral Diffie-Hellman, so each session gets fresh keys.",
+   "cite": [
+    [
+     "c05",
+     "TLS 1.3 uses ephemeral Diffie-Hellman, so each session gets fresh keys."
+    ]
+   ]
+  },
+  {
+   "id": "b7",
+   "role": "how",
+   "say": "TLS 1.3 completes the handshake in one round trip, so secure connections feel nearly as fast as plain ones.",
+   "cite": [
+    [
+     "c06",
+     "TLS 1.3 completes the handshake in one round trip"
+    ]
+   ]
+  },
+  {
+   "id": "b8",
+   "role": "proof",
+   "say": "And it holds up: even if a server key leaks later, past sessions stay protected. Certificates renew automatically, usually after 90 days.",
+   "cite": [
+    [
+     "c05",
+     "Even if a server key leaks later, past sessions stay protected."
+    ],
+    [
+     "c07",
+     "Automation tools renew them without human effort."
+    ]
+   ]
+  },
+  {
+   "id": "b9",
+   "role": "takeaway",
+   "say": "So the padlock protects the path between you and the server, nothing more.",
+   "cite": [
+    [
+     "c08",
+     "It protects the path between you and the server, nothing more."
+    ]
+   ]
+  }
+ ],
+ "scenes": [
+  {
+   "id": "s1",
+   "type": "hook",
+   "beats": [
+    "b1",
+    "b2"
+   ],
+   "p": {
+    "q": "Is the padlock in your browser really protecting you?",
+    "sub": "Anyone on the path could read or change plain HTTP traffic.",
+    "chips": [
+     "HTTP",
+     "Public Wi-Fi"
+    ]
+   }
+  },
+  {
+   "id": "s2",
+   "type": "cards",
+   "beats": [
+    "b3"
+   ],
+   "p": {
+    "title": "HTTP wrapped inside TLS",
+    "items": [
+     {
+      "label": "Encryption",
+      "sub": "Eavesdroppers see only scrambled bytes",
+      "icon": "shield",
+      "cue": "encryption"
+     },
+     {
+      "label": "Integrity",
+      "sub": "Tampering is detected",
+      "icon": "check",
+      "cue": "integrity"
+     },
+     {
+      "label": "Authentication",
+      "sub": "You know which server you reached",
+      "icon": "hook",
+      "cue": "authentication"
+     }
+    ]
+   }
+  },
+  {
+   "id": "s3",
+   "type": "flow",
+   "beats": [
+    "b4",
+    "b5",
+    "b6"
+   ],
+   "p": {
+    "title": "The TLS handshake",
+    "steps": [
+     {
+      "label": "Hello",
+      "sub": "Browser lists what it supports",
+      "icon": "chat",
+      "cue": "lists what"
+     },
+     {
+      "label": "Certificate",
+      "sub": "Server proves its identity",
+      "icon": "doc",
+      "cue": "certificate is"
+     },
+     {
+      "label": "Key exchange",
+      "sub": "Fresh shared secret",
+      "icon": "bolt",
+      "cue": "shared secret"
+     }
+    ]
+   }
+  },
+  {
+   "id": "s4",
+   "type": "big",
+   "beats": [
+    "b7"
+   ],
+   "p": {
+    "big": "1 round trip",
+    "sub": "TLS 1.3 completes the handshake"
+   }
+  },
+  {
+   "id": "s5",
+   "type": "list",
+   "beats": [
+    "b8"
+   ],
+   "p": {
+    "title": "Why it holds up",
+    "items": [
+     {
+      "label": "Forward secrecy",
+      "sub": "Past sessions stay protected",
+      "cue": "past sessions"
+     },
+     {
+      "label": "Automatic renewal",
+      "sub": "Certificates expire after 90 days",
+      "cue": "renew"
+     }
+    ]
+   }
+  },
+  {
+   "id": "s6",
+   "type": "chips",
+   "beats": [
+    "b9"
+   ],
+   "p": {
+    "title": "What the padlock covers",
+    "items": [
+     {
+      "label": "Protects",
+      "sub": "The path between you and the server"
+     },
+     {
+      "label": "Does not protect",
+      "sub": "Against a malicious site"
+     }
+    ]
+   }
+  }
+ ],
+ "gif": {
+  "title": "How HTTPS works",
+  "subtitle": "HTTP wrapped inside TLS keeps your connection private",
+  "groups": {
+   "blue": "TLS GIVES",
+   "green": "HANDSHAKE",
+   "clay": "KEYS"
+  },
+  "hub": {
+   "title": "HTTPS",
+   "steps": [
+    "Hello",
+    "Certificate",
+    "Encrypt"
+   ],
+   "tagline": "HTTP wrapped inside TLS"
+  },
+  "cards": [
+   {
+    "title": "Encryption",
+    "icon": "shield",
+    "group": "blue",
+    "body": "Eavesdroppers see only scrambled bytes."
+   },
+   {
+    "title": "Integrity",
+    "icon": "check",
+    "group": "blue",
+    "body": "Tampering is detected."
+   },
+   {
+    "title": "Authentication",
+    "icon": "globe",
+    "group": "blue",
+    "body": "You know which server you reached."
+   },
+   {
+    "title": "Hello",
+    "icon": "chat",
+    "group": "green",
+    "body": "The browser lists the TLS versions and cipher suites it supports."
+   },
+   {
+    "title": "Key exchange",
+    "icon": "bolt",
+    "group": "clay",
+    "body": "TLS 1.3 uses ephemeral Diffie-Hellman, so each session gets fresh keys."
+   },
+   {
+    "title": "Certificate",
+    "icon": "doc",
+    "group": "green",
+    "body": "A signed statement that a public key belongs to a domain. The browser warns if it does not verify."
+   },
+   {
+    "title": "Forward secrecy",
+    "icon": "rewind",
+    "group": "clay",
+    "body": "Even if a server key leaks later, past sessions stay protected."
+   },
+   {
+    "title": "One round trip",
+    "icon": "bolt",
+    "group": "green",
+    "kind": "text",
+    "body": "TLS 1.3 completes the handshake in one round trip."
+   },
+   {
+    "title": "Renewal",
+    "icon": "gear",
+    "group": "clay",
+    "kind": "text",
+    "body": "Certificates expire after 90 days. Automation tools renew them."
+   }
+  ],
+  "source": {
+   "label": "Source: How HTTPS keeps your connection private"
+  }
+ },
+ "post": {
+  "hook": "Is the padlock in your browser really protecting you?",
+  "bullets": [
+   {
+    "t": "HTTPS wraps HTTP inside TLS: encryption, integrity, and authentication",
+    "c": [
+     "c02"
+    ]
+   },
+   {
+    "t": "A handshake agrees on fresh keys with ephemeral Diffie-Hellman",
+    "c": [
+     "c05"
+    ]
+   },
+   {
+    "t": "Forward secrecy keeps past sessions protected if a key leaks later",
+    "c": [
+     "c05"
+    ]
+   },
+   {
+    "t": "TLS 1.3 completes the handshake in one round trip",
+    "c": [
+     "c06"
+    ]
+   },
+   {
+    "t": "The padlock protects the path to the server, nothing more",
+    "c": [
+     "c08"
+    ]
+   }
+  ]
+ }
+}

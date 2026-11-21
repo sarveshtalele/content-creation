@@ -1,0 +1,2 @@
+# Evaluation (out/eval.md)
+Lexical, deterministic proxies computed offline: claim_support (cited quote found in source), overlap (narration vs cited chunk), recall@k / precision@k / MRR (BM25 retrieval of each claim's cited chunk among all chunks), coverage (share of source's salient chunks used), entity groundedness (names/numbers/terms present in the source). They catch invention and drift; they do not prove factual truth. Optional ASR verifies the audio says the script.

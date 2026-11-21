@@ -1,0 +1,7 @@
+{
+  "_doc": "Spoken forms for the TTS engine. 'exact' = whole-token replacements (case-sensitive). 'ext' = spoken form of file extensions after a dot. 'as_word' = ALLCAPS tokens read as words, not spelled out. Everything else ALLCAPS (2-6 letters) is spelled letter by letter.",
+  "exact": {"CLAUDE.md": "Claude dot M D", "AGENTS.md": "agents dot M D", "README.md": "readme dot M D", "~/.claude/projects/": "the dot claude slash projects folder", "claude.ai/code": "claude dot A I slash code", "Esc": "Escape", "Shift+Tab": "Shift Tab", "Ctrl+C": "Control C", "GitHub": "GitHub", "LinkedIn": "LinkedIn", "vs.": "versus", "e.g.": "for example", "i.e.": "that is", "etc.": "and so on"},
+  "ext": {"md": "M D", "js": "J S", "ts": "T S", "py": "pie", "json": "jason", "jsonl": "J S O N L", "yaml": "yammel", "yml": "yammel", "sql": "sequel", "html": "H T M L", "css": "C S S", "txt": "text", "sh": "shell", "rs": "R S", "go": "go"},
+  "as_word": ["NASA", "NATO", "LASER", "RADAR", "SCUBA", "JSON", "YAML", "SQL", "GIF", "LLM", "LLMS", "NPM", "PIP", "SaaS"],
+  "word_forms": {"JSON": "jason", "YAML": "yammel", "SQL": "sequel", "GIF": "jif", "LLM": "L L M", "LLMs": "L L Ms", "NPM": "N P M", "PIP": "pip", "SaaS": "sass"}
+}

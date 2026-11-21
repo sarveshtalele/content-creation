@@ -1,0 +1,1 @@
+Fonts: bundled under SIL OFL 1.1 (assets/fonts/OFL-1.1.txt). Voice: Kokoro (Apache-2.0), fetched at setup. Renderer: Lemo-Opuscar (MIT), cloned at setup, not bundled. ffmpeg (LGPL/GPL, user-installed). Optional ASR: sherpa-onnx + Whisper (MIT). Avatar: supplied by Sarvesh Talele.
