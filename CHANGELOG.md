@@ -2,6 +2,8 @@
 
 ## 2.17.0
 
+- **One outputs folder**: every build and every Design Studio result is copied to `./outputs/<slug>/` (GIF, Reel, PDF, PNG slides, covers, post text, subtitles). `EXPLAINER_OUTPUTS` sets another folder. The build prints `ALL OUTPUTS -> path`.
+- **Tower funnel** rebuilt closer to the cut-away reference (glass floors, railings, plants, roof crowd, entrance).
 - **Plugin zip for GitHub**: `python install.py --zip` now also builds `explainer-studio-plugin.zip` with `.claude-plugin/`, `.codex-plugin/`, `.agent-plugin/` and `skills/explainer-studio/` at the root, which is what GitHub and plugin uploaders accept (the old zip, with the skill folder at the root, is only for ChatGPT).
 - **A call to action on every carousel slide**: the cover says "Swipe for the next one", middle slides say "Next: <title of the next slide>", the last slide asks for the follow, and a single image says "Follow for more like this". Your own per-slide `cta` still wins.
 - **Review fixes**: the Reel camera push no longer moves titles outside the safe margin; Reels are read at video pace (20 characters a second) and the pauses between scenes are shorter, so the sample Reel runs 56 s instead of 68 s and the narration cap is 115 words. The contrast check now understands text drawn over SVG shapes, small kickers and card captions were darkened, tower tags are at least 20 px (max 18 characters), the tower funnel uses the brand colours, and the studio home page no longer scrolls sideways. New `tests/test_content.py`; CI now runs it, the carousel end-to-end check and a grid GIF build.

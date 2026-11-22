@@ -42,7 +42,7 @@ def start(kind, extra_args, key='', port=0, open_browser=True, foreground_cmd=No
     if os.path.exists(sp): os.remove(sp)
     log = os.path.join(os.path.dirname(sp), os.path.basename(sp)[:-5] + '.log')
     cmd = [sys.executable, os.path.join(HERE, 'studio.py'), kind] + extra_args + ['--foreground', '--no-open', '--port', str(port), '--state', sp]
-    kw = {'stdin': subprocess.DEVNULL, 'stdout': open(log, 'w', encoding='utf-8'), 'stderr': subprocess.STDOUT, 'cwd': HERE}
+    kw = {'stdin': subprocess.DEVNULL, 'stdout': open(log, 'w', encoding='utf-8'), 'stderr': subprocess.STDOUT, 'cwd': HERE, 'env': {**os.environ, 'EXPLAINER_OUTPUTS': os.environ.get('EXPLAINER_OUTPUTS') or os.path.join(os.getcwd(), 'outputs')}}      # the server runs from the skill folder; its results still go to the outputs folder of the directory it was started from
     if os.name == 'nt': kw['creationflags'] = 0x00000008 | 0x00000200 | 0x08000000      # DETACHED_PROCESS | NEW_PROCESS_GROUP | NO_WINDOW
     else: kw['start_new_session'] = True
     p = subprocess.Popen(cmd, **kw); t0 = time.time()
