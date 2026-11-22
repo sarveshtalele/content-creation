@@ -1,0 +1,98 @@
+{
+ "meta": {
+  "title": "Four hook patterns",
+  "slug": "hook-patterns"
+ },
+ "carousel": {
+  "hook_style": "contradiction",
+  "title": {
+   "kicker": "HOOK PATTERNS",
+   "hook": "Your brain cannot scroll past unresolved tension",
+   "sub": "Four hook patterns found in more than 1000 viral hooks",
+   "icon": "hook"
+  },
+  "slides": [
+   {
+    "type": "points",
+    "title": "Four patterns that keep showing up",
+    "items": [
+     {
+      "title": "Contradictions",
+      "sub": "Two things that do not fit together create tension",
+      "group": "blue"
+     },
+     {
+      "title": "Specificity",
+      "sub": "Speak to one person instead of an audience",
+      "group": "clay"
+     },
+     {
+      "title": "Timeframe tension",
+      "sub": "Short, unexpected timeframes start a curiosity loop",
+      "group": "green"
+     },
+     {
+      "title": "POV as advice",
+      "sub": "The most engaging POV hooks are advice in disguise",
+      "group": "blue"
+     }
+    ]
+   },
+   {
+    "type": "stat",
+    "title": "Contrast is the workhorse",
+    "value": "30%",
+    "pct": 30,
+    "label": "of the top performers used contradictions",
+    "sub": "A hook that holds two things that do not fit together creates tension"
+   },
+   {
+    "type": "compare",
+    "title": "The more specific a hook gets, the more people relate",
+    "left": {
+     "head": "Generic",
+     "items": [
+      "If you ever get bloated after a meal",
+      "Speaks to an audience"
+     ]
+    },
+    "right": {
+     "head": "Specific",
+     "items": [
+      "If you've ever secretly unbuttoned your jeans at dinner",
+      "Speaks to one person"
+     ]
+    }
+   },
+   {
+    "type": "flow",
+    "title": "POV hooks are advice in disguise",
+    "steps": [
+     {
+      "title": "A scenario",
+      "sub": "People think they are just relating to a scenario",
+      "icon": "eye"
+     },
+     {
+      "title": "Defenses down",
+      "sub": "Their defenses are down when they relate",
+      "icon": "shield"
+     },
+     {
+      "title": "Advice lands",
+      "sub": "Not receiving instruction, just relating to a scenario",
+      "icon": "bolt"
+     }
+    ]
+   }
+  ],
+  "closing": {
+   "title": "Which pattern will you try first?",
+   "lines": [
+    "Save this for your next post",
+    "Repost to help your network"
+   ],
+   "kind": "follow"
+  }
+ }
+}

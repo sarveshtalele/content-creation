@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.0
+
+- **Carousel (on demand).** 5-7 slides: a title slide with a hook, content slides (points, stat ring + waffle, bars, compare, flow, big), a closing CTA slide from your brand. Every slide has a bottom CTA strip you can edit. Outputs: one PDF (LinkedIn document), a 1080x1350 PNG per slide, and the first-comment text.
+- **Resource carousel.** `studio.py resources W URL...` fetches each link (SSRF-guarded, secrets redacted) so the one-liners are grounded in the pages; three per slide, links on the slides and in the comment, CTA "Link in comments".
+- **Hook styles:** contradiction, specificity, timeframe, pov (paraphrased patterns).
+- **Full control:** `studio.py cta`, `studio.py edit`, `build --slide N`, and `studio.py editor`, a local browser editor for every field of story.json, the brand and the CTAs, with build buttons and previews.
+- Not in this release: the shared motion upgrade of the 13 GIF templates and the new data-viz templates (planned next).
+
 ## 2.6.0
 
 - **conveyor rebuilt as a data-driven animated infographic.** Each gate now carries a pass rate (`stat{value,pct}`): a ring gauge on the gate, a count-up bar in a tally panel, a light curtain that pulses when a box passes, and a numbered badge. The boxes encode the data too: the share that fails drops off the belt at its gate with a red mark, survivors take the gate's colour. Techniques: staged reveal, count-up numbers, one value shown twice (ring and bar), motion that carries meaning. `conveyor.tally` is the panel heading.

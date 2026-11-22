@@ -32,8 +32,8 @@ const res = await page.evaluate(({ STEP, TOP, BOT, SIDE, Q_GIF }) => {
     // scene bleed: texts from two scenes both ≥ .5 opacity
     const sc = new Set(L.items.filter(i => i.op > .5 && i.scene >= 0).map(i => i.scene)); if (sc.size > 1) note('SCENE-BLEED', t, `texts of ${sc.size} scenes visible together`);
   }
-  if (Q_GIF) {   // structure checks on the finished page: boxes must not collide, and cards must not be mostly empty
-    window.render(window.DUR - 1.5);
+  for (const tt of (Q_GIF ? (window.N ? [...Array(window.N).keys()].map(k => k + .5) : [window.DUR - 1.5]) : [])) {   // structure checks on the finished page (every slide of a carousel): boxes must not collide, and cards must not be mostly empty
+    window.render(tt);
     const B = window.BOXES();
     for (let a = 0; a < B.length; a++) for (let b = a + 1; b < B.length; b++) {
       const A = B[a], Z = B[b]; if (A.bg || Z.bg || A.el.contains(Z.el) || Z.el.contains(A.el)) continue;
@@ -44,7 +44,7 @@ const res = await page.evaluate(({ STEP, TOP, BOT, SIDE, Q_GIF }) => {
   }
   const fontsOk = [...fonts].map(f => { const [fam, wt] = [f.slice(0, f.lastIndexOf(' ')), f.slice(f.lastIndexOf(' ') + 1)]; return f + ': ' + document.fonts.check(`${wt} 30px "${fam}"`); });
   return { issues: Object.entries(issues).map(([k, v]) => ({ k, ...v })), fontsOk };
-}, { STEP, TOP, BOT, SIDE, Q_GIF: /mode=gif/.test(Q) });
+}, { STEP, TOP, BOT, SIDE, Q_GIF: /mode=(gif|carousel)/.test(Q) });
 await browser.close(); closeServer();
 console.log('fonts:', res.fontsOk.join(' | '));
 if (!res.issues.length) { console.log('VALIDATE OK: no overflow, leakage, overlap or safe-zone violations'); process.exit(0); }

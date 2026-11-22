@@ -9,10 +9,10 @@
   studio.py brand [--name --tagline --follow --cta LINE --avatar FILE --voice V --reset]   change the CTA/brand, then rebuild
   studio.py review DIR                  deterministic gates + contact sheets; prints the token to attest
   studio.py finalize DIR                copies to DIR/final only when every gate is 100% and the visual attestation matches"""
-import argparse, hashlib, json, os, re, shutil, subprocess, sys, time
+import argparse, tempfile, glob, hashlib, json, os, re, shutil, struct, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
-import ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
+import carousel as CAR, ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
 
 for _st in (sys.stdout, sys.stderr):   # Windows consoles default to a legacy code page that cannot print arrows or accents
     try: _st.reconfigure(encoding='utf-8', errors='replace')
@@ -242,11 +242,45 @@ def build_gif(work, story, lib, env, out, slug):
     if os.path.isfile(png): print(f'[image] done -> {png} (1080x1350 PNG, the complete diagram)')
     return {'image': png if os.path.isfile(png) else None, 'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
 
+def png_size(p):
+    with open(p, 'rb') as f: h = f.read(24)
+    return struct.unpack('>II', h[16:24]) if h[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
+def build_carousel(work, story, lib, env, out, slug, only=None):
+    """Slides as PNG stills, one PDF (the LinkedIn document upload) and the first-comment text. `only` rebuilds one slide, then the PDF from all slides."""
+    b = brand(); deck = CAR.compile_deck(story); n = len(deck); size = '1080x1350'
+    film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck}})
+    ok, issues = validate_layout(lib, env, film, size, 'mode=carousel', 8, 1342, 40)
+    if not ok:
+        print('[carousel] LAYOUT ERRORS (shorten the named text in story.json carousel section, then re-run build):'); [print('   ', l) for l in issues[:14]]; return None
+    sd = os.path.join(out, 'carousel'); os.makedirs(sd, exist_ok=True)
+    cmd = ['node', os.path.join(SKILL, 'engine', 'shots.mjs'), film, '--size', size, '--q', 'mode=carousel', '--out', sd, '--prefix', f'{slug}-carousel'] + (['--slide', str(only)] if only else [])
+    r = run(cmd, cwd=lib, env=env, quiet=True)
+    if r.returncode: print((r.stdout + r.stderr)[-800:]); sys.exit('carousel render failed')
+    pngs = [os.path.join(sd, f'{slug}-carousel-{k:02d}.png') for k in range(1, n + 1)]
+    for stale in glob.glob(os.path.join(sd, f'{slug}-carousel-*.png')):
+        if stale not in pngs: os.remove(stale)
+    ff = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'; jd = os.path.join(sd, '_jpg'); os.makedirs(jd, exist_ok=True); jpgs = []
+    for k, pn in enumerate(pngs, 1):
+        jp = os.path.join(jd, f'{k:02d}.jpg'); run([ff, '-y', '-v', 'error', '-i', pn, '-q:v', '2', '-update', '1', jp], env=env, quiet=True); jpgs.append(jp)
+    pdf = os.path.join(out, f'{slug}-carousel.pdf'); CAR.write_pdf(jpgs, pdf); shutil.rmtree(jd, ignore_errors=True)
+    ct = os.path.join(out, f'{slug}-carousel-comment.txt'); open(ct, 'w', encoding='utf-8', newline='\n').write(CAR.comment_text(story, b) + '\n')
+    print(f'[carousel] done -> {pdf} ({n} slides, 1080x1350 PNG each) + first comment -> {ct}')
+    return {'file': pdf, 'also': pngs + [ct], 'n': n, 'deck': [d['type'] for d in deck], 'gates': {'layout': True}}
+
+def art_files(B):
+    """Every file an artifact entry hands over: file, its still image, and extras (carousel slides, comment text)."""
+    out = []
+    for x in B.values():
+        if not isinstance(x, dict): continue
+        out += [x[k] for k in ('file', 'image') if x.get(k)] + list(x.get('also') or [])
+    return out
+
 def build(a):
     work = os.path.abspath(a.dir); ok, story, chunks, rep = do_check(work, quiet=False)
     if not ok: print('Fix story.json first.'); return 2
-    arts = set(['reel', 'gif', 'post'] if a.artifacts == 'all' else a.artifacts.split(','))
-    if not arts <= {'reel', 'gif', 'post'}: sys.exit('artifacts: reel,gif,post or all')
+    default = 'gif' if 'gif' in story or 'carousel' not in story else 'carousel'
+    arts = set((['reel', 'gif', 'post'] + (['carousel'] if 'carousel' in story else [])) if a.artifacts == 'all' else (a.artifacts or default).split(','))
+    if not arts <= {'reel', 'gif', 'post', 'carousel'}: sys.exit('artifacts: reel,gif,post,carousel or all')
     slug = story['meta']['slug']; out = os.path.join(work, 'out'); res = {}
     if not story['meta'].get('url'): story['meta']['url'] = load(os.path.join(work, 'source.meta.json')).get('url', '')
     if 'post' in arts:
@@ -254,13 +288,16 @@ def build(a):
         txt = POST.build(story, brand()); pe = POST.lint(txt, story)
         if pe: print('POST:', *pe, sep='\n  '); return 2
         os.makedirs(out, exist_ok=True); open(os.path.join(out, f'{slug}-linkedin-post.txt'), 'w', encoding='utf-8').write(txt); print(f'[post] -> out/{slug}-linkedin-post.txt ({len(txt)} chars)'); res['post'] = len(txt)
-    if arts & {'reel', 'gif'}:
+    if arts & {'reel', 'gif', 'carousel'}:
         lib = find_lib()
         if not lib: sys.exit('Runtime not set up. Run: ' + SETUP + '   (then: studio.py doctor)')
         env = env_for(lib)
         if 'gif' in arts:
             if 'gif' not in story: sys.exit('story.json has no "gif" section')
             res['gif'] = build_gif(work, story, lib, env, out, slug)
+        if 'carousel' in arts:
+            if 'carousel' not in story: sys.exit('story.json has no "carousel" section')
+            res['carousel'] = build_carousel(work, story, lib, env, out, slug, only=getattr(a, 'slide', None))
         if 'reel' in arts: res['reel'] = build_reel(work, story, lib, env, out, slug)
     bj = os.path.join(out, 'build.json'); prev = load(bj) if os.path.exists(bj) else {'artifacts': {}}
     prev['artifacts'].update({k: v for k, v in res.items() if v}); prev['eval'] = {k: rep[k] for k in ('claim_support', 'overlap_mean', 'recall@3', 'precision@3', 'mrr', 'coverage', 'gif_text_support', 'gif_coverage', 'pass')}; dump(prev, bj)
@@ -313,11 +350,23 @@ def review(a):
         G['reel.layout+readable'] = B['reel']['gates']['readcheck'] and B['reel']['gates']['layout']; sp = B['reel']['gates']['speech']
         G['reel.speech_matches_script'] = sp == 'verified'
         times = [round(dur * x, 2) for x in (.06, .2, .35, .5, .65, .8, .95)]; sheet(env, f, times, os.path.join(rd, 'reel_sheet.png'), 270)
+    if 'carousel' in B:
+        cb = B['carousel']; pngs = [q for q in cb['also'] if q.endswith('.png')]; n = len(pngs)
+        G['carousel.5-7_slides'] = 5 <= n <= 7; G['carousel.every_slide_1080x1350'] = all(png_size(q) == (1080, 1350) for q in pngs)
+        G['carousel.pdf_pages_match'] = CAR.pdf_pages(cb['file']) == n; G['carousel.layout+readable'] = all(cb['gates'].values())
+        dk = CAR.compile_deck(story); G['carousel.every_slide_has_cta'] = all(d['cta'].strip() for d in dk); G['carousel.title_first_closing_last'] = dk[0]['type'] == 'title' and dk[-1]['type'] == 'closing'
+        ctf = [x for x in cb['also'] if x.endswith('comment.txt')][0]
+        if (story['carousel'].get('resources') or {}).get('items'): G['carousel.comment_lists_every_link'] = all(i['url'] in open(ctf, encoding='utf-8').read() for i in story['carousel']['resources']['items'])
+        tmpd = os.path.join(rd, '_cs'); os.makedirs(tmpd, exist_ok=True); sm = []
+        for k, pn in enumerate(pngs):
+            tp = os.path.join(tmpd, f'{k}.png'); run(['ffmpeg', '-y', '-v', 'error', '-i', pn, '-vf', 'scale=300:-1', tp], env=env, quiet=True); sm.append(tp)
+        if len(sm) > 1: run(['ffmpeg', '-y', '-v', 'error'] + sum([['-i', t] for t in sm], []) + ['-filter_complex', f'hstack=inputs={len(sm)}', os.path.join(rd, 'carousel_sheet.png')], env=env, quiet=True)
+        shutil.rmtree(tmpd, ignore_errors=True)
     if 'post' in B: pf = os.path.join(out, f'{story["meta"]["slug"]}-linkedin-post.txt'); files.append(pf); G['post.exact_cta_lines'] = all(l in open(pf, encoding='utf-8').read() for l in brand()['post_cta'])
-    files = files + [x['image'] for x in B.values() if isinstance(x, dict) and x.get('image') and x['image'] not in files]   # the PNG is part of what is attested
+    files = files + [x for x in art_files(B) if x not in files]   # stills, carousel slides and comment text are part of what is attested
     token = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
     bad = [k for k, v in G.items() if v is not True]; pct = round(100 * (len(G) - len(bad)) / max(1, len(G)))
-    rep_ = {'gates': G, 'passed': len(G) - len(bad), 'total': len(G), 'confidence_pct': pct, 'token': token, 'sheets': [x for x in ('gif_sheet.png', 'reel_sheet.png') if os.path.exists(os.path.join(rd, x))]}; dump(rep_, os.path.join(rd, 'gates.json'))
+    rep_ = {'gates': G, 'passed': len(G) - len(bad), 'total': len(G), 'confidence_pct': pct, 'token': token, 'sheets': [x for x in ('gif_sheet.png', 'reel_sheet.png', 'carousel_sheet.png') if os.path.exists(os.path.join(rd, x))]}; dump(rep_, os.path.join(rd, 'gates.json'))
     for k in bad: print('GATE FAILED:', k)
     if 'reel.speech_matches_script' in bad and B.get('reel', {}).get('gates', {}).get('speech') == 'skipped': print('  (speech check was skipped: run  sh scripts/setup.sh asr  to enable it, then rebuild the Reel)')
     print(f'gates {rep_["passed"]}/{rep_["total"]} ({pct}%)  token {token}')
@@ -333,7 +382,7 @@ def finalize(a):
     if not os.path.exists(at): print('REFUSED: out/review/attest.json missing (look at the sheets, then write it)'); return 1
     A = load(at); need = ('text_legible', 'nothing_overlaps_or_clipped', 'matches_source', 'arrows_follow_the_logic')
     story = load(os.path.join(work, 'story.json')); B = load(os.path.join(out, 'build.json'))['artifacts']
-    files = [x['file'] for x in B.values() if isinstance(x, dict) and 'file' in x] + [x['image'] for x in B.values() if isinstance(x, dict) and x.get('image')]; slug = story['meta']['slug']; pf = os.path.join(out, f'{slug}-linkedin-post.txt')
+    files = art_files(B); slug = story['meta']['slug']; pf = os.path.join(out, f'{slug}-linkedin-post.txt')
     if 'post' in B: files.append(pf)
     cur = hashlib.sha256((sha(os.path.join(work, 'story.json')) + ''.join(sha(x) for x in sorted(files))).encode()).hexdigest()[:12]
     if cur != R['token']: print('REFUSED: outputs changed since review; run studio.py review again'); return 1
@@ -376,6 +425,78 @@ def set_brand(a):
     b = brand(); print(json.dumps({k: b[k] for k in ('name', 'follow', 'tagline', 'post_cta', 'voice', 'speed') if k in b}, ensure_ascii=False, indent=1))
     print('avatar:', USER_AVATAR if os.path.isfile(USER_AVATAR) else 'shipped default'); print('Saved in ' + USER_BRAND + '. Next: studio.py build DIR --artifacts gif  (reel/post/all as needed), then review and finalize.'); return 0
 
+
+# ───────────────────────── resources, edit, cta ─────────────────────────
+def clean_readme(t):
+    t = re.sub(r'<[^>]+>', ' ', t); t = re.sub(r'!\[[^\]]*\]\([^)]*\)', ' ', t); t = re.sub(r'\[!\[.*?\]\([^)]*\)\]\([^)]*\)', ' ', t)
+    t = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', t); t = re.sub(r'```.*?```', ' ', t, flags=re.S); t = re.sub(r'https?://\S+', ' ', t)
+    t = re.sub(r'[-=]{3,}', ' ', t); t = re.sub(r'[>*_#`|]+|\[!\w+\]', ' ', t); return re.sub(r'\s+', ' ', t).strip()
+
+def resources_cmd(a):
+    """studio.py resources DIR URL [URL ...]: fetch each link once (SSRF-guarded, secrets redacted) and write one grounded source for a learning-resources carousel."""
+    work = os.path.abspath(a.dir); os.makedirs(work, exist_ok=True); blocks, meta = [], []
+    for n, u in enumerate(a.urls[:10], 1):
+        tmp = tempfile.mkdtemp(prefix='es_res_')
+        try:
+            m = ING.run(u, tmp, max_chars=a.per_link * 3); full = open(os.path.join(tmp, 'source_full.txt'), encoding='utf-8').read()
+            body = clean_readme(full)[:a.per_link]; title = m.get('title') or u
+            blocks.append((f'{n}. {title}', f'{title}. Link: {u}. {body}')); meta.append({'n': n, 'url': u, 'title': title, 'chars': len(body)}); print(f'[{n}] ok   {u}  ({title[:50]})')
+        except SystemExit as e: print(f'[{n}] FAIL {u}: {e}'); meta.append({'n': n, 'url': u, 'error': str(e)})
+        except Exception as e: print(f'[{n}] FAIL {u}: {type(e).__name__}: {str(e)[:120]}'); meta.append({'n': n, 'url': u, 'error': str(e)[:200]})
+        finally: shutil.rmtree(tmp, ignore_errors=True)
+    if not blocks: print('no link could be read; nothing written'); return 1
+    ING.build(a.title or 'Learning resources', blocks, '', work, 40000); dump(meta, os.path.join(work, 'resources.json'))
+    print(f'-> read {os.path.join(work, "source.md")} once. For each link write carousel.resources.items[]{{name, url, why}} (why = one line taken from that link\'s own text). Failed links stay out of the story.'); return 0
+
+def _tokens(path):
+    out = []
+    for m in re.finditer(r'([A-Za-z_][\w-]*)|\[(\d+)\]', path): out.append(m.group(1) if m.group(1) is not None else int(m.group(2)))
+    if not out: raise ValueError('empty path')
+    return out
+def set_path(obj, path, value):
+    t = _tokens(path); cur = obj
+    for k in t[:-1]:
+        try: cur = cur[k]
+        except (KeyError, IndexError, TypeError):
+            if isinstance(k, str) and isinstance(cur, dict): cur[k] = {}; cur = cur[k]
+            else: raise ValueError(f'no such place: {path} (stopped at {k})')
+    k = t[-1]
+    if isinstance(k, int):
+        if not isinstance(cur, list) or k >= len(cur): raise ValueError(f'{path}: index out of range')
+    cur[k] = value
+def parse_value(v):
+    try: return json.loads(v)
+    except Exception: return v
+def save_story(work, story):
+    sp = os.path.join(work, 'story.json'); shutil.copy(sp, sp + '.bak') if os.path.exists(sp) else None
+    with open(sp, 'w', encoding='utf-8', newline='\n') as f: json.dump(story, f, indent=1, ensure_ascii=False); f.write('\n')
+def edit_cmd(a):
+    """studio.py edit DIR PATH VALUE [--build gif,carousel] [--slide N]: change one field (PATH like gif.title or carousel.slides[1].cta; VALUE is JSON or plain text)."""
+    work = os.path.abspath(a.dir); story = load(os.path.join(work, 'story.json'))
+    try: set_path(story, a.path, parse_value(a.value))
+    except ValueError as e: print('EDIT FAILED:', e); return 2
+    save_story(work, story); print(f'set {a.path} (previous story.json kept as story.json.bak)')
+    ok, *_ = do_check(work)
+    if not ok: print('The edit made the story fail a check; fix it (or restore story.json.bak).'); return 1
+    if a.build: a2 = argparse.Namespace(dir=a.dir, artifacts=a.build, slide=a.slide); return build(a2)
+    return 0
+def cta_cmd(a):
+    """studio.py cta DIR SLIDE TEXT [--build]: set the CTA strip of one carousel slide (1 = title ... last = closing); 'all' sets the default for every slide."""
+    work = os.path.abspath(a.dir); story = load(os.path.join(work, 'story.json'))
+    if 'carousel' not in story: print('story.json has no carousel'); return 2
+    c = story['carousel']; n = CAR.deck_len(c)
+    if str(a.slide).lower() == 'all': c['cta_default'] = a.text; path = 'carousel.cta_default'; num = None
+    else:
+        num = int(a.slide)
+        if not 1 <= num <= n: print(f'slide must be 1-{n} or "all"'); return 2
+        path = CAR.slide_path(c, num)
+    if path != 'carousel.cta_default': set_path(story, path, a.text)
+    save_story(work, story); print(f'CTA of {"every slide without its own" if num is None else "slide " + str(num)} -> "{a.text}" ({path})')
+    ok, *_ = do_check(work)
+    if not ok: return 1
+    if a.build: return build(argparse.Namespace(dir=a.dir, artifacts='carousel', slide=None if num is None or path.startswith('carousel.resources') else num))
+    return 0
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
@@ -384,8 +505,17 @@ def main():
     br = sp.add_parser('brand')
     for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
-    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default='gif')
+    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
+    rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
+    ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
+    ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
+    ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true')
     a = ap.parse_args()
+    if a.cmd == 'editor':
+        import editor as ED; return ED.serve(a.dir, a.port, not a.no_open)
+    if a.cmd == 'resources': return resources_cmd(a)
+    if a.cmd == 'edit': return edit_cmd(a)
+    if a.cmd == 'cta': return cta_cmd(a)
     if a.cmd == 'doctor': return doctor(a)
     if a.cmd == 'brand': return set_brand(a)
     if a.cmd == 'spec': return spec(a)

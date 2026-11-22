@@ -3,6 +3,7 @@ import { E, seg, eo, FLAGS } from './kit.js';
 import { buildReel } from './reel.js';
 import { buildGif } from './gif.js';
 import { cta } from './cta.js';
+import { buildCarousel } from './carousel.js';
 
 const Q = new URLSearchParams(location.search);
 const MODE = Q.get('mode') || 'reel';
@@ -77,10 +78,14 @@ async function setupGif(D) {
   const g = buildGif(stage, D);
   window.DUR = g.DUR; window.EV = []; window.render = g.render;
 }
+async function setupCarousel(D) {
+  const g = buildCarousel(stage, D);
+  window.DUR = g.DUR; window.N = g.N; window.EV = []; window.render = g.render;
+}
 (async () => {
   const D = await (await fetch('data.json')).json();
   FLAGS.logo = D.logo === true;
   await loadFonts();                                   // before building: templates measure text to fit it
-  await (MODE === 'gif' ? setupGif(D) : setupReel(D));
+  await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : setupReel(D));
   window.READY = true;
 })().catch(e => { console.error(e); throw e; });

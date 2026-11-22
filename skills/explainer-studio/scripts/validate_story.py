@@ -1,7 +1,7 @@
 """validate_story: schema + limits + storytelling arc + grounding checks for story.json. Returns (errors, warnings). Pure standard library."""
 import re, sys
 from common import *
-import tts_norm
+import tts_norm, carousel as CAR
 
 ROLES = ['hook', 'stakes', 'answer', 'how', 'proof', 'takeaway', 'engage']
 NEED_CITE = {'stakes', 'answer', 'how', 'proof'}
@@ -94,7 +94,7 @@ def validate(story, chunks, full_text):
     v = V(); icons = set(icon_names()); N = SPEC['narration']
     byid = {c['id']: c for c in chunks}; srcn, srcw = source_index(full_text)
     if 'meta' not in story: v.e('story.json: missing "meta"')
-    if not any(k in story for k in ('beats', 'gif', 'post')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post')
+    if not any(k in story for k in ('beats', 'gif', 'post', 'carousel')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post, carousel')
     if ('beats' in story) != ('scenes' in story): v.e('story.json: "beats" and "scenes" go together (Reel)')
     if v.err: return v.err, v.warn
     beats, scenes, meta = story.get('beats', []), story.get('scenes', []), story['meta']
@@ -164,16 +164,86 @@ def validate(story, chunks, full_text):
         for w, t in gif_texts(story['gif']):   # every GIF text must come from the source (>=75% of its content words appear there)
             cw = content_words(t)
             if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'gif text not grounded in source ({w}): "{t[:60]}". Reword using the source\'s own words')
+    if 'carousel' in story:
+        v_carousel(v, story['carousel'], icons)
+        for w, t in carousel_texts(story['carousel']):   # slide text must come from the source (resources: from the fetched pages)
+            cw = content_words(t)
+            if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'carousel text not grounded in source ({w}): "{t[:60]}". Reword using the source\'s own words')
     if 'post' in story: v_post(v, story['post'], byid, srcn, srcw)
     # ── entity grounding on every string ──
     allstr = [('say', b['say']) for b in beats if isinstance(b.get('say'), str)] + [('scene', s) for sc in scenes for s in strings(sc.get('p', {}))]
-    allstr += [('gif', s) for s in strings(story.get('gif', {}))] + [('post', s) for s in strings(story.get('post', {}))]
+    allstr += [('gif', s) for s in strings(story.get('gif', {}))] + [('post', s) for s in strings(story.get('post', {}))] + [('carousel', t) for _, t in carousel_texts(story.get('carousel', {}))]
     ok = set(cfg('allow.json')['entities']); miss = {}
     for where, s in allstr:
         for e in entities(s):
             if e not in ok and not in_source(e, srcn, srcw): miss.setdefault(e, set()).add(where)
     for e, ws in sorted(miss.items()): v.e(f'ungrounded term "{e}" ({"/".join(sorted(ws))}): not in the source. Remove it, or quote the source for it')
     return v.err, v.warn
+
+
+CAR_TYPES = ('points', 'stat', 'bars', 'compare', 'flow', 'big')
+def _pct(v, w, val):
+    if not (isinstance(val, (int, float)) and not isinstance(val, bool) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
+def v_carousel(v, c, icons):
+    if not isinstance(c, dict): v.e('carousel must be an object'); return
+    if c.get('hook_style') not in CAR.HOOK_STYLES: v.e('carousel.hook_style must be one of ' + '|'.join(CAR.HOOK_STYLES))
+    t = c.get('title') if isinstance(c.get('title'), dict) else {}
+    _S(v, 'carousel.title.hook', t.get('hook'), 12, 110)
+    if t.get('sub') is not None: _S(v, 'carousel.title.sub', t.get('sub'), 0, 110)
+    if t.get('kicker') is not None: _S(v, 'carousel.title.kicker', t.get('kicker'), 0, 26)
+    if t.get('icon') is not None: _ic(v, 'carousel.title.icon', t.get('icon'), icons)
+    sl = _list(v, 'carousel.slides', c.get('slides', []), 0, 5)
+    for i, s_ in enumerate(sl):
+        w = f'carousel.slides[{i}]'
+        if not isinstance(s_, dict) or s_.get('type') not in CAR_TYPES: v.e(f'{w}.type must be one of ' + '|'.join(CAR_TYPES)); continue
+        ty = s_['type']
+        if ty != 'big': _S(v, w + '.title', s_.get('title'), 6, 60)
+        if ty == 'points':
+            for j, it in enumerate(_list(v, w + '.items', s_.get('items'), 2, 4)):
+                _S(v, f'{w}.items[{j}].title', it.get('title'), 3, 28); _S(v, f'{w}.items[{j}].sub', it.get('sub', ''), 0, 90)
+                if it.get('group') is not None: _grp(v, f'{w}.items[{j}].group', it['group'])
+        elif ty == 'stat':
+            _S(v, w + '.value', s_.get('value'), 1, 8); _S(v, w + '.label', s_.get('label'), 6, 70); _S(v, w + '.sub', s_.get('sub', ''), 0, 100)
+            if s_.get('pct') is not None: _pct(v, w + '.pct', s_['pct'])
+        elif ty == 'bars':
+            for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
+                _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
+        elif ty == 'compare':
+            for sd in ('left', 'right'):
+                x = s_.get(sd) if isinstance(s_.get(sd), dict) else {}; _S(v, f'{w}.{sd}.head', x.get('head'), 3, 26)
+                for j, it in enumerate(_list(v, f'{w}.{sd}.items', x.get('items'), 2, 3)): _S(v, f'{w}.{sd}.items[{j}]', it, 6, 60)
+        elif ty == 'flow':
+            for j, st in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 4)):
+                _S(v, f'{w}.steps[{j}].title', st.get('title'), 3, 24); _S(v, f'{w}.steps[{j}].sub', st.get('sub', ''), 0, 70); _ic(v, f'{w}.steps[{j}].icon', st.get('icon'), icons, req=False)
+        elif ty == 'big': _S(v, w + '.big', s_.get('big'), 10, 110); _S(v, w + '.sub', s_.get('sub', ''), 0, 120)
+        if s_.get('cta') is not None: _S(v, w + '.cta', s_['cta'], 0, 44)
+    R = c.get('resources')
+    if R is not None:
+        _S(v, 'carousel.resources.title', R.get('title'), 4, 34)
+        for j, it in enumerate(_list(v, 'carousel.resources.items', R.get('items'), 2, 10)):
+            _S(v, f'carousel.resources.items[{j}].name', it.get('name'), 2, 30); _S(v, f'carousel.resources.items[{j}].why', it.get('why'), 12, 110)
+            if not (isinstance(it.get('url'), str) and re.match(r'https?://[^\s]+$', it['url'])): v.e(f'carousel.resources.items[{j}].url must be an http(s) link')
+    cl = c.get('closing') if isinstance(c.get('closing'), dict) else {}
+    _S(v, 'carousel.closing.title', cl.get('title'), 6, 60)
+    if cl.get('kind', 'follow') not in ('follow', 'comments'): v.e('carousel.closing.kind must be follow|comments')
+    for j, t_ in enumerate(_list(v, 'carousel.closing.lines', cl.get('lines', []), 0, 3)): _S(v, f'carousel.closing.lines[{j}]', t_, 3, 38)
+    if cl.get('cta') is not None: _S(v, 'carousel.closing.cta', cl['cta'], 0, 44)
+    if c.get('cta_default') is not None: _S(v, 'carousel.cta_default', c['cta_default'], 0, 44)
+    try: n = CAR.deck_len(c)
+    except Exception: return
+    if not 5 <= n <= 7: v.e(f'carousel has {n} slides (title + {len(sl)} content + {len(CAR.pages((R or {}).get("items") or []))} resource page(s) + closing); allowed 5-7. Add or remove content slides')
+    if R and cl.get('kind') != 'comments': v.w('carousel has resources: set closing.kind to "comments" so the last slide says the links are in the comments')
+
+def carousel_texts(c):
+    out = []
+    def walk(o, p):
+        if isinstance(o, str): out.append((p, o))
+        elif isinstance(o, dict):
+            for k, x in o.items():
+                if k not in ('icon', 'group', 'type', 'hook_style', 'kind', 'url', 'cta', 'cta_default', 'comment', 'pct', 'kicker', 'lines', 'closing'): walk(x, f'{p}.{k}')   # closing is a call to action, not a claim
+        elif isinstance(o, list):
+            for i, x in enumerate(o): walk(x, f'{p}[{i}]')
+    walk(c, 'carousel'); return [(w, t) for w, t in out if t]
 
 def gif_texts(g):
     out = []

@@ -30,6 +30,11 @@ python3 S/scripts/studio.py finalize W             # deliver ONLY the files in W
 `build --artifacts gif` writes the animated GIF and `<slug>-linkedin.png`, the complete diagram as one image. Give the user both. The Reel (MP4) only when asked.
 `pick` chooses: pipeline (steps), columns (categories), lanes (layers), hub (one concept, parts), ecosystem (core -> sections), framework (6|9 parts, each a mini diagram + takeaways), exploded (3D layers pulled apart), isoflow (3D ordered flow), orbit (core with 4-6 around it), stairs (3D levels that climb). Override only if clearly wrong. Reuse the source's own words; icons by meaning (`spec --icons`); fill every slot, keep to the limits.
 
+## Carousel (only if asked; PDF + PNG per slide + first-comment text)
+`build --artifacts carousel` makes 5-7 slides: slide 1 = title with a hook, last = closing CTA from the user's brand, every slide has an editable CTA strip. Write `story.carousel` (see `fixtures/carousel.story.json`): `hook_style` (contradiction | specificity | timeframe | pov | plain, see `docs/CAROUSEL.md`), `title{kicker,hook,sub,icon}`, `slides[]` (0-5 of points | stat | bars | compare | flow | big, each with optional `cta`), `closing{kind: follow|comments,title,lines}`. Text must come from the source.
+Resource carousel (user sends N links, e.g. 5 repos): `studio.py resources W URL...` fetches each link once and writes `source.md`; then fill `carousel.resources{title,cta:"Link in comments",items[{name,url,why}]}` with `why` taken from each page; `closing.kind` = `comments`. Max 3 per slide, full links go into the `*-comment.txt` file. Drop any link that failed to fetch.
+Edit anything later: `studio.py cta W 3 "Save this" --build` (one slide's CTA; `all` = default), `studio.py edit W carousel.slides[1].title "..." --build carousel --slide 3`, or `studio.py editor W` (local browser editor for every field of story.json, brand, CTAs and previews; it prints a private link).
+
 ## Reel (only if asked; `spec` has limits)
 Arc: hook (question from the source) -> stakes -> answer -> how -> proof -> takeaway -> engage (question or one-step challenge). Speak to "you", sentences <= 22 words, 90-170 words total so it stays <= 90 s. Every claim beat cites `[[chunkId, "verbatim quote"]]`.
 
