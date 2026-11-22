@@ -31,7 +31,7 @@ def short_url(u):
 def compile_deck(story):
     """-> list of slide dicts the page renders. Per-slide 'cta' falls back to carousel.cta_default, then to a built-in line."""
     c = story['carousel']; cd = c.get('cta_default'); deck = []
-    t = dict(c['title']); deck.append({'type': 'title', 'hook': t['hook'], 'sub': t.get('sub', ''), 'kicker': t.get('kicker', ''), 'icon': t.get('icon', 'bolt'), 'layout': t.get('layout', 'classic'), 'prompt': t.get('prompt', ''), 'window': t.get('window', ''), 'cta': t.get('cta') or cd or DEFAULT_CTA['title']})
+    t = dict(c['title']); deck.append({'type': 'title', 'hook': t['hook'], 'sub': t.get('sub', ''), 'kicker': t.get('kicker', ''), 'icon': t.get('icon', 'bolt'), 'layout': t.get('layout', 'classic'), 'prompt': t.get('prompt', ''), 'accent': t.get('accent', ''), 'chips': t.get('chips', []), 'window': t.get('window', ''), 'cta': t.get('cta') or cd or DEFAULT_CTA['title']})
     for s in c.get('slides') or []:
         d = dict(s); d['short'] = short_url(s['url']) if s.get('url') else ''; d['cta'] = s.get('cta') or cd or DEFAULT_CTA['mid']; deck.append(d)
     R = c.get('resources') or {}; its = R.get('items') or []; pg = pages(its); off = 0

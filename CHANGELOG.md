@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.13.0
+
+- **Bold poster cover** (`title.layout: "bold"`): giant headline, one accent word on a colour box (`title.accent`), swoosh, 3D slab stack with topic icon tiles and a chip row (`title.chips`, 2-4). No photo or character on the cover.
+- New light **`sky`** carousel theme (blue/white, from the poster references).
+- CTA pill and carousel header show your profile photo (rounded square; `brand.avatar_shape: "circle"` to change). The seated 3D character appears only on the closing slide.
+- Loop-slide label contrast fixed so e2e passes.
+
 ## 2.12.0
 
 - **3D character** (`assets/character.png`) replaces the round photo in the CTA pill, the carousel header and the closing slide; `pageshot.mjs --transparent` added.

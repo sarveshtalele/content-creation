@@ -183,8 +183,8 @@ def validate(story, chunks, full_text):
 
 
 CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
-CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint')
-CAR_LAYOUTS = ('classic', 'poster', 'terminal')
+CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
+CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold')
 def _pct(v, w, val):
     if not (isinstance(val, (int, float)) and not isinstance(val, bool) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
 def v_carousel(v, c, icons):
@@ -197,6 +197,10 @@ def v_carousel(v, c, icons):
     if c.get('theme') is not None and c['theme'] not in CAR_THEMES: v.e('carousel.theme must be one of ' + '|'.join(CAR_THEMES))
     if t.get('layout') is not None and t['layout'] not in CAR_LAYOUTS: v.e('carousel.title.layout must be one of ' + '|'.join(CAR_LAYOUTS))
     if t.get('icon') is not None: _ic(v, 'carousel.title.icon', t.get('icon'), icons)
+    if t.get('accent') is not None and str(t['accent']).lower() not in str(t.get('hook', '')).lower(): v.e('carousel.title.accent must be words that appear in the hook (they get the colour box)')
+    if t.get('chips') is not None:
+        for j, ch in enumerate(_list(v, 'carousel.title.chips', t['chips'], 2, 4)):
+            if isinstance(ch, dict): _S(v, f'carousel.title.chips[{j}].label', ch.get('label'), 3, 16); _ic(v, f'carousel.title.chips[{j}].icon', ch.get('icon'), icons)
     sl = _list(v, 'carousel.slides', c.get('slides', []), 0, 5)
     for i, s_ in enumerate(sl):
         w = f'carousel.slides[{i}]'

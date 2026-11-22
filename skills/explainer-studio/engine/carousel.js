@@ -2,10 +2,12 @@
 // the body is one of a few infographic slide types. Slides are static (a still per slide), so every build is identical.
 import { C, E, box, tx, icon, svgLayer, path, circ, fitSize, measure, svgNS } from './kit.js';
 import { PAL } from './gif_common.js';
+import { iso, mix } from './gif_3d.js';
 import { cta } from './cta.js';
 
 const THEMES = {
   paper: { sub: C.sub, onAcc: '#FFFFFF', dots: '#E4E1D4' },
+  sky: { bg: '#EEF3FF', card: '#FFFFFF', line: '#D5E0FB', lineD: '#A9BDF0', ink: '#0B1B4B', mid: '#4A5A8A', sub: '#2B3A6B', clay: '#FF6B3D', clayD: '#C74A1F', claySoft: '#FFE3D9', blue: '#2B59FF', blueD: '#1636C4', blueSoft: '#DCE6FF', green: '#16A34A', greenD: '#0E7A37', greenSoft: '#D6F3E2', sand: '#E4ECFF', onAcc: '#FFFFFF', dots: '#D5E0FB' },
   midnight: { bg: '#0E1320', card: '#172033', line: '#2B3856', lineD: '#3A4A6E', ink: '#F3F0E8', mid: '#A8B2C9', sub: '#C4CCDD', clay: '#FF8A5B', clayD: '#FFB394', claySoft: '#2B2230', blue: '#5FB0FF', blueD: '#A5D4FF', blueSoft: '#142A47', green: '#6FD08A', greenD: '#B0EBBF', greenSoft: '#14301F', sand: '#1B2438', onAcc: '#0E1320', dots: '#1B2640' },
   sunrise: { bg: '#FFF6E5', card: '#FFFFFF', line: '#F0DDB8', lineD: '#E2C98E', ink: '#2B1B12', mid: '#6B5444', sub: '#4F3B2E', clay: '#E8590C', clayD: '#B3400A', claySoft: '#FFE3CC', blue: '#7B5EA7', blueD: '#54387F', blueSoft: '#EDE5F7', green: '#2F9E6B', greenD: '#1F7048', greenSoft: '#DDF3E7', sand: '#FBEBCB', onAcc: '#FFFFFF', dots: '#F4E2BC' },
   mint: { bg: '#EEF7F3', card: '#FFFFFF', line: '#CFE3DA', lineD: '#A9CBBD', ink: '#0F2A22', mid: '#4B6B5F', sub: '#2F4A40', clay: '#0F9D82', clayD: '#0A6B58', claySoft: '#D6F0E8', blue: '#3B82C4', blueD: '#235A8F', blueSoft: '#DCEAF6', green: '#C27A0E', greenD: '#8A5508', greenSoft: '#F8EBCF', sand: '#E1EFE9', onAcc: '#FFFFFF', dots: '#DCEBE4' },
@@ -22,8 +24,8 @@ const grp = i => PAL[GROUPS[i % 3]];
 const arrow = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M4 12h15M13 6l6 6-6 6"/></svg>`;
 
 function frame(root, i, n, brand, ctaText, last) {
-  E(root, 'abs', `left:${X0 - 4}px;top:22px;width:70px;height:76px;background:url(${brand.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))`);
-  tx(root, 'fr-name', brand.name, { x: X0 + 80, y: 36, w: 560, h: 56, size: 26, weight: 700 });
+  E(root, 'abs', `left:${X0}px;top:36px;width:56px;height:56px;border-radius:${brand.avatar_shape === 'circle' ? '50%' : '26%'};background:url(${brand.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${C.card};box-shadow:0 0 0 2px ${C.line}`);
+  tx(root, 'fr-name', brand.name, { x: X0 + 70, y: 36, w: 560, h: 56, size: 26, weight: 700 });
   tx(root, 'fr-count', `${i + 1} / ${n}`, { x: W - X0 - 160, y: 36, w: 160, h: 56, size: 26, weight: 600, color: C.mid, align: 'right' });
   const gap = 8, sw = (XW - gap * (n - 1)) / n;
   for (let k = 0; k < n; k++) E(root, 'abs', `left:${X0 + k * (sw + gap)}px;top:104px;width:${sw}px;height:7px;border-radius:4px;background:${k <= i ? C.clay : C.line}`);
@@ -58,6 +60,35 @@ function titlePoster(root, s) {          // full-bleed colour poster: huge hook,
   if (s.sub) tx(bgp, 'ti-sub', s.sub, { x: 48, y: yy, w: iw, h: sh, size: sz, weight: 600, color: C.onAcc, wrap: true, lh: 1.25, css: 'align-items:flex-start;opacity:.92;' });
   E(bgp, 'abs', `right:48px;bottom:44px;width:96px;height:96px;border-radius:50%;background:${C.onAcc};display:flex;align-items:center;justify-content:center`, arrow(C.clay, 52));
 }
+
+// "bold" cover, after the poster references: one giant headline, one word on a colour box, a swoosh, a short line of copy, a 3D object built from the topic
+// and a row of topic chips. No photo, no character: just the title and related infographics.
+function textW(t, size, weight) { const e = E(document.body, 'sans', `position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;font-size:${size}px;font-weight:${weight};letter-spacing:-.03em`); e.textContent = t; const w = e.getBoundingClientRect().width; e.remove(); return w; }
+function titleBold(root, s) {
+  const x = X0, w = XW, y0 = BODY0 + 14, hue = C.blueD, acc = C.green;
+  E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:radial-gradient(900px 700px at 70% 55%,${C.blueSoft},transparent 70%);opacity:.9`);
+  const svg = svgLayer(root, W, H);
+  path(svg, `M-20 1010 C200 930 380 1060 620 960 S960 800 1110 760`, { stroke: acc, w: 12 });
+  const accent = (s.accent || '').trim(), hk = s.hook, ai = accent ? hk.toLowerCase().indexOf(accent.toLowerCase()) : -1;
+  const split = t => { const ws = t.split(/\s+/).filter(Boolean), n = Math.max(1, Math.ceil(t.length / 16)), out = []; let cur = [], target = t.length / n; ws.forEach(wd => { cur.push(wd); if (cur.join(' ').length >= target && out.length < n - 1) { out.push(cur.join(' ')); cur = []; } }); if (cur.length) out.push(cur.join(' ')); return out; };
+  const parts = ai < 0 ? split(hk).map(t => ({ t })) : [...(hk.slice(0, ai).trim() ? split(hk.slice(0, ai).trim()).map(t => ({ t })) : []), { t: hk.slice(ai, ai + accent.length), hi: true }, ...(hk.slice(ai + accent.length).trim() ? split(hk.slice(ai + accent.length).trim()).map(t => ({ t })) : [])];
+  const sz = Math.min(...parts.map(p => fitSize(p.t, { w: w - 40, h: 170, max: hk.length > 36 ? 84 : 112, min: 54, weight: 900, lh: 1 })), hk.length > 36 ? 84 : 112), lh = Math.ceil(sz * 1.2) + 1;
+  let y = y0; if (s.kicker) { tx(root, 'ti-kick', s.kicker.toUpperCase(), { x, y, w, h: 44, size: 28, weight: 800, color: C.blue, css: 'letter-spacing:.22em;' }); y += 60; }
+  parts.forEach((p, k) => {
+    if (p.hi) { const mw = textW(p.t, sz, 900), bx = E(root, 'abs', `left:${x - 12}px;top:${y + 24}px;width:${Math.ceil(mw) + 36}px;height:${lh - 22}px;background:${acc};transform:rotate(-1.6deg);border-radius:8px`);
+      tx(bx, 'ti-l' + k, p.t, { x: 12, y: -14, w: Math.ceil(mw) + 24, h: lh, size: sz, weight: 900, color: '#fff', css: 'letter-spacing:-.03em;' }); y += lh + 4; return; }
+    tx(root, 'ti-l' + k, p.t, { x, y, w: w, h: lh, size: sz, weight: 900, color: hue, css: 'letter-spacing:-.03em;' }); y += lh;
+  });
+  y += 14;
+  if (s.sub) { const zz = fitSize(s.sub, { w: 560, h: 120, max: 32, min: 22, weight: 600, lh: 1.25 }); tx(root, 'ti-sub', s.sub, { x, y: y + 8, w: 560, h: H_(s.sub, zz, 560, 600) + 6, size: zz, weight: 600, color: C.sub, wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); }
+  // 3D object: three isometric slabs stacked, with floating icon tiles (the topic's own icons)
+  const chips = (s.chips || []).slice(0, 4), cx = 810, base = hk.length > 36 ? 950 : 930, sc = hk.length > 36 ? .72 : 1, cols = [C.blue, C.clay, C.green];
+  for (let k = 0; k < 3; k++) { const g = iso(svg, { cx, cy: base - k * 110 * sc, hw: (190 - k * 26) * sc, hh: (95 - k * 13) * sc, h: 70 * sc, color: cols[k] }); g.style.opacity = '1'; }
+  const tiles = chips.length ? chips : [{ icon: s.icon || 'bolt' }];
+  tiles.forEach((c, k) => { const tx_ = [640, 960, 700, 940][k] ?? 700, ty = hk.length > 36 ? [830, 730, 930, 890][k] : [830, 640, 960, 880][k]; const t = E(root, 'abs', `left:${tx_ - 40}px;top:${ty - 40}px;width:80px;height:80px;border-radius:22px;background:#fff;box-shadow:0 10px 0 ${C.line},0 18px 30px rgba(20,40,120,.18);display:flex;align-items:center;justify-content:center;transform:rotate(${k % 2 ? 6 : -6}deg)`, icon(c.icon || 'bolt', 44, hue, 2.2)); });
+  // chip row at the bottom: icon + short label (like the footer row on the poster reference)
+  if (chips.length) { const cw = Math.floor(w / chips.length); chips.forEach((c, k) => { E(root, 'abs', `left:${x + k * cw}px;top:1088px;width:46px;height:46px;display:flex;align-items:center;justify-content:center`, icon(c.icon || 'bolt', 40, hue, 2.2)); tx(root, 'ti-c' + k, (c.label || '').toUpperCase(), { x: x + k * cw + 58, y: 1084, w: cw - 66, h: 54, size: 22, weight: 800, color: hue, wrap: true, lh: 1.05, css: 'letter-spacing:.04em;' }); }); }
+}
 function titleTerminal(root, s) {        // the hook typed into a terminal window
   const x = X0, w = XW, y = BODY0 + 6, h = BODY1 - BODY0 - 6, iw = w - 90;
   const t = box(root, { x, y, w, h, r: 30, fill: DARK, bd: C.lineD, bw: 3, shadow: false, bg: true });
@@ -76,6 +107,7 @@ function titleTerminal(root, s) {        // the hook typed into a terminal windo
 const H_ = (t, size, w, weight = 500, lh = 1.25) => Math.ceil(measure(t, { size, weight, w, lh }).h);
 const TYPES = {
   title(root, s, i, D) {
+    if (s.layout === 'bold') return titleBold(root, s);
     if (s.layout === 'poster') return titlePoster(root, s);
     if (s.layout === 'terminal') return titleTerminal(root, s);
     const P = PAL.clay, hz = fitSize(s.hook, { w: XW - 20, h: 470, max: 96, min: 52, weight: 700, font: 'serif', lh: 1.08 }), hh = Math.ceil(measure(s.hook, { size: hz, weight: 700, font: 'serif', w: XW - 20, lh: 1.08 }).h) + 8;
@@ -176,7 +208,7 @@ const TYPES = {
     }
     E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px`, `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${g}</svg>`);
     E(root, 'abs', `left:${cx - 95}px;top:${cy - 95}px;width:190px;height:190px;border-radius:50%;background:${C.claySoft};border:3px solid ${C.clay};display:flex;align-items:center;justify-content:center`, icon('refresh', 76, C.clayD, 2));
-    if (s.center) tx(root, 'lp-c', s.center, { x: cx - 85, y: cy + 100, w: 170, h: 70, size: 22, wrap: true, lh: 1.15, weight: 700, color: C.clayD, align: 'center' });
+    if (s.center) tx(root, 'lp-c', s.center, { x: cx - 85, y: cy + 100, w: 170, h: 70, size: 22, wrap: true, lh: 1.15, weight: 700, color: C.ink, align: 'center' });
     s.steps.forEach((st, k) => { const bh = bhs[k], P = grp(k), [px, py] = pt(ang(k)), b = box(root, { x: Math.round(px - bw / 2), y: Math.round(py - bh / 2), w: bw, h: bh, r: 26, bd: P.bd, bw: 3 });
       E(b, 'abs', `left:18px;top:${Math.round((bh - 6) / 2 - 31)}px;width:62px;height:62px;border-radius:18px;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon(st.icon || 'bolt', 36, P.ink, 2));
       tx(b, `lp${k}-t`, st.title, { x: 96, y: 12, w: bw - 108, h: 52, size: tz, weight: 700 });
@@ -222,8 +254,8 @@ const TYPES = {
     (s.lines || []).forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
       E(bx, 'abs', `left:18px;top:16px;width:54px;height:54px;border-radius:50%;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon('check', 32, P.ink, 2.4)); tx(bx, `cl${k}`, t, { x: 92, y: 0, w: XW - 80 - 116, h: 86, size: 34, weight: 600 }); y += 112; });
     y += 30;
-    E(root, 'abs', `left:${W / 2 - 90}px;top:${y + 20}px;width:180px;height:196px;background:url(${b.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3))`);
-    cta(root, 'cl-cta', b, { x: 60, y: y + 224, w: 960, h: 104, size: 28, bw: 4 });
+    E(root, 'abs', `left:${W / 2 - 95}px;top:${y - 6}px;width:190px;height:220px;background:url(${b.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 10px 12px rgba(0,0,0,.25))`);   // the seated 3D character (closing slide only)
+    cta(root, 'cl-cta', b, { x: 60, y: y + 232, w: 960, h: 104, size: 28, bw: 4 });
   },
 };
 
