@@ -38,5 +38,5 @@ jobs:
           python skills/explainer-studio/scripts/studio.py build "$W" --artifacts gif
           C="$RUNNER_TEMP/c"; python skills/explainer-studio/scripts/studio.py ingest skills/explainer-studio/fixtures/carousel.md --out "$C"
           cp skills/explainer-studio/fixtures/carousel.story.json "$C/story.json"
-          python skills/explainer-studio/scripts/studio.py build "$C" --artifacts carousel
+          python skills/explainer-studio/scripts/studio.py build "$C" --artifacts carousel --format both
           test -s "$C"/out/*-carousel.pdf && ls "$C"/out/carousel/*.png | wc -l
