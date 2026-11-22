@@ -4,6 +4,7 @@ import { C, E, box, tx, icon, svgLayer, path, circ, fitSize, measure, svgNS } fr
 import { PAL } from './gif_common.js';
 import { iso, mix } from './gif_3d.js';
 import { cta } from './cta.js';
+import { banner, legend, cards } from './motifs.js';
 
 const THEMES = {
   paper: { sub: C.sub, onAcc: '#FFFFFF', dots: '#E4E1D4' },
@@ -181,6 +182,12 @@ const TYPES = {
     s.items.forEach((it, k) => { const ch = hs[k], P = PAL[it.group] || grp(k), b = box(root, { x: X0, y, w: XW, h: ch, r: 26, bd: P.bd, bw: 3 });
       numBadge(b, k + 1, P, 22, 20); tx(b, `pt${k}-t`, it.title, { x: 98, y: 14, w: XW - 120, h: 62, size: 40, weight: 700 });
       if (it.sub) tx(b, `pt${k}-s`, it.sub, { x: 98, y: 76, w: sw, h: ch - 76 - 14, size: ss, weight: 500, color: C.sub, wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); y += ch + gap; });
+  },
+  grid(root, s) {
+    const svg = svgLayer(root, W, H), bh = s.kicker ? 150 : 124;
+    banner(root, svg, { x: X0, y: BODY0 + 4, w: XW, h: bh, title: s.title, kicker: s.kicker });
+    const ly = BODY0 + 4 + bh + 16; if (s.legend && s.legend.length) legend(root, svg, s.legend, { x: X0, y: ly, w: XW });
+    const cy0 = ly + (s.legend && s.legend.length ? 56 : 0); cards(root, svg, s.cards, { x: X0, y: cy0, w: XW, h: BODY1 - cy0 });
   },
   stat(root, s) {
     const y = heading(root, 'st-h', s.title) + 10, cx = W / 2, R = 170, cy = y + R + 56, svg = svgLayer(root, W, H), L = 2 * Math.PI * R, pc = Math.max(0, Math.min(100, s.pct ?? 100));

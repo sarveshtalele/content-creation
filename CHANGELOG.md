@@ -2,6 +2,8 @@
 
 ## 2.17.0
 
+- **Card grid poster** ("20 AI algorithms visualised" style): a title banner, group legend and 4, 6 or 9 numbered cards, each with a small diagram (`bars curve tree flow cluster network loop steps split pixels`), a caption, a title and one line, in the Claude light theme with your branding. Available as a PNG infographic, as a carousel slide (`type: grid`) and as a GIF template (`gif.template: grid`, cards pop in and each diagram's highlight pulses).
+- **Choose by design**: the GIF page shows a preview of every GIF style and the Post page shows every image design; the pick goes into the request for your agent.
 - **Reel narration**: capitalised words in code or text (SKILL, NEVER) are spoken as words instead of letter by letter; only known initialisms (API, CLI, ...) are spelled. Faster voice (1.12), tighter pauses, narration capped at about 130 words so reels stay short.
 - **Carousel workflow**: you choose an infographic for each slide; the cover is made from your headline (no template step). The PDF and separate PNG images are always both delivered.
 - **3D ring funnel** redrawn as lit cylinders in the Claude light palette.

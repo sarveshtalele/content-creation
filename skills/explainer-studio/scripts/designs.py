@@ -12,6 +12,7 @@ ICONS = ('agents bell bolt book branch chart chat check chip clipboard cloud cod
 def T(key, label, mx, mn=0, hint='', area=False): return {'key': key, 'type': 'text', 'label': label, 'min': mn, 'max': mx, 'hint': hint, 'area': area}
 def L(key, label, mn, mx, item, hint=''): return {'key': key, 'type': 'list', 'label': label, 'min': mn, 'max': mx, 'item': item, 'hint': hint}
 def I(key='icon', label='Icon'): return {'key': key, 'type': 'icon', 'label': label}
+def SEL(key, label, opts): return {'key': key, 'type': 'select', 'label': label, 'options': list(opts)}
 def N(key, label, mx=100): return {'key': key, 'type': 'number', 'label': label, 'min': 0, 'max': mx}
 CHIPS = L('chips', 'Topic chips', 2, 4, [I(), T('label', 'Label', 16, 3)], 'Short labels with an icon; they become the icons and labels on the cover')
 
@@ -23,6 +24,8 @@ def _title(layout, v, extra=None):
 
 def _rows(v): return [{'label': r['label'], 'value': r['value'], 'pct': int(r['pct'])} for r in v['rows']]
 
+GROUPS_ = ('green', 'blue', 'clay')
+MOTIFS_ = ('bars', 'curve', 'tree', 'flow', 'cluster', 'network', 'loop', 'steps', 'split', 'pixels')
 DESIGNS = [
     {'id': 'cover-bold', 'group': 'cover', 'name': 'Poster Bold', 'tag': 'Giant headline, one highlighted word, 3D slabs',
      'blurb': 'A bold poster: huge blue headline, one word on a green box, a swoosh and a 3D stack. The strongest scroll-stopper for a claim.',
@@ -58,6 +61,13 @@ DESIGNS = [
      'sample': {'hook': 'Read this before you give agents less supervision', 'kicker': '3 reads', 'sub': 'Evals and harness engineering for agents you ship', 'icon': 'book'},
      'build': lambda v: ('title', _title('poster', v, {'icon': v.get('icon', 'bolt')}))},
 
+    {'id': 'info-grid', 'group': 'infographic', 'name': 'Card grid poster', 'tag': 'Numbered cards, each with a small diagram',
+     'blurb': 'A poster of 4, 6 or 9 numbered cards, each with a mini diagram, a caption, a title and one line. Good for "N ideas explained at a glance".',
+     'best_for': 'Lists of tools, algorithms, concepts or tips (4, 6 or 9 items)', 'theme': 'paper',
+     'fields': [T('title', 'Poster title', 40, 6), T('kicker', 'Line under the title', 44), L('legend', 'Group labels (optional)', 0, 4, [T('label', 'Label', 20, 3), SEL('group', 'Colour', GROUPS_)]),
+                L('cards', 'Cards (use 4, 6 or 9)', 4, 9, [SEL('motif', 'Diagram', MOTIFS_), T('caption', 'Small line under the diagram', 30, 3), T('title', 'Card title', 24, 3), T('sub', 'One line', 70, 10), SEL('group', 'Colour', GROUPS_)], 'A full grid looks best: 4, 6 or 9 cards')],
+     'sample': {'title': '9 AI Algorithms Visualised', 'kicker': 'Part 1: the ideas, drawn simply', 'legend': [{'label': 'Supervised', 'group': 'green'}, {'label': 'Ensembles', 'group': 'blue'}, {'label': 'Deep learning', 'group': 'clay'}], 'cards': [{'motif': 'bars', 'caption': 'shrink weights', 'title': 'Ridge Regression', 'sub': 'Shrinks weights with an L2 penalty to reduce overfitting.', 'group': 'green'}, {'motif': 'bars', 'caption': 'some weights = 0', 'title': 'Lasso Regression', 'sub': 'Uses an L1 penalty to push some weights to zero.', 'group': 'green'}, {'motif': 'curve', 'caption': 'fit a curved line', 'title': 'Polynomial Regression', 'sub': 'Adds powers of features to fit a curved relationship.', 'group': 'green'}, {'motif': 'tree', 'caption': 'random splits', 'title': 'Extra Trees', 'sub': 'Combines trees built with random split thresholds.', 'group': 'blue'}, {'motif': 'cluster', 'caption': 'soft membership', 'title': 'Gaussian Mixture', 'sub': 'Fits overlapping Gaussians with soft cluster membership.', 'group': 'clay'}, {'motif': 'network', 'caption': 'learn from errors', 'title': 'Neural Network', 'sub': 'Layers of neurons learn patterns from examples.', 'group': 'clay'}, {'motif': 'split', 'caption': 'draw a boundary', 'title': 'Classifier', 'sub': 'Separates two groups with a learned boundary.', 'group': 'green'}, {'motif': 'loop', 'caption': 'act, reward, repeat', 'title': 'Q-Learning', 'sub': 'Learns action values from the rewards it receives.', 'group': 'blue'}, {'motif': 'pixels', 'caption': 'remove noise', 'title': 'Diffusion Model', 'sub': 'Generates samples by removing noise step by step.', 'group': 'clay'}]},
+     'build': lambda v: ('slide', {'type': 'grid', 'title': v['title'], 'kicker': v.get('kicker', ''), 'legend': [{'label': x['label'], 'group': x['group']} for x in v.get('legend', [])], 'cards': [{k: c[k] for k in ('motif', 'caption', 'title', 'sub', 'group')} for c in v['cards']]})},
     {'id': 'info-ring', 'group': 'infographic', 'name': '3D Ring Funnel', 'tag': 'Icons pour into blue rings, with a numbered list',
      'blurb': 'A glossy stack of rings that narrows to a glowing spout. Icons feed it from above and each step is explained in a numbered list.',
      'best_for': 'Step-by-step funnels, sales and marketing processes', 'theme': 'paper',
@@ -134,3 +144,23 @@ def assemble(items, closing, theme, single, brand_name):
     story = {'meta': {'title': (title.get('hook') or 'design')[:60], 'slug': re.sub(r'[^a-z0-9]+', '-', (title.get('hook') or 'design').lower()).strip('-')[:40] or 'design'}, 'carousel': c}
     src = '\n'.join(t for t in _texts({'a': title, 'b': slides, 'c': cl}) if t) + '\n' + brand_name
     return story, src
+
+
+# GIF styles shown on the studio's GIF page (preview stills are studio/samples/gif-<id>.jpg, made by gif_samples.py)
+GIF_STYLES = [
+    {'id': 'grid', 'name': 'Card grid poster', 'tag': 'Numbered cards, each with a small moving diagram', 'best': 'Lists of 4, 6 or 9 ideas, tools or algorithms'},
+    {'id': 'hub', 'name': 'Hub and cards', 'tag': 'One idea in the middle, nine parts around it', 'best': 'A concept with many parts'},
+    {'id': 'columns', 'name': 'Catalogue columns', 'tag': 'Three or four categories with items', 'best': 'A catalogue grouped by type'},
+    {'id': 'pipeline', 'name': 'Top-down pipeline', 'tag': 'Start, stages, result', 'best': 'A workflow in order'},
+    {'id': 'lanes', 'name': 'Stack lanes', 'tag': 'Layers of a stack or ecosystem', 'best': 'Layers and how they connect'},
+    {'id': 'ecosystem', 'name': 'Ecosystem', 'tag': 'A hub with the tools around it', 'best': 'Products and integrations'},
+    {'id': 'framework', 'name': 'Framework', 'tag': 'Pillars of a framework', 'best': 'Models with named parts'},
+    {'id': 'exploded', 'name': 'Exploded layers', 'tag': '3D plates pulled apart', 'best': 'Architecture in layers'},
+    {'id': 'isoflow', 'name': '3D flow', 'tag': 'Isometric steps joined by arrows', 'best': 'Processes with a clear direction'},
+    {'id': 'orbit', 'name': 'Orbit', 'tag': 'Parts circling a centre', 'best': 'A core with satellites'},
+    {'id': 'stairs', 'name': 'Stairs', 'tag': 'Blocks that climb left to right', 'best': 'Levels, stages, maturity'},
+    {'id': 'tower', 'name': 'Tower', 'tag': 'Floors with a small scene each', 'best': 'Stacked stages'},
+    {'id': 'skyline', 'name': 'Skyline', 'tag': 'Buildings sized by value', 'best': 'Comparing amounts'},
+    {'id': 'conveyor', 'name': 'Conveyor', 'tag': 'Items pass through gates', 'best': 'Filters and pass rates'},
+    {'id': 'funnel', 'name': 'Funnel', 'tag': 'Stages that narrow', 'best': 'Conversion and drop-off'},
+]

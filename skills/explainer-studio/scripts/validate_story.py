@@ -24,7 +24,8 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'grid': 'poster of 4, 6 or 9 numbered cards, each with a mini diagram: gif.grid{kicker?,legend[0-4]{label<=20,group},cards[4|6|9]{motif bars|curve|tree|flow|cluster|network|loop|steps|split|pixels,caption<=30,title<=24,sub 10-70,group}}  (also carousel slide type grid)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
     'columns': 'catalogue by category: gif.hub{title,sub?,tagline}, gif.columns[3-4]{label,icon,group,items[2-3]{title<=22,sub<=60,icon}}',
     'pipeline': 'top-down workflow: gif.pipeline{start{title,sub?,icon},stages[2-4]{label,group,link?,nodes[2-4]{title<=24,sub<=44}},result{title,sub?,icon}}',
@@ -182,7 +183,7 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'ring', 'tower', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
+CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'ring', 'tower', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot', 'grid')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
 CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold', 'stage', 'editorial')
 def _pct(v, w, val):
@@ -217,6 +218,7 @@ def v_carousel(v, c, icons):
         elif ty in ('bars', 'funnel'):
             for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
                 _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
+        elif ty == 'grid': _grid(v, w, s_)
         elif ty == 'ring':
             for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 5)):
                 _S(v, f'{w}.steps[{j}].title', st_.get('title'), 2, 18); _S(v, f'{w}.steps[{j}].sub', st_.get('sub', ''), 0, 44); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
@@ -294,7 +296,7 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
-TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
+TEMPLATES = ('grid', 'hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
 VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
@@ -361,6 +363,20 @@ def v_conveyor(v, g, icons):
         if not isinstance(st, dict): v.e(f'gif.conveyor.gates[{i}].stat must be {{"value":"88%","pct":88}} (the share that passes this gate, taken from the source)'); continue
         _S(v, f'gif.conveyor.gates[{i}].stat.value', st.get('value'), 1, 8)
         if not (isinstance(st.get('pct'), (int, float)) and not isinstance(st.get('pct'), bool) and 0 <= st['pct'] <= 100): v.e(f'gif.conveyor.gates[{i}].stat.pct must be a number 0-100')
+MOTIFS = ('bars', 'curve', 'tree', 'flow', 'cluster', 'network', 'loop', 'steps', 'split', 'pixels')
+def _grid(v, w, x):
+    """The numbered card grid (carousel slide `grid`, GIF template `grid`): 4, 6 or 9 cards, each a mini diagram + caption + title + one line."""
+    x = x if isinstance(x, dict) else {}
+    if x.get('kicker') is not None: _S(v, w + '.kicker', x['kicker'], 0, 44)
+    for j, lg in enumerate(_list(v, w + '.legend', x.get('legend', []), 0, 4) if x.get('legend') else []):
+        _S(v, f'{w}.legend[{j}].label', lg.get('label'), 3, 20); _grp(v, f'{w}.legend[{j}].group', lg.get('group'))
+    cs = _list(v, w + '.cards', x.get('cards'), 4, 9)
+    if cs and len(cs) not in (4, 6, 9): v.e(f'{w}.cards must have exactly 4, 6 or 9 cards (a full grid), not {len(cs)}')
+    for j, c in enumerate(cs):
+        ww = f'{w}.cards[{j}]'
+        if c.get('motif') not in MOTIFS: v.e(f'{ww}.motif must be one of ' + '|'.join(MOTIFS))
+        _S(v, ww + '.caption', c.get('caption'), 3, 30); _S(v, ww + '.title', c.get('title'), 3, 24); _S(v, ww + '.sub', c.get('sub'), 10, 70); _grp(v, ww + '.group', c.get('group'))
+def v_grid(v, g, icons): _grid(v, 'gif.grid', g.get('grid'))
 def v_gif(v, g, icons):
     G = SPEC['gif']; tpl = g.get('template', 'hub')
     if tpl not in TEMPLATES: v.e('gif.template must be ' + '|'.join(TEMPLATES)); return
@@ -369,6 +385,7 @@ def v_gif(v, g, icons):
     if 'source' in g: v.w('gif.source is ignored: the GIF no longer shows a source line')
     if tpl == 'framework': return v_framework(v, g, icons)
     if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
+    if tpl == 'grid': return v_grid(v, g, icons)
     if tpl in ('exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel'): return {'exploded': v_exploded, 'isoflow': v_isoflow, 'orbit': v_orbit, 'stairs': v_stairs, 'tower': v_tower, 'skyline': v_skyline, 'conveyor': v_conveyor, 'funnel': v_funnel}[tpl](v, g, icons)
     if tpl == 'columns':
         h = g.get('hub', {}); _S(v, 'gif.hub.title', h.get('title'), 2, 22); _S(v, 'gif.hub.tagline', h.get('tagline'), 4, 34)

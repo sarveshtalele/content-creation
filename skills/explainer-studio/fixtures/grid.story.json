@@ -1,0 +1,92 @@
+{
+ "meta": {
+  "title": "9 AI algorithms visualised",
+  "slug": "ai-algorithms-grid"
+ },
+ "gif": {
+  "template": "grid",
+  "title": "9 AI Algorithms Visualised",
+  "subtitle": "Part 1: the ideas, drawn simply",
+  "grid": {
+   "legend": [
+    {
+     "label": "Supervised",
+     "group": "green"
+    },
+    {
+     "label": "Ensembles",
+     "group": "blue"
+    },
+    {
+     "label": "Deep learning",
+     "group": "clay"
+    }
+   ],
+   "cards": [
+    {
+     "motif": "bars",
+     "caption": "shrink weights",
+     "title": "Ridge Regression",
+     "sub": "Shrinks weights with an L2 penalty to reduce overfitting.",
+     "group": "green"
+    },
+    {
+     "motif": "bars",
+     "caption": "some weights = 0",
+     "title": "Lasso Regression",
+     "sub": "Uses an L1 penalty to push some weights to zero.",
+     "group": "green"
+    },
+    {
+     "motif": "curve",
+     "caption": "fit a curved line",
+     "title": "Polynomial Regression",
+     "sub": "Adds powers of features to fit a curved relationship.",
+     "group": "green"
+    },
+    {
+     "motif": "tree",
+     "caption": "random splits",
+     "title": "Extra Trees",
+     "sub": "Combines trees built with random split thresholds.",
+     "group": "blue"
+    },
+    {
+     "motif": "cluster",
+     "caption": "soft membership",
+     "title": "Gaussian Mixture",
+     "sub": "Fits overlapping Gaussians with soft cluster membership.",
+     "group": "clay"
+    },
+    {
+     "motif": "network",
+     "caption": "learn from errors",
+     "title": "Neural Network",
+     "sub": "Layers of neurons learn patterns from examples.",
+     "group": "clay"
+    },
+    {
+     "motif": "split",
+     "caption": "draw a boundary",
+     "title": "Classifier",
+     "sub": "Separates two groups with a learned boundary.",
+     "group": "green"
+    },
+    {
+     "motif": "loop",
+     "caption": "act, reward, repeat",
+     "title": "Q-Learning",
+     "sub": "Learns action values from the rewards it receives.",
+     "group": "blue"
+    },
+    {
+     "motif": "pixels",
+     "caption": "remove noise",
+     "title": "Diffusion Model",
+     "sub": "Generates samples by removing noise step by step.",
+     "group": "clay"
+    }
+   ]
+  }
+ }
+}
