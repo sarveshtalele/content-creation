@@ -20,6 +20,7 @@ jobs:
         run: |
           python skills/explainer-studio/tests/test_platform.py
           python skills/explainer-studio/tests/test_security.py
+          python skills/explainer-studio/tests/test_studio.py
       - name: Offline self-test (ingest, check, pick, post for every fixture)
         run: python skills/explainer-studio/scripts/selftest.py
       - name: Installer

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.14.0
+
+- **Design Studio** (`studio.py studio`): a local web app where you pick the design, see a preloaded sample of each, fill in your content and generate. 5 covers and 6 infographics, as one image or a carousel (PDF, images or both, always asked). See `docs/STUDIO.md`.
+- New cover layouts: **Poster Bold with your photo**, **Gradient Stage**, **Editorial Masthead**. Cover photo is a separate transparent PNG (`assets/photo_cutout.png`, replaceable in the studio); the profile photo is unchanged.
+- Carousel shots now wait for every image to decode (large photos could come out blank).
+- `carousel.single` (no pager) and `carousel.short` (2-7 slides) story flags for studio output.
+
 ## 2.13.1
 
 - **Bold poster cover** (`title.layout: "bold"`): giant headline, one accent word on a colour box (`title.accent`), swoosh, 3D slab stack with topic icon tiles and a chip row (`title.chips`, 2-4). No photo or character on the cover.

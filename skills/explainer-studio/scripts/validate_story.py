@@ -184,7 +184,7 @@ def validate(story, chunks, full_text):
 
 CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
-CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold')
+CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold', 'stage', 'editorial')
 def _pct(v, w, val):
     if not (isinstance(val, (int, float)) and not isinstance(val, bool) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
 def v_carousel(v, c, icons):
@@ -253,7 +253,7 @@ def v_carousel(v, c, icons):
     if c.get('cta_default') is not None: _S(v, 'carousel.cta_default', c['cta_default'], 0, 44)
     try: n = CAR.deck_len(c)
     except Exception: return
-    if not 5 <= n <= 7: v.e(f'carousel has {n} slides (title + {len(sl)} content + {len(CAR.pages((R or {}).get("items") or []))} resource page(s) + closing); allowed 5-7. Add or remove content slides')
+    if not (2 if c.get('single') or c.get('short') else 5) <= n <= 7: v.e(f'carousel has {n} slides (title + {len(sl)} content + {len(CAR.pages((R or {}).get("items") or []))} resource page(s) + closing); allowed 5-7. Add or remove content slides')
     if R and cl.get('kind') != 'comments': v.w('carousel has resources: set closing.kind to "comments" so the last slide says the links are in the comments')
 
 def carousel_texts(c):

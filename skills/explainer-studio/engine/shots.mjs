@@ -10,6 +10,11 @@ const N = await page.evaluate(() => window.N);
 for (let k = 0; k < N; k++) {
   if (ONLY && +ONLY !== k + 1) continue;
   await page.evaluate(t => window.render(t), k + .5);
+  await page.evaluate(async () => {   // every photo and avatar must be decoded before the shot, or large images come out blank
+    const urls = new Set(); document.querySelectorAll('*').forEach(e => { const m = getComputedStyle(e).backgroundImage.match(/url\("?([^")]+)"?\)/g) || []; m.forEach(u => urls.add(u.replace(/url\("?|"?\)/g, ''))); if (e.tagName === 'IMG') urls.add(e.src); });
+    await Promise.all([...urls].map(u => { const im = new Image(); im.src = u; return im.decode().catch(() => {}); }));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  });
   await page.screenshot({ path: path.join(OUT, `${PRE}-${String(k + 1).padStart(2, '0')}.png`), clip: { x: 0, y: 0, width: VW, height: VH } });
 }
 await browser.close(); closeServer(); console.log('SHOTS', N);

@@ -23,12 +23,12 @@ const W = 1080, H = 1350, X0 = 48, XW = W - 2 * X0, BODY0 = 128, BODY1 = 1170, G
 const grp = i => PAL[GROUPS[i % 3]];
 const arrow = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M4 12h15M13 6l6 6-6 6"/></svg>`;
 
-function frame(root, i, n, brand, ctaText, last) {
+function frame(root, i, n, brand, ctaText, last, single) {
   E(root, 'abs', `left:${X0}px;top:36px;width:56px;height:56px;border-radius:${brand.avatar_shape === 'circle' ? '50%' : '26%'};background:url(${brand.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${C.card};box-shadow:0 0 0 2px ${C.line}`);
   tx(root, 'fr-name', brand.name, { x: X0 + 70, y: 36, w: 560, h: 56, size: 26, weight: 700 });
-  tx(root, 'fr-count', `${i + 1} / ${n}`, { x: W - X0 - 160, y: 36, w: 160, h: 56, size: 26, weight: 600, color: C.mid, align: 'right' });
+  if (!single) tx(root, 'fr-count', `${i + 1} / ${n}`, { x: W - X0 - 160, y: 36, w: 160, h: 56, size: 26, weight: 600, color: C.mid, align: 'right' });
   const gap = 8, sw = (XW - gap * (n - 1)) / n;
-  for (let k = 0; k < n; k++) E(root, 'abs', `left:${X0 + k * (sw + gap)}px;top:104px;width:${sw}px;height:7px;border-radius:4px;background:${k <= i ? C.clay : C.line}`);
+  for (let k = 0; k < (single ? 0 : n); k++) E(root, 'abs', `left:${X0 + k * (sw + gap)}px;top:104px;width:${sw}px;height:7px;border-radius:4px;background:${k <= i ? C.clay : C.line}`);
   const b = box(root, { x: X0, y: 1196, w: XW, h: 88, r: 44, fill: C.claySoft, bd: C.clay, bw: 3, shadow: false });
   tx(b, 'fr-cta', ctaText, { x: 36, y: 0, w: XW - 36 - 96, h: 82, size: 30, weight: 700, color: C.clayD });
   if (!last) E(b, 'abs', `left:${XW - 76}px;top:15px;width:52px;height:52px;border-radius:50%;background:${C.clay};display:flex;align-items:center;justify-content:center`, arrow(C.onAcc, 30));
@@ -64,7 +64,7 @@ function titlePoster(root, s) {          // full-bleed colour poster: huge hook,
 // "bold" cover, after the poster references: one giant headline, one word on a colour box, a swoosh, a short line of copy, a 3D object built from the topic
 // and a row of topic chips. No photo: just the title and related infographics.
 function textW(t, size, weight) { const e = E(document.body, 'sans', `position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;font-size:${size}px;font-weight:${weight};letter-spacing:-.03em`); e.textContent = t; const w = e.getBoundingClientRect().width; e.remove(); return w; }
-function titleBold(root, s) {
+function titleBold(root, s, D) {
   const x = X0, w = XW, y0 = BODY0 + 14, hue = C.blueD, acc = C.green;
   E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:radial-gradient(900px 700px at 70% 55%,${C.blueSoft},transparent 70%);opacity:.9`);
   const svg = svgLayer(root, W, H);
@@ -82,12 +82,62 @@ function titleBold(root, s) {
   y += 14;
   if (s.sub) { const zz = fitSize(s.sub, { w: 560, h: 120, max: 32, min: 22, weight: 600, lh: 1.25 }); tx(root, 'ti-sub', s.sub, { x, y: y + 8, w: 560, h: H_(s.sub, zz, 560, 600) + 6, size: zz, weight: 600, color: C.sub, wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); }
   // 3D object: three isometric slabs stacked, with floating icon tiles (the topic's own icons)
-  const chips = (s.chips || []).slice(0, 4), cx = 810, base = hk.length > 36 ? 950 : 930, sc = hk.length > 36 ? .72 : 1, cols = [C.blue, C.clay, C.green];
-  for (let k = 0; k < 3; k++) { const g = iso(svg, { cx, cy: base - k * 110 * sc, hw: (190 - k * 26) * sc, hh: (95 - k * 13) * sc, h: 70 * sc, color: cols[k] }); g.style.opacity = '1'; }
+  const usePhoto = s.photo && D && D.brand && D.brand.photo, chips = (s.chips || []).slice(0, 4), cx = 810, base = hk.length > 36 ? 950 : 930, sc = hk.length > 36 ? .72 : 1, cols = [C.blue, C.clay, C.green];
+  if (usePhoto) { photoEl(root, D, { left: 470, top: 590, w: 600, h: 580 }); chips.forEach((c, k) => { E(root, 'abs', `left:${x}px;top:${860 + k * 70}px;width:46px;height:46px;display:flex;align-items:center;justify-content:center`, icon(c.icon || 'bolt', 40, hue, 2.2)); tx(root, 'ti-c' + k, (c.label || '').toUpperCase(), { x: x + 58, y: 856 + k * 70, w: 300, h: 54, size: 24, weight: 800, color: hue, css: 'letter-spacing:.04em;' }); }); return; }
+  for (let k = 0; k < (usePhoto ? 0 : 3); k++) { const g = iso(svg, { cx, cy: base - k * 110 * sc, hw: (190 - k * 26) * sc, hh: (95 - k * 13) * sc, h: 70 * sc, color: cols[k] }); g.style.opacity = '1'; }
   const tiles = chips.length ? chips : [{ icon: s.icon || 'bolt' }];
   tiles.forEach((c, k) => { const tx_ = [640, 960, 700, 940][k] ?? 700, ty = hk.length > 36 ? [830, 730, 930, 890][k] : [830, 640, 960, 880][k]; const t = E(root, 'abs', `left:${tx_ - 40}px;top:${ty - 40}px;width:80px;height:80px;border-radius:22px;background:#fff;box-shadow:0 10px 0 ${C.line},0 18px 30px rgba(20,40,120,.18);display:flex;align-items:center;justify-content:center;transform:rotate(${k % 2 ? 6 : -6}deg)`, icon(c.icon || 'bolt', 44, hue, 2.2)); });
   // chip row at the bottom: icon + short label (like the footer row on the poster reference)
   if (chips.length) { const cw = Math.floor(w / chips.length); chips.forEach((c, k) => { E(root, 'abs', `left:${x + k * cw}px;top:1088px;width:46px;height:46px;display:flex;align-items:center;justify-content:center`, icon(c.icon || 'bolt', 40, hue, 2.2)); tx(root, 'ti-c' + k, (c.label || '').toUpperCase(), { x: x + k * cw + 58, y: 1084, w: cw - 66, h: 54, size: 22, weight: 800, color: hue, wrap: true, lh: 1.05, css: 'letter-spacing:.04em;' }); }); }
+}
+
+// the person's cutout photo (assets/photo_cutout.png), bottom-anchored with a soft fade so a half-body crop never ends in a hard line
+function photoEl(root, D, { left, top, w, h }) {
+  const src = D && D.brand && D.brand.photo; if (!src) return false;
+  E(root, 'abs', `left:${left}px;top:${top}px;width:${w}px;height:${h}px;background:url(${src}) center bottom/contain no-repeat;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent);filter:drop-shadow(0 18px 28px rgba(20,40,120,.25))`);
+  return true;
+}
+// "stage" cover (poster reference 5): centred stacked headline in two weights, floating tags, ribbon arcs, photo rising from the bottom
+function titleStage(root, s, D) {
+  const W_ = W, cx = W_ / 2, ink = C.ink, blue = C.blue;
+  root.prepend(E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:linear-gradient(180deg,${C.bg} 0%,${C.blueSoft} 62%,${mix(C.blue, .55)} 100%)`));
+  const svg = svgLayer(root, W, H);
+  path(svg, 'M-30 930 C120 760 330 760 420 900', { stroke: blue, w: 34 }); path(svg, 'M1110 760 C960 700 840 820 900 980', { stroke: blue, w: 34 });
+  const ws = s.hook.split(/\s+/), acc = (s.accent || '').trim(), has = acc && s.hook.toLowerCase().includes(acc.toLowerCase());
+  const rest = has ? s.hook.replace(new RegExp(acc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), '\u0001').split(/\s+/).filter(Boolean) : ws;
+  const lines = []; { let cur = []; rest.forEach(wd => { cur.push(wd); if (cur.join(' ').length >= 13 && lines.length < 3) { lines.push(cur.join(' ')); cur = []; } }); if (cur.length) lines.push(cur.join(' ')); }
+  const sizes = lines.map((l, k) => Math.min(fitSize(l.replace('\u0001', acc), { w: 960, h: 150, max: k % 2 ? 150 : 128, min: 48, weight: 900, lh: 1 }), k % 2 ? 150 : 128));
+  let y = BODY0 + 10; if (s.kicker) { tx(root, 'ti-kick', s.kicker.toUpperCase(), { x: X0, y, w: XW, h: 40, size: 26, weight: 800, color: blue, align: 'center', css: 'letter-spacing:.22em;' }); y += 54; }
+  lines.forEach((l, k) => { const t = l.replace('\u0001', '').trim(); if (!t) return; const lh = Math.ceil(sizes[k] * 1.2) + 2;
+    tx(root, 'ti-l' + k, t, { x: X0, y, w: XW, h: lh, size: sizes[k], weight: 900, color: k % 2 ? blue : ink, align: 'center', css: 'letter-spacing:-.035em;' }); y += lh; });
+  if (has) E(root, 'abs', `left:${cx - 90}px;top:${y + 6}px;padding:12px 26px;border-radius:14px;background:${blue};color:#fff;font:800 34px/1 Inter,system-ui,sans-serif;transform:rotate(-6deg);box-shadow:0 14px 30px rgba(20,60,200,.3)`, acc);
+  if (has) y += 70;
+  if (s.sub) { const zz = fitSize(s.sub, { w: 760, h: 96, max: 30, min: 22, weight: 600, lh: 1.25 }); tx(root, 'ti-sub', s.sub, { x: cx - 380, y: y + 10, w: 760, h: 96, size: zz, weight: 600, color: C.sub, align: 'center', wrap: true, lh: 1.25 }); }
+  const chips = (s.chips || []).slice(0, 4), pos = [[90, 840], [850, 780], [120, 1010], [830, 960]];
+  chips.forEach((c, k) => { const [px, py] = pos[k]; E(root, 'abs', `left:${px}px;top:${py}px;width:96px;height:96px;border-radius:26px;background:#fff;box-shadow:0 12px 0 ${C.line},0 24px 34px rgba(20,40,140,.2);display:flex;align-items:center;justify-content:center;transform:rotate(${k % 2 ? 7 : -7}deg)`, icon(c.icon || 'bolt', 54, blue, 2.2)); });
+  if (!photoEl(root, D, { left: cx - 290, top: 720, w: 580, h: 450 })) { const g = iso(svg, { cx, cy: 960, hw: 200, hh: 100, h: 70, color: C.blue }); g.style.opacity = '1'; }
+}
+// "editorial" cover (poster reference 4): serif masthead, hairline rules, a cut-away building whose floors are the topic's stages, side notes
+function titleEditorial(root, s, D) {
+  const paper = '#F5F0E3', ink = '#17181C', teal = '#2E7F86', gold = '#D9A93B', rule = '#17181C';
+  root.prepend(E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:${paper}`));
+  const svg = svgLayer(root, W, H), x = X0, w = XW;
+  if (s.kicker) tx(root, 'ti-kick', s.kicker, { x, y: BODY0 + 6, w, h: 34, size: 24, weight: 600, color: ink, align: 'center', font: 'serif', italic: true });
+  const lines = []; { const ws = s.hook.split(/\s+/); let cur = []; const n = s.hook.length > 22 ? 2 : 1, tg = s.hook.length / n; ws.forEach(wd => { cur.push(wd); if (cur.join(' ').length >= tg && lines.length < n - 1) { lines.push(cur.join(' ')); cur = []; } }); if (cur.length) lines.push(cur.join(' ')); }
+  const sz = Math.min(...lines.map(l => fitSize(l, { w: w, h: 120, max: 104, min: 48, weight: 800, font: 'serif', lh: 1 })), 104); let y = BODY0 + 50;
+  lines.forEach((l, k) => { tx(root, 'ti-l' + k, l.toUpperCase(), { x, y, w, h: Math.ceil(sz * 1.12), size: Math.floor(sz * .86), weight: 800, color: ink, align: 'center', font: 'serif', css: 'letter-spacing:-.01em;' }); y += Math.ceil(sz * 1.16); });
+  path(svg, `M${x} ${y + 10} H${x + w}`, { stroke: rule, w: 2 });
+  if (s.sub) tx(root, 'ti-sub', s.sub.toUpperCase().slice(0, 60), { x, y: y + 22, w, h: 40, size: 20, weight: 600, color: ink, align: 'center', css: 'letter-spacing:.2em;' });
+  const fl = (s.chips && s.chips.length >= 2 ? s.chips : [{ label: 'First' }, { label: 'Second' }, { label: 'Third' }]).slice(0, 4), n = fl.length, top = y + 100, hgt = Math.min(185, Math.floor((1150 - top) / n)), cx = 540;
+  const tint = [teal, gold, teal, gold];
+  for (let k = 0; k < n; k++) { const t = top + k * hgt, wt = 760 - k * 140, wb = 760 - (k + 1) * 140, yb = t + hgt;
+    path(svg, `M${cx - wt / 2} ${t} L${cx + wt / 2} ${t} L${cx + wb / 2} ${yb} L${cx - wb / 2} ${yb} Z`, { stroke: ink, w: 3, fill: k % 2 ? '#FBF8EE' : '#EFE8D4' });
+    path(svg, `M${cx - wt / 2 + 18} ${t + 16} H${cx + wt / 2 - 18}`, { stroke: ink, w: 2 });
+    const bw = Math.min(380, Math.max(210, wb - 24)); E(root, 'abs', `left:${cx - bw / 2}px;top:${t + 52}px;width:${bw}px;height:56px;background:${tint[k]};display:flex;align-items:center;justify-content:flex-start;padding-left:14px`, icon(fl[k].icon || 'bolt', 30, k % 2 ? ink : '#fff', 2.2));
+    tx(root, 'ti-f' + k, (fl[k].label || '').toUpperCase(), { x: cx - bw / 2 + 60, y: t + 52, w: bw - 64, h: 56, size: 20, weight: 800, color: k % 2 ? ink : '#fff', font: 'serif', css: 'letter-spacing:.02em;' });
+    if (k === 0 || k === n - 1) tx(root, 'ti-n' + k, k === 0 ? 'Wide at the top' : 'A loyal core', { x: x, y: t + 60, w: 130, h: 60, size: 22, weight: 500, color: ink, font: 'serif', italic: true, wrap: true, lh: 1.15 });
+  }
+  if (D && D.brand && D.brand.photo) E(root, 'abs', `left:${x + w - 150}px;top:${top + n * hgt - 130}px;width:150px;height:150px;border-radius:50%;background:url(${D.brand.photo}) center 20%/cover;border:4px solid ${ink};box-shadow:0 0 0 4px ${paper}`);
 }
 function titleTerminal(root, s) {        // the hook typed into a terminal window
   const x = X0, w = XW, y = BODY0 + 6, h = BODY1 - BODY0 - 6, iw = w - 90;
@@ -107,7 +157,9 @@ function titleTerminal(root, s) {        // the hook typed into a terminal windo
 const H_ = (t, size, w, weight = 500, lh = 1.25) => Math.ceil(measure(t, { size, weight, w, lh }).h);
 const TYPES = {
   title(root, s, i, D) {
-    if (s.layout === 'bold') return titleBold(root, s);
+    if (s.layout === 'bold') return titleBold(root, s, D);
+    if (s.layout === 'stage') return titleStage(root, s, D);
+    if (s.layout === 'editorial') return titleEditorial(root, s, D);
     if (s.layout === 'poster') return titlePoster(root, s);
     if (s.layout === 'terminal') return titleTerminal(root, s);
     const P = PAL.clay, hz = fitSize(s.hook, { w: XW - 20, h: 470, max: 96, min: 52, weight: 700, font: 'serif', lh: 1.08 }), hh = Math.ceil(measure(s.hook, { size: hz, weight: 700, font: 'serif', w: XW - 20, lh: 1.08 }).h) + 8;
@@ -262,7 +314,7 @@ export function buildCarousel(stage, D) {
   const c = D.carousel, slides = c.deck, n = slides.length, roots = []; applyTheme(stage, c.theme);
   slides.forEach((s, i) => {
     const root = E(stage, 'scene'); root.style.display = 'none'; root.style.opacity = '1'; roots.push(root);
-    frame(root, i, n, D.brand, s.cta || '', i === n - 1);
+    frame(root, i, n, D.brand, s.cta || '', i === n - 1, !!c.single);
     TYPES[s.type](root, s, i, D);
   });
   return { DUR: n, N: n, render(t) { const k = Math.max(0, Math.min(n - 1, Math.floor(t + 1e-6))); roots.forEach((r, i) => { r.style.display = i === k ? 'block' : 'none'; }); } };

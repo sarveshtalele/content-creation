@@ -98,13 +98,13 @@ def load_project(work):
     for f in ('story.json', 'source.chunks.json', 'source_full.txt', 'source.meta.json'):
         if not os.path.exists(os.path.join(work, f)): sys.exit(f'missing {f} in {work} (run ingest, then write story.json)')
     return load(os.path.join(work, 'story.json')), load(os.path.join(work, 'source.chunks.json')), open(os.path.join(work, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(work, 'source.meta.json'))
-USER_BRAND = os.path.join(EH, 'brand.json'); USER_AVATAR = os.path.join(EH, 'avatar.png')
+USER_BRAND = os.path.join(EH, 'brand.json'); USER_AVATAR = os.path.join(EH, 'avatar.png'); USER_PHOTO = os.path.join(EH, 'photo_cutout.png')
 def brand():
     """Shipped defaults, overlaid by the user's own brand in ~/.cache/explainer-studio/brand.json (survives re-installs and updates)."""
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png',}
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': 'assets/photo_cutout.png' if os.path.isfile(os.path.join(SKILL, 'assets', 'photo_cutout.png')) or os.path.isfile(USER_PHOTO) else ''}
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -156,6 +156,7 @@ def stage(work, name, data):
     for f in os.listdir(os.path.join(SKILL, 'engine')):
         if f.endswith(('.js', '.html')): shutil.copy(os.path.join(SKILL, 'engine', f), d)
     shutil.copytree(os.path.join(SKILL, 'assets'), os.path.join(d, 'assets'))
+    if os.path.isfile(USER_PHOTO): shutil.copy(USER_PHOTO, os.path.join(d, 'assets', 'photo_cutout.png'))   # the cutout the person uploaded in the studio
     if os.path.isfile(USER_AVATAR): shutil.copy(USER_AVATAR, os.path.join(d, 'assets', 'avatar.png'))   # the user's own avatar replaces the shipped one
     dump(data, os.path.join(d, 'data.json')); return d
 BAD = re.compile(r'^BAD\s+(\S+)\s+at\s+([\d.]+)s\s+\d+ chars\s+need\s+([\d.]+)s\s+got\s+([\d.]+)s', re.M)
@@ -250,7 +251,7 @@ def png_size(p):
 def build_carousel(work, story, lib, env, out, slug, only=None, fmt='both'):
     """Slides as PNG stills, one PDF (the LinkedIn document upload) and the first-comment text. `only` rebuilds one slide, then the PDF from all slides."""
     b = brand(); deck = CAR.compile_deck(story); n = len(deck); size = '1080x1350'
-    film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck, 'theme': story['carousel'].get('theme', 'paper')}})
+    film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck, 'theme': story['carousel'].get('theme', 'paper'), 'single': bool(story['carousel'].get('single'))}})
     for d_ in deck:                                    # screenshots used by 'shot' slides live in the project; copy them next to the page
         if d_.get('type') == 'shot':
             src = os.path.realpath(os.path.join(work, d_['image'])); dst = os.path.join(film, d_['image'])
@@ -591,6 +592,7 @@ def main():
     rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
     ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
+    sg = sp.add_parser('studio'); sg.add_argument('--port', type=int, default=0); sg.add_argument('--no-open', action='store_true')
     ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true')
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
@@ -603,6 +605,8 @@ def main():
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)
     if a.cmd == 'shot': return shot_cmd(a)
+    if a.cmd == 'studio':
+        import studio_app as SA; return SA.serve(a.port, not a.no_open)
     if a.cmd == 'editor':
         import editor as ED; return ED.serve(a.dir, a.port, not a.no_open)
     if a.cmd == 'resources': return resources_cmd(a)

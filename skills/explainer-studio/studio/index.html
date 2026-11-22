@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Design Studio</title>
+<style>
+@font-face{font-family:Inter;font-weight:400;src:url(/fonts/inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:600;src:url(/fonts/inter-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:700;src:url(/fonts/inter-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Lora;font-weight:600;src:url(/fonts/lora-latin-600-normal.woff2) format("woff2")}
+:root{--ink:#0B1B4B;--mid:#4A5A8A;--blue:#2B59FF;--blueD:#1636C4;--wash:#EEF3FF;--line:#D5E0FB;--soft:#DCE6FF;--green:#16A34A;--greenSoft:#D6F3E2;--go:#FF6B3D;--goD:#C74A1F;--goSoft:#FFE3D9;--bad:#B42318;--r:14px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--wash);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+button,select,input,textarea{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:16px;padding:14px clamp(16px,4vw,48px);background:#fff;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:20}
+header h1{margin:0;font:700 22px/1 Inter;letter-spacing:-.03em}header .who{color:var(--mid);font-size:14px}header .sp{flex:1}
+.pill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer;display:flex;gap:10px;align-items:center}
+.pill:hover{border-color:var(--blue)}.pill img{width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:top;background:var(--soft)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:clamp(20px,3vw,48px);padding:clamp(20px,4vw,48px);max-width:1500px;margin:0 auto;align-items:start}
+@media(max-width:1020px){.layout{grid-template-columns:1fr}.proof{position:static!important}}
+section.step{margin:0 0 56px}
+.stephead{display:flex;align-items:baseline;gap:14px;margin:0 0 18px}
+.stephead b{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-size:15px;flex:none;transform:translateY(-3px)}
+.stephead h2{margin:0;font:800 clamp(28px,4vw,44px)/1.05 Inter;letter-spacing:-.04em}
+.lede{margin:-6px 0 20px;color:var(--mid);max-width:60ch}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.choice{text-align:left;background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:20px;cursor:pointer;transition:border-color .15s,transform .15s}
+.choice:hover{border-color:var(--blue)}.choice[aria-pressed=true]{border-color:var(--blue);background:var(--soft);box-shadow:0 0 0 3px var(--blue) inset}
+.choice strong{display:block;font:800 22px/1.1 Inter;letter-spacing:-.03em;margin-bottom:6px}.choice span{color:var(--mid);font-size:15px}
+.tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}.tab{border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-weight:600;cursor:pointer}.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:28px 22px}
+.poster{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:block}
+.poster .sheet{display:block;position:relative;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 2px 0 var(--line),0 18px 30px -14px rgba(20,40,120,.35);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.poster img{width:100%;height:100%;object-fit:cover;display:block}
+.poster:hover .sheet,.poster:focus-visible .sheet{transform:translateY(-6px) rotate(-.6deg);box-shadow:0 2px 0 var(--line),0 28px 36px -14px rgba(20,40,120,.45)}
+.poster[aria-pressed=true] .sheet{outline:4px solid var(--blue);outline-offset:3px}
+.poster .tick{position:absolute;top:10px;right:10px;background:var(--blue);color:#fff;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px;display:none}.poster[aria-pressed=true] .tick{display:block}
+.poster strong{display:block;margin-top:12px;font:700 17px/1.2 Inter;letter-spacing:-.02em}.poster small{display:block;color:var(--mid);font-size:14px;line-height:1.35;margin-top:2px}
+.proof{position:sticky;top:84px;background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px}
+.proof img.big{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:10px;background:var(--wash);display:block}
+.proof h3{margin:14px 0 4px;font:800 22px/1.1 Inter;letter-spacing:-.03em}.proof p{margin:0 0 8px;color:var(--mid);font-size:15px}
+.proof .fit{font-size:14px;background:var(--greenSoft);color:#0E5A2A;border-radius:8px;padding:8px 10px}
+.empty{color:var(--mid);padding:30px 6px;text-align:center}
+.deck{display:flex;flex-direction:column;gap:8px;margin:0 0 22px}
+.deckrow{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px}.deckrow img{width:44px;height:55px;object-fit:cover;border-radius:5px}.deckrow span{flex:1;font-weight:600}.deckrow button{border:0;background:none;color:var(--mid);cursor:pointer;font-size:14px;padding:6px}.deckrow button:hover{color:var(--bad)}
+.form{background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:20px;margin:0 0 20px}
+.form h3{margin:0 0 2px;font:800 24px/1.1 Inter;letter-spacing:-.03em}.form .sub{color:var(--mid);margin:0 0 14px;font-size:14px}
+.fld{margin:0 0 14px}.fld>label{display:flex;justify-content:space-between;font-weight:600;font-size:15px;margin-bottom:4px}.fld .cnt{font-weight:400;color:var(--mid);font-size:13px}.fld .cnt.over{color:var(--bad);font-weight:700}
+.fld>label.toggle{justify-content:flex-start}.li .cnt{margin-left:6px}.fld .hint{color:var(--mid);font-size:13px;margin:2px 0 0}
+input[type=text],input[type=number],select,textarea{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px var(--soft)}
+.listbox{border-left:4px solid var(--soft);padding-left:12px;display:grid;gap:10px}
+.li{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr)) auto;gap:8px;align-items:end;background:var(--wash);border-radius:10px;padding:10px}
+.li label{font-size:12px;color:var(--mid);display:block;margin-bottom:2px;font-weight:600}.li button{border:0;background:none;color:var(--mid);cursor:pointer;padding:8px}.li button:hover{color:var(--bad)}
+.toggle{display:flex;gap:10px;align-items:center;font-weight:600}.toggle input{width:20px;height:20px;accent-color:var(--blue)}
+.btn{border:0;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;background:var(--ink);color:#fff}.btn.go{background:var(--go);color:#fff;font-size:18px;padding:15px 30px;box-shadow:0 5px 0 var(--goD);transition:transform .1s,box-shadow .1s}
+.btn.go:active{transform:translateY(4px);box-shadow:0 1px 0 var(--goD)}.btn.go:disabled{background:#c9d2ee;box-shadow:0 5px 0 #aab6dc;cursor:not-allowed}.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}.btn.sm{padding:7px 14px;font-size:14px}
+fieldset{border:0;padding:0;margin:0 0 18px}legend{font-weight:700;margin-bottom:8px}.radios{display:flex;gap:10px;flex-wrap:wrap}
+.radios label{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:600}.radios input{margin-right:8px;accent-color:var(--blue)}.radios label:has(input:checked){border-color:var(--blue);background:var(--soft)}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:20px}.results figure{margin:0}.results img{width:100%;border-radius:10px;border:2px solid var(--line);display:block}.results figcaption{margin-top:6px;font-size:14px}.results a{color:var(--blueD);font-weight:600}
+.msg{border-radius:12px;padding:12px 14px;margin:14px 0}.msg.err{background:#FEE4E2;color:var(--bad)}.msg.ok{background:var(--greenSoft);color:#0E5A2A}.msg.busy{background:var(--soft)}
+details{margin-top:8px}pre{white-space:pre-wrap;background:var(--ink);color:#e7ecff;border-radius:10px;padding:12px;font-size:12px;max-height:260px;overflow:auto}
+dialog{border:0;border-radius:18px;padding:24px;max-width:520px;width:calc(100% - 32px);box-shadow:0 30px 80px rgba(11,27,75,.4)}dialog::backdrop{background:rgba(11,27,75,.45)}
+dialog h2{margin:0 0 6px;font:800 26px/1.1 Inter;letter-spacing:-.03em}.checker{background:conic-gradient(#e9eefc 25%,#fff 0 50%,#e9eefc 0 75%,#fff 0) 0 0/20px 20px;border-radius:12px;padding:10px;text-align:center;margin:14px 0}.checker img{max-height:260px;max-width:100%}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<header><h1>Design Studio</h1><span class="who" id="who"></span><span class="sp"></span><button class="pill" id="photoBtn" type="button"><img id="photoThumb" alt="">Cover photo</button></header>
+<div class="layout"><main>
+ <section class="step" id="s1"><div class="stephead"><b>1</b><h2>What are you making?</h2></div>
+  <div class="choices"><button class="choice" data-mode="single" aria-pressed="false"><strong>One image</strong><span>A single cover or infographic, ready to post.</span></button>
+  <button class="choice" data-mode="carousel" aria-pressed="false"><strong>A carousel</strong><span>A cover, your infographics and a closing slide, as PDF, images or both.</span></button></div></section>
+ <section class="step" id="s2" hidden><div class="stephead"><b>2</b><h2>Pick the design</h2></div><p class="lede" id="s2lede"></p>
+  <div class="tabs" role="tablist" id="tabs"></div><div class="wall" id="wall"></div></section>
+ <section class="step" id="s3" hidden><div class="stephead"><b>3</b><h2>Write your content</h2></div><p class="lede">Everything is filled with the sample so you can see what each field does. Replace it with your own words.</p>
+  <div class="deck" id="deck"></div><div id="forms"></div><div id="closingForm"></div></section>
+ <section class="step" id="s4" hidden><div class="stephead"><b>4</b><h2>Generate</h2></div>
+  <fieldset id="fmt" hidden><legend>How do you want the carousel delivered?</legend><div class="radios"><label><input type="radio" name="f" value="pdf">PDF</label><label><input type="radio" name="f" value="images">Separate images</label><label><input type="radio" name="f" value="both">Both</label></div></fieldset>
+  <label class="fld" style="display:block"><span style="font-weight:600">Colour theme</span><select id="theme" style="max-width:280px"></select></label>
+  <button class="btn go" id="go" type="button" disabled>Generate</button><div id="status"></div><div class="results" id="results"></div></section>
+</main>
+<aside class="proof" id="proof"><div class="empty" id="proofEmpty">Hover or choose a design to see it here.</div><div id="proofBody" hidden><img class="big" id="proofImg" alt=""><h3 id="proofName"></h3><p id="proofBlurb"></p><div class="fit" id="proofFit"></div></div></aside></div>
+<dialog id="dlg"><h2>Cover photo</h2><p style="margin:0;color:var(--mid)">Used on cover designs that show you. Your profile photo in the header and CTA stays the same.</p>
+ <div class="checker"><img id="dlgImg" alt="Current cover photo"></div><div id="dlgMsg"></div>
+ <p style="color:var(--mid);font-size:14px;margin:0 0 12px">Upload a PNG with a transparent background, at least 400px on the short side.</p>
+ <div style="display:flex;gap:10px;flex-wrap:wrap"><label class="btn" style="cursor:pointer">Upload PNG<input id="file" type="file" accept="image/png" hidden></label><button class="btn ghost" id="reset" type="button">Use the built-in photo</button><button class="btn ghost" id="close" type="button">Done</button></div></dialog>
+<script>
+const TOKEN='__TOKEN__';const $=(s,p=document)=>p.querySelector(s);const $$=(s,p=document)=>[...p.querySelectorAll(s)];
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==='class')e.className=v;else if(x==='text')e.textContent=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else if(v!==false&&v!==null&&v!==undefined)e.setAttribute(x,v===true?'':v)}k.flat().forEach(c=>e.append(c&&c.nodeType?c:document.createTextNode(c??'')));return e};
+const api=async(p,b)=>{const r=await fetch(p+(p.includes('?')?'&':'?')+'t='+TOKEN,{method:b?'POST':'GET',headers:{'X-Token':TOKEN,'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});return r.json()};
+const img=(p)=>p+'?t='+TOKEN;
+let D=null,mode=null,group='cover',picked=[],vals={},closing={title:'What will you try first?',lines:[]},hover=null;
+const byId=id=>D.designs.find(d=>d.id===id),clone=o=>JSON.parse(JSON.stringify(o));
+async function init(){D=await api('/api/designs');$('#who').textContent=D.brand.name;$('#theme').append(...D.themes.map(([v,t])=>el('option',{value:v,text:t})));refreshPhoto();
+ $$('.choice').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));}
+function refreshPhoto(){const u=img('/api/photo')+'&r='+Date.now();$('#photoThumb').src=u;$('#dlgImg').src=u}
+function setMode(m){mode=m;picked=[];$$('.choice').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));$('#s2').hidden=false;group='cover';
+ $('#s2lede').textContent=m==='single'?'Choose one design. You will fill in its content next.':'Choose one cover, then add the infographics you want inside the carousel (up to 5). The closing slide is added for you.';
+ $('#fmt').hidden=m!=='carousel';drawTabs();drawWall();drawDeck();drawForms();update();$('#s2').scrollIntoView({block:'start'})}
+function drawTabs(){const t=$('#tabs');t.innerHTML='';[['cover','Covers'],['infographic','Infographics']].forEach(([g,n])=>{if(mode==='single'||true)t.append(el('button',{class:'tab',role:'tab','aria-selected':g===group,text:n,onclick:()=>{group=g;drawTabs();drawWall()}}))})}
+function drawWall(){const w=$('#wall');w.innerHTML='';D.designs.filter(d=>d.group===group).forEach(d=>{const on=picked.includes(d.id);
+ const b=el('button',{class:'poster','aria-pressed':on,onclick:()=>toggle(d),onmouseenter:()=>show(d),onfocus:()=>show(d)},el('span',{class:'sheet'},el('img',{src:img('/samples/'+d.id+'.jpg'),alt:'Sample of '+d.name}),el('span',{class:'tick',text:'Selected'})),el('strong',{text:d.name}),el('small',{text:d.tag}));w.append(b)})}
+function show(d){hover=d;$('#proofEmpty').hidden=true;$('#proofBody').hidden=false;$('#proofImg').src=img('/samples/'+d.id+'.jpg');$('#proofImg').alt='Sample of '+d.name;$('#proofName').textContent=d.name;$('#proofBlurb').textContent=d.blurb;$('#proofFit').textContent='Best for: '+d.best_for}
+function toggle(d){const i=picked.indexOf(d.id);
+ if(mode==='single'){picked=i<0?[d.id]:[]}
+ else if(d.group==='cover'){picked=picked.filter(x=>byId(x).group!=='cover');if(i<0)picked.unshift(d.id)}
+ else{if(i>=0)picked.splice(i,1);else if(picked.filter(x=>byId(x).group==='infographic').length<5)picked.push(d.id)}
+ picked.forEach(id=>{if(!vals[id])vals[id]=clone(byId(id).sample)});show(d);drawWall();drawDeck();drawForms();update()}
+function drawDeck(){const k=$('#deck');k.innerHTML='';if(mode!=='carousel'||!picked.length)return;picked.forEach(id=>{const d=byId(id);k.append(el('div',{class:'deckrow'},el('img',{src:img('/samples/'+id+'.jpg'),alt:''}),el('span',{text:(d.group==='cover'?'Cover: ':'Slide: ')+d.name}),el('button',{type:'button',onclick:()=>{picked=picked.filter(x=>x!==id);drawWall();drawDeck();drawForms();update()}},'Remove')))});k.append(el('div',{class:'deckrow'},el('span',{text:'Closing slide with your follow button (added automatically)'})))}
+function counter(inp,lab,mx,mn){const c=el('span',{class:'cnt'});const f=()=>{const n=inp.value.length;c.textContent=n+'/'+mx;c.classList.toggle('over',n>mx||n<mn)};inp.addEventListener('input',f);f();lab.append(c)}
+function field(spec,obj,onchange){const w=el('div',{class:'fld'});const id='f'+Math.random().toString(36).slice(2,8);
+ const ch=()=>{onchange&&onchange()};
+ if(spec.type==='text'){const inp=el(spec.area?'textarea':'input',{id,type:'text'});inp.value=obj[spec.key]??'';inp.oninput=()=>{obj[spec.key]=inp.value;ch()};const lab=el('label',{for:id},spec.label);counter(inp,lab,spec.max,spec.min);w.append(lab,inp);if(spec.hint)w.append(el('div',{class:'hint',text:spec.hint}))}
+ else if(spec.type==='number'){const inp=el('input',{id,type:'number',min:0,max:spec.max});inp.value=obj[spec.key]??0;inp.oninput=()=>{obj[spec.key]=+inp.value;ch()};w.append(el('label',{for:id},spec.label),inp)}
+ else if(spec.type==='icon'){const s=el('select',{id});D.icons.forEach(i=>s.append(el('option',{value:i,text:i,selected:obj[spec.key]===i})));s.onchange=()=>{obj[spec.key]=s.value;ch()};w.append(el('label',{for:id},spec.label),s)}
+ else if(spec.type==='toggle'){const c=el('input',{id,type:'checkbox'});c.checked=!!obj[spec.key];c.onchange=()=>{obj[spec.key]=c.checked;ch()};w.append(el('label',{class:'toggle',for:id},c,spec.label))}
+ else if(spec.type==='list'){const box=el('div',{class:'listbox'}),add=el('button',{type:'button',class:'btn ghost sm',text:'Add'});const lab=el('label',{},spec.label);
+  const draw=()=>{box.innerHTML='';(obj[spec.key]=obj[spec.key]||[]).forEach((it,i)=>{const row=el('div',{class:'li'});spec.item.forEach(sp=>{const f=field(sp,it,ch);f.style.margin=0;row.append(f)});row.append(el('button',{type:'button','aria-label':'Remove item '+(i+1),onclick:()=>{obj[spec.key].splice(i,1);draw();ch()}},'Remove'));box.append(row)});add.hidden=obj[spec.key].length>=spec.max};
+  add.onclick=()=>{const it={};spec.item.forEach(sp=>it[sp.key]=sp.type==='icon'?D.icons[0]:sp.type==='number'?50:'');obj[spec.key].push(it);draw();ch()};draw();w.append(lab,box,add,el('div',{class:'hint',text:spec.min+' to '+spec.max+' items'+(spec.hint?'. '+spec.hint:'')}))}
+ return w}
+function drawForms(){const f=$('#forms');f.innerHTML='';$('#s3').hidden=!picked.length;$('#s4').hidden=!picked.length;
+ picked.forEach(id=>{const d=byId(id),box=el('div',{class:'form'},el('h3',{text:d.name}),el('p',{class:'sub',text:d.tag}));d.fields.forEach(sp=>box.append(field(sp,vals[id],update)));box.append(el('button',{type:'button',class:'btn ghost sm',onclick:()=>{vals[id]=clone(d.sample);drawForms()}},'Reset to the sample'));f.append(box)});
+ const c=$('#closingForm');c.innerHTML='';if(mode==='carousel'&&picked.length){const box=el('div',{class:'form'},el('h3',{text:'Closing slide'}),el('p',{class:'sub',text:'The last slide, with your follow button underneath.'}));
+  box.append(field({key:'title',type:'text',label:'Question or call to action',min:6,max:60},closing,update),field({key:'lines',type:'list',label:'Optional lines (what to do next)',min:0,max:3,item:[{key:'t',type:'text',label:'Line',min:3,max:38}]},{lines:(closing.lines||[]).map(t=>({t}))},null));c.append(box);
+  const lb=$$('.li input',box);}
+ if(picked.length){const d=byId(picked[0]);$('#theme').value=d.theme}}
+function collectClosing(){const box=$('#closingForm');const ls=$$('#closingForm .li input[type=text]').map(i=>i.value).filter(Boolean);return{title:closing.title,lines:ls}}
+function ready(){if(!mode||!picked.length)return false;if(mode==='carousel'&&!picked.some(i=>byId(i).group==='cover'))return false;if(mode==='carousel'&&!$('input[name=f]:checked'))return false;return true}
+function update(){$('#go').disabled=!ready()}
+$$('input[name=f]').forEach(r=>r.onchange=update);
+$('#go').onclick=async()=>{const st=$('#status'),res=$('#results');res.innerHTML='';$('#go').disabled=true;st.innerHTML='';st.append(el('div',{class:'msg busy',role:'status',text:'Building with the real engine. This takes up to a minute.'}));
+ const items=picked.map(id=>({design:id,values:vals[id]}));
+ const r=await api('/api/generate',{mode,format:mode==='carousel'?$('input[name=f]:checked').value:'images',theme:$('#theme').value,items,closing:mode==='carousel'?collectClosing():null});
+ st.innerHTML='';if(r.error){st.append(el('div',{class:'msg err',role:'alert',text:r.error}));update();return}
+ if(!r.ok){const fixes=(r.log||'').split('\n').filter(l=>/FIX|OVERFLOW|OVERLAP|LEAK|SAFE|must|required|ERROR|LAYOUT/.test(l)).slice(0,8);
+  st.append(el('div',{class:'msg err',role:'alert'},el('strong',{text:'Could not build this one. '}),'Shorten the text that is named below, then generate again.',el('pre',{text:fixes.join('\n')||r.log}),el('details',{},el('summary',{text:'Full log'}),el('pre',{text:r.log}))));update();return}
+ st.append(el('div',{class:'msg ok',role:'status',text:'Done. Your files are below.'}));
+ r.files.forEach(f=>{const u=img(f.url);const fig=el('figure',{});if(/\.png$/.test(f.name))fig.append(el('a',{href:u,target:'_blank',rel:'noopener'},el('img',{src:u,alt:f.name})));fig.append(el('figcaption',{},el('a',{href:u,download:f.name},'Download '+f.name)));res.append(fig)});update()};
+$('#photoBtn').onclick=()=>{$('#dlgMsg').innerHTML='';$('#dlg').showModal()};$('#close').onclick=()=>$('#dlg').close();
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;const buf=new Uint8Array(await f.arrayBuffer());let s='';for(let i=0;i<buf.length;i+=0x8000)s+=String.fromCharCode(...buf.subarray(i,i+0x8000));
+ const r=await api('/api/photo',{data:btoa(s)});$('#dlgMsg').innerHTML='';$('#dlgMsg').append(el('div',{class:'msg '+(r.ok?'ok':'err'),role:'status',text:r.ok?'Cover photo updated. New designs will use it. The sample thumbnails still show the built-in photo.':r.error}));refreshPhoto()};
+$('#reset').onclick=async()=>{await api('/api/photo/reset',{});refreshPhoto();$('#dlgMsg').innerHTML='';$('#dlgMsg').append(el('div',{class:'msg ok',text:'Using the built-in cover photo.'}))};
+init();
+</script></body></html>
