@@ -248,7 +248,12 @@ def png_size(p):
 def build_carousel(work, story, lib, env, out, slug, only=None):
     """Slides as PNG stills, one PDF (the LinkedIn document upload) and the first-comment text. `only` rebuilds one slide, then the PDF from all slides."""
     b = brand(); deck = CAR.compile_deck(story); n = len(deck); size = '1080x1350'
-    film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck}})
+    film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck, 'theme': story['carousel'].get('theme', 'paper')}})
+    for d_ in deck:                                    # screenshots used by 'shot' slides live in the project; copy them next to the page
+        if d_.get('type') == 'shot':
+            src = os.path.realpath(os.path.join(work, d_['image'])); dst = os.path.join(film, d_['image'])
+            if not src.startswith(os.path.realpath(work) + os.sep) or not os.path.isfile(src): print('[carousel] missing screenshot', d_['image']); return None
+            os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy(src, dst)
     ok, issues = validate_layout(lib, env, film, size, 'mode=carousel', 8, 1342, 40)
     if not ok:
         print('[carousel] LAYOUT ERRORS (shorten the named text in story.json carousel section, then re-run build):'); [print('   ', l) for l in issues[:14]]; return None
@@ -502,6 +507,28 @@ def cta_cmd(a):
     if a.build: return build(argparse.Namespace(dir=a.dir, artifacts='carousel', slide=None if num is None or path.startswith('carousel.resources') else num))
     return 0
 
+def readercard_cmd(a):
+    """studio.py readercard DIR NAME SPEC.json: render shots/NAME.png (a labelled summary card) with Playwright from a small JSON spec."""
+    import readercard as RC
+    work = os.path.abspath(a.dir); spec = load(os.path.abspath(a.spec)); os.makedirs(os.path.join(work, 'shots'), exist_ok=True)
+    hp = os.path.join(work, 'shots', a.name + '.html'); open(hp, 'w', encoding='utf-8', newline='\n').write(RC.render(spec)); out = os.path.join(work, 'shots', a.name + '.png')
+    r = run(['node', os.path.join(SKILL, 'engine', 'pageshot.mjs'), hp, out, '--size', '1280x780', '--scale', '2', '--wait', '300'], env=dict(os.environ)); print((r.stdout or '').strip()[-200:])
+    os.remove(hp); return 0 if os.path.isfile(out) else 1
+def shot_cmd(a):
+    """studio.py shot DIR NAME URL: Playwright screenshot of a public page into shots/NAME.png (the page must load with its styles; check the image)."""
+    try: ING.check_url(a.url)
+    except ValueError as e: print('refused:', e); return 2
+    work = os.path.abspath(a.dir); os.makedirs(os.path.join(work, 'shots'), exist_ok=True); out = os.path.join(work, 'shots', a.name + '.png')
+    r = run(['node', os.path.join(SKILL, 'engine', 'pageshot.mjs'), a.url, out, '--size', a.size, '--scale', '2'], env=dict(os.environ)); print((r.stdout or '').strip()[-200:] or (r.stderr or '')[-300:])
+    return 0 if os.path.isfile(out) else 1
+
+def e2e_cmd(a):
+    """studio.py e2e DIR: Playwright end-to-end evaluation of the built carousel (run after build)."""
+    import e2e as E2E
+    work = os.path.abspath(a.dir); ok0, story, *_ = do_check(work, quiet=True)
+    deck = CAR.compile_deck(story); ok, lines = E2E.run(work, [d['type'] for d in deck], story['carousel'].get('theme', 'paper'), story['carousel']['title']['hook'])
+    print('\n'.join(lines)); print('E2E', 'PASS' if ok else 'FAIL'); return 0 if ok else 1
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
@@ -515,7 +542,13 @@ def main():
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
     ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
     ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true')
+    rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
+    sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
+    e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     a = ap.parse_args()
+    if a.cmd == 'e2e': return e2e_cmd(a)
+    if a.cmd == 'readercard': return readercard_cmd(a)
+    if a.cmd == 'shot': return shot_cmd(a)
     if a.cmd == 'editor':
         import editor as ED; return ED.serve(a.dir, a.port, not a.no_open)
     if a.cmd == 'resources': return resources_cmd(a)

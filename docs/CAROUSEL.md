@@ -38,3 +38,8 @@ Each link is fetched once with the same guards as `ingest` (no private addresses
 - Change any field: `studio.py edit W carousel.slides[1].title "New title" --build carousel --slide 3`. The previous story is kept as `story.json.bak`.
 - Rebuild one slide: `studio.py build W --artifacts carousel --slide 3` (the PDF is rebuilt from all slides).
 - Browser editor: `studio.py editor W` prints a link (127.0.0.1 only, private token). It shows a form for every field of the story (carousel, GIF, Reel, post), a table of per-slide CTAs, brand fields, build buttons and previews. Nothing leaves your computer.
+
+## Looks and slide types (2.8)
+Themes: `paper`, `midnight`, `sunrise`, `mint` (`carousel.theme`). Title layouts: `classic`, `poster`, `terminal`.
+Extra slide types: `loop{title,center,steps[3-4]}`, `stack{title,rows[3-5]}`, `terminal{title,prompt,lines[3-6]}`, `shot{title,image,host,url,why}`.
+Screenshots: `studio.py shot W NAME URL` needs a page that loads with its styles in your network; otherwise `studio.py readercard W NAME spec.json` makes a labelled summary card. Run `studio.py e2e W` for the browser evaluation.

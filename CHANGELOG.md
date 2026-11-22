@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.8.0
+
+- **Carousels no longer look alike.** Four colour themes (`carousel.theme`: paper, midnight, sunrise, mint), three title layouts (`title.layout`: classic, poster, terminal) and four new infographic slide types: `loop` (cycle diagram), `stack` (layered slabs), `terminal` (command transcript) and `shot` (page frame with heading, caption and link).
+- **Hook-first covers.** Hooks are capped at 72 characters in the validator and the e2e gate wants 60 or fewer; the SKILL guide lists the viral patterns to use (contrarian reframe, specific audience, "read this before...", number proof, POV).
+- **Page cards for links.** `studio.py readercard` renders a labelled summary card with Playwright; `studio.py shot` screenshots a public page. Cards are never presented as screenshots.
+- **`studio.py e2e`**: every slide rendered in a real browser; checks PNG size, PDF pages, image loading and upscaling, text contrast, minimum text size, hook length and slide variety.
+- Sharper avatar: shown at its native 112 px on the closing slide.
+
 ## 2.7.0
 
 - **Carousel (on demand).** 5-7 slides: a title slide with a hook, content slides (points, stat ring + waffle, bars, compare, flow, big), a closing CTA slide from your brand. Every slide has a bottom CTA strip you can edit. Outputs: one PDF (LinkedIn document), a 1080x1350 PNG per slide, and the first-comment text.

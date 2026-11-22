@@ -181,16 +181,20 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'compare', 'flow', 'big')
+CAR_TYPES = ('points', 'stat', 'bars', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
+CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint')
+CAR_LAYOUTS = ('classic', 'poster', 'terminal')
 def _pct(v, w, val):
     if not (isinstance(val, (int, float)) and not isinstance(val, bool) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
 def v_carousel(v, c, icons):
     if not isinstance(c, dict): v.e('carousel must be an object'); return
     if c.get('hook_style') not in CAR.HOOK_STYLES: v.e('carousel.hook_style must be one of ' + '|'.join(CAR.HOOK_STYLES))
     t = c.get('title') if isinstance(c.get('title'), dict) else {}
-    _S(v, 'carousel.title.hook', t.get('hook'), 12, 110)
+    _S(v, 'carousel.title.hook', t.get('hook'), 12, 72)
     if t.get('sub') is not None: _S(v, 'carousel.title.sub', t.get('sub'), 0, 110)
     if t.get('kicker') is not None: _S(v, 'carousel.title.kicker', t.get('kicker'), 0, 26)
+    if c.get('theme') is not None and c['theme'] not in CAR_THEMES: v.e('carousel.theme must be one of ' + '|'.join(CAR_THEMES))
+    if t.get('layout') is not None and t['layout'] not in CAR_LAYOUTS: v.e('carousel.title.layout must be one of ' + '|'.join(CAR_LAYOUTS))
     if t.get('icon') is not None: _ic(v, 'carousel.title.icon', t.get('icon'), icons)
     sl = _list(v, 'carousel.slides', c.get('slides', []), 0, 5)
     for i, s_ in enumerate(sl):
@@ -215,6 +219,19 @@ def v_carousel(v, c, icons):
         elif ty == 'flow':
             for j, st in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 4)):
                 _S(v, f'{w}.steps[{j}].title', st.get('title'), 3, 24); _S(v, f'{w}.steps[{j}].sub', st.get('sub', ''), 0, 70); _ic(v, f'{w}.steps[{j}].icon', st.get('icon'), icons, req=False)
+        elif ty == 'loop':
+            for j, st in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 4)):
+                _S(v, f'{w}.steps[{j}].title', st.get('title'), 3, 22); _S(v, f'{w}.steps[{j}].sub', st.get('sub', ''), 0, 60); _ic(v, f'{w}.steps[{j}].icon', st.get('icon'), icons, req=False)
+            if s_.get('center') is not None: _S(v, w + '.center', s_['center'], 0, 24)
+        elif ty == 'stack':
+            for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)): _S(v, f'{w}.rows[{j}].title', r.get('title'), 3, 28); _S(v, f'{w}.rows[{j}].sub', r.get('sub', ''), 0, 64)
+        elif ty == 'terminal':
+            _S(v, w + '.prompt', s_.get('prompt', 'claude'), 0, 40)
+            for j, t_ in enumerate(_list(v, w + '.lines', s_.get('lines'), 3, 6)): _S(v, f'{w}.lines[{j}]', t_, 6, 64)
+        elif ty == 'shot':
+            if not (isinstance(s_.get('image'), str) and re.match(r'^[\w./-]+\.(png|jpg|jpeg)$', s_['image']) and '..' not in s_['image']): v.e(f'{w}.image must be a png/jpg path inside the project (studio.py shot / readercard make them)')
+            _S(v, w + '.host', s_.get('host'), 3, 60); _S(v, w + '.why', s_.get('why', ''), 0, 120)
+            if not (isinstance(s_.get('url'), str) and re.match(r'https?://[^\s]+$', s_['url'])): v.e(f'{w}.url must be an http(s) link')
         elif ty == 'big': _S(v, w + '.big', s_.get('big'), 10, 110); _S(v, w + '.sub', s_.get('sub', ''), 0, 120)
         if s_.get('cta') is not None: _S(v, w + '.cta', s_['cta'], 0, 44)
     R = c.get('resources')
@@ -240,7 +257,7 @@ def carousel_texts(c):
         if isinstance(o, str): out.append((p, o))
         elif isinstance(o, dict):
             for k, x in o.items():
-                if k not in ('icon', 'group', 'type', 'hook_style', 'kind', 'url', 'cta', 'cta_default', 'comment', 'pct', 'kicker', 'lines', 'closing'): walk(x, f'{p}.{k}')   # closing is a call to action, not a claim
+                if k not in ('icon', 'group', 'type', 'hook_style', 'kind', 'url', 'cta', 'cta_default', 'comment', 'pct', 'kicker', 'lines', 'closing', 'image', 'host', 'window', 'theme', 'layout', 'prompt', 'center', 'label'): walk(x, f'{p}.{k}')   # closing is a call to action, not a claim
         elif isinstance(o, list):
             for i, x in enumerate(o): walk(x, f'{p}[{i}]')
     walk(c, 'carousel'); return [(w, t) for w, t in out if t]
