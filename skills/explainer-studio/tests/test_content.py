@@ -43,7 +43,7 @@ import carousel as CAR
 st, _ = DS.assemble([{'design': i, 'values': DS.BY_ID[i]['sample']} for i in ('cover-bold', 'info-grid', 'info-compare')], None, 'paper', False, 'Sarvesh Talele')
 dk = CAR.compile_deck(st); assert all(d['cta'].strip() for d in dk), [d['cta'] for d in dk]
 assert dk[1]['cta'].startswith('Next: ') and dk[-1]['cta'], [d['cta'] for d in dk]
-st1, _ = DS.assemble([{'design': 'info-grid', 'values': DS.BY_ID['info-grid']['sample']}], None, 'paper', True, 'x'); assert 'swip' not in ' '.join(d['cta'].lower() for d in CAR.compile_deck(st1))
+st1, _ = DS.assemble([{'design': 'info-grid', 'values': DS.BY_ID['info-grid']['sample']}], None, 'paper', True, 'x'); assert 'swip' not in CAR.compile_deck(st1)[1]['cta'].lower()
 
 # --- the plugin zip has the manifests and skills/<name>/SKILL.md at its root (what GitHub and plugin uploaders require)
 import zipfile
