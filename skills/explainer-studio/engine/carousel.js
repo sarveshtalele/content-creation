@@ -339,15 +339,21 @@ const TYPES = {
   // cut-away tower funnel (reference: editorial "what is a marketing funnel"): floors narrow downward, stage banners, notes and figures on the right, altitude notes on the left
   tower(root, s) {
     const TEAL = C.blueD, GOLD = C.clay, INK = C.ink, st = s.steps, n = st.length, y0 = heading(root, 'tw-h', s.title) + 10, svg = svgLayer(root, W, H);
-    const cx = 440, rt0 = 222, rb0 = 96, ry = 40, roofY = y0 + 64, fh = Math.min(210, Math.floor((BODY1 - 130 - roofY) / n)), r = d => rt0 + (rb0 - rt0) * d / n, base = roofY + n * fh;
+    const cx = 440, rt0 = 232, rb0 = 120, ry = 40, roofY = y0 + 64, fh = Math.min(236, Math.floor((BODY1 - 76 - roofY) / n)), r = d => rt0 + (rb0 - rt0) * d / n, base = roofY + n * fh;
     const ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
     path(svg, `M${X0 + 160} ${roofY} L${X0 + 160} ${base}`, { stroke: INK, w: 2 });
     for (let k = 0; k <= n; k++) path(svg, `M${X0 + 150} ${roofY + k * fh} L${X0 + 170} ${roofY + k * fh}`, { stroke: INK, w: 2 });
     for (let k = 0; k < n; k++) {
       const yt = roofY + k * fh, yb = yt + fh, rt = r(k), rb = r(k + 1);
       path(svg, `M${cx - rt} ${yt} L${cx + rt} ${yt} L${cx + rb} ${yb} L${cx - rb} ${yb} Z`, { stroke: INK, w: 3, fill: k % 2 ? '#F8F3E6' : '#EFE8D4' });
-      path(svg, `M${cx - rt + 16} ${yt + 6} L${cx - rb + 14} ${yb}`, { stroke: INK, w: 1.5 }); path(svg, `M${cx + rt - 16} ${yt + 6} L${cx + rb - 14} ${yb}`, { stroke: INK, w: 1.5 });
-      path(svg, `M${cx - rb - 12} ${yb - 7} L${cx + rb + 12} ${yb - 7}`, { stroke: INK, w: 12, cap: 'butt' }); path(svg, `M${cx - rb - 12} ${yb - 7} L${cx + rb + 12} ${yb - 7}`, { stroke: '#FFFDF6', w: 8, cap: 'butt' });
+      path(svg, `M${cx - rt + 18} ${yt + 4} L${cx + rt - 18} ${yt + 4} L${cx + rb - 16} ${yb - 14} L${cx - rb + 16} ${yb - 14} Z`, { stroke: 'none', fill: C.blueSoft }).setAttribute('opacity', '.55');
+      for (let m = 1; m < 8; m++) { const f = m / 8; path(svg, `M${cx - rt + 18 + (2 * rt - 36) * f} ${yt + 4} L${cx - rb + 16 + (2 * rb - 32) * f} ${yb - 14}`, { stroke: C.lineD, w: 1.4 }); }
+      [-1, 1].forEach(sd => { const d = `M${cx + sd * (rt - 14)} ${yt + 4} L${cx + sd * (rb - 12)} ${yb - 10}`; path(svg, d, { stroke: INK, w: 7, cap: 'butt' }); path(svg, d, { stroke: '#FFFDF6', w: 3, cap: 'butt' }); });
+      path(svg, `M${cx - rb - 14} ${yb - 7} L${cx + rb + 14} ${yb - 7}`, { stroke: INK, w: 14, cap: 'butt' }); path(svg, `M${cx - rb - 14} ${yb - 7} L${cx + rb + 14} ${yb - 7}`, { stroke: '#FFFDF6', w: 9, cap: 'butt' });
+      { const rl = rb - 22, ty = yb - 34; path(svg, `M${cx - rl} ${ty} L${cx + rl} ${ty}`, { stroke: INK, w: 2.4 }); for (let q = 0; q <= 14; q++) { const xx = cx - rl + (2 * rl) * q / 14; path(svg, `M${xx} ${ty} L${xx} ${yb - 14}`, { stroke: INK, w: 1.3 }); } }
+      const plant = (px, py, z, tone) => { path(svg, `M${px} ${py} L${px} ${py - 22 * z}`, { stroke: '#5B4A32', w: 3 * z }); [[0, -30, 11], [-9, -22, 9], [9, -22, 9], [0, -40, 8]].forEach(([dx, dy, rr]) => circ(svg, px + dx * z, py + dy * z, rr * z, { fill: tone })); path(svg, `M${px - 9 * z} ${py} L${px + 9 * z} ${py} L${px + 6 * z} ${py + 10 * z} L${px - 6 * z} ${py + 10 * z} Z`, { stroke: INK, w: 1.6, fill: '#E8DCC0' }); };
+      plant(cx - rb * .82, yb - 40, .9, C.green); plant(cx + rb * .82, yb - 40, .9, C.greenD);
+      if (fh > 150 && rb > 170) { [-1, 1].forEach(sd => { const px = cx + sd * (rb * .74), pw = 40, ph = 66, py = yb - 50 - ph; box(root, { x: px - pw / 2, y: py, w: pw, h: ph, r: 2, fill: '#FFFDF6', bd: INK, bw: 1.6, shadow: false }); for (let q = 0; q < 4; q++) E(root, 'abs', `left:${px - 14}px;top:${py + 12 + q * 12}px;width:${q === 3 ? 14 : 28}px;height:4px;background:${C.lineD}`); }); }
       const rm = r(k + .5), bw = Math.round(rm * 1.86), by = yt + (k ? 14 : ry + 2), col = k % 2 ? GOLD : TEAL, tg = Math.round(rm * 1.8);
       E(root, 'abs', `left:${cx - bw / 2}px;top:${by}px;width:${bw}px;height:58px;background:${col};border:2px solid ${INK}`);
       tx(root, `tw-t${k}`, st[k].title.toUpperCase(), { x: cx - bw / 2 + 10, y: by, w: bw - 20, h: 58, size: fitSize(st[k].title.toUpperCase(), { w: bw - 20, h: 54, max: 32, min: 18, weight: 700, font: 'serif', lh: 1.1 }), weight: 700, font: 'serif', color: k % 2 ? INK : '#fff', align: 'center' });
@@ -358,9 +364,12 @@ const TYPES = {
       if (st[k].note) { const nh = H_(st[k].note, 20, RW - 28, 500, 1.25) + 20; box(root, { x: RX, y: ny, w: RW, h: nh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); tx(root, `tw-n${k}`, st[k].note, { x: RX + 14, y: ny + 6, w: RW - 28, h: nh - 12, size: 20, weight: 500, wrap: true, lh: 1.25 }); path(svg, `M${cx + rm} ${ny + nh / 2} L${RX} ${ny + nh / 2}`, { stroke: '#9C927B', w: 2, dash: '3 6' }); ny += nh + 10; }
       if (st[k].stat) { const sw_ = RW - 78, hh = H_(st[k].stat, 21, sw_, 700, 1.2) + 24, bx = box(root, { x: RX, y: ny, w: RW, h: hh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); E(bx, 'abs', `left:14px;top:${(hh - 30) / 2 - 2}px`, icon(st[k].icon || 'star', 30, col === GOLD ? '#8A6510' : TEAL, 2)); tx(root, `tw-v${k}`, st[k].stat, { x: RX + 60, y: ny + 8, w: sw_, h: hh - 16, size: 21, weight: 700, wrap: true, lh: 1.2 }); }
     }
+    path(svg, ell(cx, roofY - 20, rt0 - 6, ry * .62), { stroke: INK, w: 2, fill: C.blueSoft }).setAttribute('opacity', '.5'); for (let q = 0; q <= 18; q++) { const xx = cx - (rt0 - 6) + (2 * rt0 - 12) * q / 18; path(svg, `M${xx} ${roofY - 20} L${xx} ${roofY + 2}`, { stroke: INK, w: 1.2 }); }
     path(svg, ell(cx, roofY, rt0 + 14, ry), { stroke: INK, w: 3, fill: '#FFFDF6' });
-    for (let k = 0; k < 17; k++) { const a = Math.PI * (k + .5) / 17; circ(svg, cx + (rt0 - 8) * Math.cos(a), roofY + (ry - 10) * Math.sin(a) + 2, 9, { fill: k % 3 === 0 ? GOLD : k % 3 === 1 ? TEAL : '#B5A98E' }); }
+    for (let row = 0; row < 2; row++) for (let k = 0; k < 19 - row * 3; k++) { const a = Math.PI * (k + .5) / (19 - row * 3), rr = rt0 - 6 - row * 40; circ(svg, cx + rr * Math.cos(a), roofY + (ry - 8 - row * 11) * Math.sin(a) + 3, 8.5 - row, { fill: (k + row) % 3 === 0 ? GOLD : (k + row) % 3 === 1 ? TEAL : C.green }); }
     const dw = r(n) * 1.7; E(root, 'abs', `left:${cx - dw / 2}px;top:${base + 4}px;width:${dw}px;height:54px;background:#FFFDF6;border:3px solid ${INK};border-bottom:0`); E(root, 'abs', `left:${cx - 26}px;top:${base + 16}px;width:52px;height:42px;background:${TEAL};border:2px solid ${INK};border-bottom:0`);
+    for (let q = 1; q < 4; q++) path(svg, `M${cx - 26 + q * 13} ${base + 16} L${cx - 26 + q * 13} ${base + 58}`, { stroke: INK, w: 1.4 });
+    [[-1, C.green], [1, C.greenD]].forEach(([sd, tone]) => [dw / 2 + 34, dw / 2 + 92].forEach((o, j) => { const px = cx + sd * o, py = base + 52; path(svg, `M${px} ${py} L${px} ${py - 20}`, { stroke: '#5B4A32', w: 3 }); [[0, -30, 12], [-10, -22, 10], [10, -22, 10], [0, -42, 9]].forEach(([dx, dy, rr]) => circ(svg, px + dx * (j ? .8 : 1), py + dy * (j ? .8 : 1) + 8, rr * (j ? .8 : 1), { fill: j ? tone : C.greenD })); }));
     path(svg, `M${X0} ${base + 58} L${W - X0} ${base + 58}`, { stroke: INK, w: 3 });
   },
   closing(root, s, i, D) {
