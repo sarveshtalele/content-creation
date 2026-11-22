@@ -117,6 +117,14 @@ const TYPES = {
       E(root, 'abs', `left:${TX}px;top:${cy + 12}px;width:${Math.round(TW * Math.max(0, Math.min(100, r.pct)) / 100)}px;height:42px;border-radius:21px;background:${P.bd}`);
       tx(root, `br${k}-v`, r.value, { x: TX + TW + 12, y: cy, w: W - X0 - (TX + TW + 12), h: 66, size: 34, weight: 700, color: P.ink, align: 'right' }); });
   },
+  funnel(root, s) {   // narrowing stages: widths follow pct, label inside, value on the right
+    let y = heading(root, 'fn-h', s.title) + 30; const n = s.rows.length, gap = 14, rh = Math.min(150, Math.floor((BODY1 - y - 20 - (n - 1) * gap) / n)), FW = XW;
+    y += Math.max(0, Math.floor((BODY1 - y - (n * rh + (n - 1) * gap)) / 2) * .8);
+    s.rows.forEach((r, k) => { const P = grp(k), w = Math.max(360, Math.round(FW * Math.max(0, Math.min(100, r.pct)) / 100)), x = X0 + Math.round((FW - w) / 2), cy = y + k * (rh + gap);
+      E(root, 'abs', `left:${x}px;top:${cy}px;width:${w}px;height:${rh}px;border-radius:22px;background:${P.soft};border:3px solid ${P.bd}`);
+      tx(root, `fn${k}-l`, r.label, { x: x + 22, y: cy + 8, w: w - 44, h: Math.round(rh * .48), size: 32, weight: 700, color: P.ink, align: 'center', wrap: true, lh: 1.1 });
+      tx(root, `fn${k}-v`, r.value, { x: x + 22, y: cy + Math.round(rh * .5), w: w - 44, h: Math.round(rh * .42), size: 40, weight: 700, color: P.ink, align: 'center', font: 'serif' }); });
+  },
   compare(root, s) {
     let y = heading(root, 'cm-h', s.title) + 30; const cw = (XW - 40) / 2, tw = cw - 70, all = [...s.left.items, ...s.right.items];
     const iz = Math.min(...all.map(t => fitSize(t, { w: tw, h: 190, max: 38, min: 22, weight: 500, lh: 1.25 })));

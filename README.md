@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.8.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.9.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -63,7 +63,7 @@ Turning an article into a clean diagram is slow, and AI-made diagrams are often 
 - **LinkedIn post** with a hook question, arrow bullets, link and your closing CTA on request
 - **Review gate** with Playwright layout checks (overflow, overlap, empty cards) and speech-to-text verification of the voice
 - **Safe by default**: SSRF guard, secret redaction, hook-free and symlink-free repo clones, checksummed model downloads
-- **Portable**: macOS, Windows and Linux; Claude Code, Codex, Antigravity and Gemini CLI from one skill folder (ChatGPT for the text steps)
+- **Portable**: macOS, Windows and Linux; Claude Code, Codex, Antigravity and Gemini CLI from one skill folder (ChatGPT too, by uploading the zipped skill)
 
 ## Quick start
 
@@ -125,7 +125,7 @@ Needs `node >= 20` (with npm), `python` 3.11 to 3.13 (what CI tests), `git`. `ff
 
 Troubleshooting: `python` not found on Windows, use `py -3`. Voice install fails on Python 3.14, install 3.12 (setup picks it automatically when present). Browser download blocked by a proxy, set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary. Long Windows paths break the offline voice engine, keep the repository close to the drive root or set `EXPLAINER_HOME` to a short path.
 
-**ChatGPT limits.** Its sandbox usually cannot download the browser and voice model. Use it for the grounded story, validation, accuracy report and post; build GIFs and Reels in one of the local agents.
+**ChatGPT.** Supported: run `python3 install.py --zip`, then in ChatGPT go to Skills > Create > Upload and add `explainer-studio-skill.zip`. The full pipeline runs there when the sandbox can start a browser (Playwright). `studio.py doctor` checks this first and says exactly what is missing, so nothing fails halfway.
 
 ## Use it
 
@@ -235,7 +235,7 @@ Source text is treated as untrusted data. URLs are fetched from public hosts onl
 
 **Does it work offline?** Rendering, voice and checks run on your machine. Only fetching a URL or repo, and the one-time setup downloads, need the network.
 
-**Which agents does it work with?** Claude Code, Codex, Antigravity and Gemini CLI run the full pipeline. ChatGPT cannot usually download the browser and voice model, so use it for the story, validation and post, and build GIFs and Reels locally.
+**Which agents does it work with?** Claude Code, Codex, Antigravity, Gemini CLI and ChatGPT (zipped skill upload). Run `studio.py doctor` once in a new environment to confirm it can render.
 
 **Can I use it on Windows?** Yes. GIF and post work out of the box. The Reel also needs [Git for Windows](https://git-scm.com/download/win) for its audio mux step; `doctor` tells you.
 

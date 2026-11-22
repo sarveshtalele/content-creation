@@ -19,9 +19,13 @@ for (let k = 0; k < N; k++) {
       if (cr < (big ? 3 : 4.5)) res.lowContrast.push({ text: txt.slice(0, 40), ratio: +cr.toFixed(2), size: fs });
       if (fs < 20) res.small.push({ text: txt.slice(0, 40), size: fs });
     }
+    let top = 1e9, bot = 0; for (const e of vis.querySelectorAll('*')) { const b = e.getBoundingClientRect(); if (b.width < 8 || b.height < 8 || b.height > 1000 || b.top < 120 || b.top > 1190) continue; top = Math.min(top, b.top); bot = Math.max(bot, b.bottom); }
+    res.span = bot ? [Math.round(top), Math.round(bot)] : [0, 0]; res.fill = bot ? +((bot - top) / 1042).toFixed(2) : 0;
     res.theme = getComputedStyle(document.getElementById('stage')).backgroundColor; return res;
   });
   out.per.push(r);
+  if (r.fill && r.fill < .5 && k > 0 && k < N - 1) out.problems.push(`slide ${k + 1}: underfilled, content uses only ${Math.round(r.fill * 100)}% of the slide body`);
+  if (r.span[1] > 1176 && k > 0 && k < N - 1) out.problems.push(`slide ${k + 1}: content reaches y=${r.span[1]}, into the CTA strip (oversized)`);
   r.images.forEach(i => { if (!i.loaded) out.problems.push(`slide ${k + 1}: image failed to load ${i.src}`); else if (i.scale > 1.3) out.problems.push(`slide ${k + 1}: ${i.src} is shown ${i.scale}x its pixel size (will look blurry)`); });
   r.lowContrast.forEach(c => out.problems.push(`slide ${k + 1}: low contrast ${c.ratio} on "${c.text}"`));
   r.small.forEach(c => out.problems.push(`slide ${k + 1}: text under 20px "${c.text}"`));

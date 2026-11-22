@@ -181,7 +181,7 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
+CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint')
 CAR_LAYOUTS = ('classic', 'poster', 'terminal')
 def _pct(v, w, val):
@@ -209,7 +209,7 @@ def v_carousel(v, c, icons):
         elif ty == 'stat':
             _S(v, w + '.value', s_.get('value'), 1, 8); _S(v, w + '.label', s_.get('label'), 6, 70); _S(v, w + '.sub', s_.get('sub', ''), 0, 100)
             if s_.get('pct') is not None: _pct(v, w + '.pct', s_['pct'])
-        elif ty == 'bars':
+        elif ty in ('bars', 'funnel'):
             for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
                 _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
         elif ty == 'compare':

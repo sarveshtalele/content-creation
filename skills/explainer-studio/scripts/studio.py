@@ -529,6 +529,28 @@ def e2e_cmd(a):
     deck = CAR.compile_deck(story); ok, lines = E2E.run(work, [d['type'] for d in deck], story['carousel'].get('theme', 'paper'), story['carousel']['title']['hook'])
     print('\n'.join(lines)); print('E2E', 'PASS' if ok else 'FAIL'); return 0 if ok else 1
 
+def plan_cmd(a):
+    """studio.py plan DIR: scan the source for numbers, stages, comparisons, cycles and commands, then write plan.md: questions to ask first and a slide-by-slide infographic proposal to approve before building."""
+    work = os.path.abspath(a.dir); src = ''
+    for n in ('source_full.txt', 'source.txt', 'source.md'):
+        f = os.path.join(work, n)
+        if os.path.isfile(f): src = open(f, encoding='utf-8', errors='replace').read(); break
+    if not src: print('no source text in ' + work + ' (run ingest first)'); return 1
+    low = src.lower(); sig = []
+    nums = re.findall(r'\b\d+(?:\.\d+)?\s?(?:%|x|k|m|ms|s|min|hours?|days?|steps?|tools?|frameworks?|users?)\b', src, re.I)
+    if len(nums) >= 3: sig.append(('stat / bars / funnel', f'{len(nums)} figures found, e.g. ' + ', '.join(dict.fromkeys(nums[:4])), 'put the biggest number on a ring+waffle (stat), compare 3-5 on bars, or use a funnel if they shrink stage by stage'))
+    if len(re.findall(r'(?m)^\s*(?:\d+[.)]|step \d+)', src, re.I)) >= 3 or 'step by step' in low: sig.append(('flow / terminal', 'numbered steps or commands', 'a vertical flow for steps, or a terminal transcript for commands'))
+    if re.search(r'\b(loop|cycle|repeat|feedback|iterate)\b', low): sig.append(('loop', 'loop/cycle wording', 'a circular diagram with 3-4 nodes and a centre label'))
+    if re.search(r'\b(vs\.?|versus|instead of|rather than|compared (?:to|with)|difference between)\b', low): sig.append(('compare', 'a contrast in the text', 'two cards side by side, 2-3 points each'))
+    if re.search(r'\b(layers?|stack|tiers?|levels?)\b', low): sig.append(('stack', 'layers/tiers wording', 'slabs that show what sits on what'))
+    if re.search(r'`[^`]+`|\$ \w+|\bnpm |\bpip |\bgit \w+', src): sig.append(('terminal', 'commands in the text', 'a command transcript'))
+    if re.search(r'https?://', src): sig.append(('shot', 'links in the text', 'a framed page card per recommended link'))
+    if not sig: sig.append(('points / big', 'no numbers, steps or contrasts found', 'icon points for the list, one big quote for the key line'))
+    L = ['# Plan (approve before building)', '', '## Ask the person first', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
+    L += [f'- **{t}**: {why}. Idea: {idea}.' for t, why, idea in sig]
+    L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
+    open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
@@ -544,8 +566,10 @@ def main():
     ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true')
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
+    pl = sp.add_parser('plan'); pl.add_argument('dir')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     a = ap.parse_args()
+    if a.cmd == 'plan': return plan_cmd(a)
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)
     if a.cmd == 'shot': return shot_cmd(a)

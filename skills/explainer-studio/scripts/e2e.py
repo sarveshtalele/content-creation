@@ -16,9 +16,13 @@ def run(work, deck_types, theme, hook, expect_pdf_pages=None):
     gate('one PNG per slide, all 1080x1350', len(pngs) == res['slides'] and all(png_wh(p) == (1080, 1350) for p in pngs), f'{len(pngs)} PNGs')
     if pdfs:
         n = len(re.findall(rb'/Type /Page\b', open(pdfs[0], 'rb').read())); gate('PDF has one page per slide', n == res['slides'], f'{n} pages')
+    av = os.path.join(SKILL, 'assets', 'avatar.png'); aw = png_wh(av)[0] if os.path.isfile(av) else 0
+    lines.append(('PASS' if aw >= 256 else 'WARN') + f'  avatar source is {aw}px' + ('' if aw >= 256 else ' (under 256px: the CTA photo will look soft; give a larger square photo with studio.py brand --avatar FILE)'))
     gate('every image loads and avatar/screenshots are not upscaled >1.3x (sharp)', not [p for p in res['problems'] if 'image' in p or 'blurry' in p], '; '.join(p for p in res['problems'] if 'image' in p or 'blurry' in p)[:200])
     gate('text contrast readable on every slide', not [p for p in res['problems'] if 'contrast' in p], '; '.join(p for p in res['problems'] if 'contrast' in p)[:200])
     gate('no text under 20px', not [p for p in res['problems'] if 'under 20px' in p], '; '.join(p for p in res['problems'] if 'under 20px' in p)[:200])
+    gate('no slide is underfilled (content uses >= 50% of the body)', not [p for p in res['problems'] if 'underfilled' in p], '; '.join(p for p in res['problems'] if 'underfilled' in p)[:200])
+    gate('no slide is oversized (content stays above the CTA strip)', not [p for p in res['problems'] if 'oversized' in p], '; '.join(p for p in res['problems'] if 'oversized' in p)[:200])
     gate('hook is short enough to read at a glance (<= 60 characters)', len(hook) <= 60, f'{len(hook)} chars')
     kinds = {t for t in deck_types if t not in ('title', 'closing')}; gate('at least two different infographic slide types', len(kinds) >= 2, ', '.join(sorted(kinds)))
     gate('first slide is a poster/terminal title, last slide is the CTA', deck_types[0] == 'title' and deck_types[-1] == 'closing')

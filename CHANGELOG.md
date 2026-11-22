@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.0
+
+- **ChatGPT is supported** through the zipped skill upload; README and install notes updated.
+- **`studio.py plan DIR`**: scans the source for figures, steps, loops, contrasts, layers, commands and links, then writes `plan.md` with questions to ask first and a slide-by-slide infographic proposal to approve before building.
+- **New `funnel` slide type** (3-5 narrowing stages with values) beside bars, stat ring and waffle.
+- **e2e fit gates**: underfilled slides (content under 50% of the body), oversized slides (content into the CTA strip) and an avatar-resolution warning (under 256 px looks soft).
+- Shipped avatar replaced with an 800 px photo so the CTA is sharp.
+
 ## 2.8.0
 
 - **Carousels no longer look alike.** Four colour themes (`carousel.theme`: paper, midnight, sunrise, mint), three title layouts (`title.layout`: classic, poster, terminal) and four new infographic slide types: `loop` (cycle diagram), `stack` (layered slabs), `terminal` (command transcript) and `shot` (page frame with heading, caption and link).
