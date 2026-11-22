@@ -147,19 +147,68 @@ function end(root, E_) {
   return t0 => t => { enter(sp, t, t0 + .05, { sc: .6, dy: 0, pop: true, d: .7 }); enter(t1, t, t0 + .1, { dy: 24 }); enter(t2, t, t0 + .25, { dy: 14 }); if (t3) enter(t3, t, t0 + .35, { dy: 14 }); enter(ct, t, t0 + .55, { dy: 18, sc: .96, pop: true }); };
 }
 
+
+// ── look: "cinematic" (dark grade, camera, light, impact) or "light" (the original paper look). Both get the fit-to-frame pass. ──
+const NIGHT = { bg: '#0B1020', card: '#141C33', line: '#26314F', lineD: '#34456E', ink: '#F3F0E8', mid: '#A8B2C9', clay: '#FF8A5B', clayD: '#FFB394', claySoft: '#2B2230',
+  blue: '#5FB0FF', blueD: '#A5D4FF', blueSoft: '#142A47', green: '#6FD08A', greenD: '#B0EBBF', greenSoft: '#14301F', sand: '#1B2438' };
+export function applyReelLook(stage, look) {
+  if (look !== 'cinematic') return;
+  Object.assign(C, NIGHT);
+  const set = (i, a, b, c) => Object.assign(PALS[i], { bd: C[a], ink: C[b], soft: C[c] });
+  set(0, 'blue', 'blueD', 'blueSoft'); set(1, 'clay', 'clayD', 'claySoft'); set(2, 'green', 'greenD', 'greenSoft'); Object.assign(PALS[3], { bd: C.lineD, ink: C.mid, soft: C.sand });
+  stage.style.backgroundColor = C.bg;
+  stage.style.backgroundImage = `radial-gradient(900px 760px at 50% 36%,#1A2A5E 0%,transparent 72%),radial-gradient(#1B2640 2px,transparent 2.3px)`;
+  stage.style.backgroundSize = '100% 100%,54px 54px';
+}
+// Everything a scene drew goes into one wrapper that is scaled and centred in the safe band (y 250-1190), so short scenes fill the frame instead of
+// hugging the top, and the wrapper is what the camera pushes. Measured once at build time, before any animation transform exists.
+const BAND = { top: 250, bot: 1190, cy: 720, w: 960 };
+function fitScene(root, canPush = true) {
+  const wrap = E(root, 'abs', 'left:0;top:0;width:1080px;height:1920px');
+  [...root.children].forEach(c => { if (c !== wrap) wrap.appendChild(c); });
+  // painted extents only: text glyph boxes, svg/img, and elements with a visible fill or border (layout boxes that merely span the width are ignored)
+  const rs = [], rg = document.createRange();
+  for (const e of wrap.querySelectorAll('*')) {
+    const cs = getComputedStyle(e), r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2 || r.width >= 1000 && r.height >= 1800) continue;
+    const painted = e instanceof SVGElement ? /^(circle|path|rect|ellipse|line|polygon|polyline|image)$/.test(e.tagName) : (e.tagName === 'IMG' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') || parseFloat(cs.borderTopWidth) > 0 || cs.backgroundImage !== 'none');
+    if (painted) rs.push(r);
+    for (const n of e.childNodes) if (n.nodeType === 3 && n.textContent.trim()) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width > 2) rs.push(q); }
+  }
+  if (!rs.length) return { wrap, tx: 0, ty: 0, s: 1, ox: 540, oy: 720 };
+  const L = Math.min(...rs.map(r => r.left)), R = Math.max(...rs.map(r => r.right)), T = Math.min(...rs.map(r => r.top)), B = Math.max(...rs.map(r => r.bottom));
+  const bw = R - L, bh = B - T, headroom = canPush ? .94 : 1, s = Math.max(1, Math.min(1.5, (BAND.bot - BAND.top) / bh * headroom, BAND.w / bw * headroom)), cx = (L + R) / 2, cy = (T + B) / 2;
+  wrap.style.transformOrigin = `${cx}px ${cy}px`;
+  return { wrap, tx: 540 - cx, ty: BAND.cy - cy, s, ox: cx, oy: cy };
+}
+
 export function buildReel(stage, D) {
-  const scenes = D.scenes.map((sc, i) => { const root = E(stage, 'scene'); return { ...sc, root, idx: i, update: B[sc.type](root, sc) }; });
-  const endRoot = E(stage, 'scene'), endUpd = end(endRoot, { ...D.end, brand: D.brand })(D.end.t0);
+  const cin = D.look === 'cinematic';
+  applyReelLook(stage, D.look);
+  const scenes = D.scenes.map((sc, i) => { const root = E(stage, 'scene'); const update = B[sc.type](root, sc); return { ...sc, root, idx: i, update, f: fitScene(root) }; });
+  const endRoot = E(stage, 'scene'), endUpd = end(endRoot, { ...D.end, brand: D.brand })(D.end.t0), endF = fitScene(endRoot, false);
+  // cinematic layers: vignette, a light sweep at every scene change, a flash on impact ("big" scenes)
+  const vig = cin ? E(stage, 'abs', 'left:0;top:0;width:1080px;height:1920px;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 50% 46%,transparent 52%,rgba(0,0,0,.62) 100%)') : null;
+  const sweep = cin ? E(stage, 'abs', 'left:-620px;top:-100px;width:520px;height:2120px;pointer-events:none;opacity:0;transform:skewX(-14deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.17),transparent)') : null;
+  const flash = cin ? E(stage, 'abs', 'left:0;top:0;width:1080px;height:1920px;pointer-events:none;opacity:0;background:#fff') : null;
+  const hits = D.scenes.filter(sc => sc.type === 'big').map(sc => when(sc, 0));
+  window.__fit = scenes.map(s => [s.type, +s.f.s.toFixed(2), Math.round(s.f.tx), Math.round(s.f.ty)]);
   return {
     render(t) {
+      let sw = 0, fl = 0, shake = 0;
       for (const s of scenes) {
         const vis = t >= s.t0 - .001 && t < s.t1 + .001; s.root.style.display = vis ? 'block' : 'none';
         if (!vis) continue;
-        const a = s.idx === 0 ? 1 : eo(seg(t, s.t0, s.t0 + .45)), b = 1 - eo(seg(t, s.t1 - .4, s.t1));
-        s.root.style.opacity = String(Math.min(a, b)); s.root.style.transform = `translateY(${(1 - a) * 26 - (1 - b) * 22}px)`; s.update(t);
+        const a = s.idx === 0 ? 1 : eo(seg(t, s.t0, s.t0 + .45)), b = 1 - eo(seg(t, s.t1 - .4, s.t1)), k = clamp((t - s.t0) / Math.max(.1, s.t1 - s.t0), 0, 1);
+        s.root.style.opacity = String(Math.min(a, b));
+        s.root.style.transform = cin ? `scale(${1 + (1 - a) * .06 - (1 - b) * .03})` : `translateY(${(1 - a) * 26 - (1 - b) * 22}px)`;
+        let dx = 0, dy = 0; if (cin) { for (const h of hits) { const q = t - h; if (q >= 0 && q < .32) { const d = 1 - q / .32; dx += Math.sin(q * 95) * 9 * d; dy += Math.cos(q * 80) * 6 * d; fl = Math.max(fl, .34 * (1 - seg(t, h, h + .2))); } } }
+        const f = s.f, push = cin ? 1 + .05 * k : 1; f.wrap.style.transform = `translate(${f.tx + dx}px,${f.ty + dy}px) scale(${f.s * push})`;
+        s.update(t);
+        if (cin && s.idx > 0) sw = Math.max(sw, seg(t, s.t0 + .02, s.t0 + .95) * (1 - seg(t, s.t0 + .95, s.t0 + 1.05)) > 0 ? eo(seg(t, s.t0 + .02, s.t0 + .95)) : 0);
       }
       const ev = t >= D.end.t0 - .001; endRoot.style.display = ev ? 'block' : 'none';
-      if (ev) { endRoot.style.opacity = String(eo(seg(t, D.end.t0, D.end.t0 + .4))); endUpd(t); }
+      if (ev) { endRoot.style.opacity = String(eo(seg(t, D.end.t0, D.end.t0 + .4))); endRoot.style.transform = cin ? `scale(${1 + (1 - eo(seg(t, D.end.t0, D.end.t0 + .5))) * .05})` : ''; endF.wrap.style.transform = `translate(${endF.tx}px,${endF.ty}px) scale(${endF.s})`; endUpd(t); }
+      if (cin) { sweep.style.opacity = sw > 0 && sw < 1 ? '1' : '0'; sweep.style.left = (-620 + sw * 1900) + 'px'; flash.style.opacity = String(fl); }
       return ev;
     },
   };

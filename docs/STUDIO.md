@@ -13,7 +13,7 @@ It prints a link that only your computer can open (random token, 127.0.0.1 only)
 3. **Write your content.** Each design's fields use the same length limits as the validator, with live counters.
 4. **Generate.** For a carousel the studio asks PDF, separate images, or both, and does not build until you choose. Single images come out as a 1080x1350 PNG.
 
-Your **cover photo** is a transparent PNG used by Poster Bold and Gradient Stage (Editorial uses it as a small badge). Replace it from the *Cover photo* button; your profile photo in the header and CTA is separate and never changes. Uploads must be PNG, at least 400px on the short side.
+Covers carry no photo. Your profile photo appears only in the header avatar and the follow button.
 
 Files are written under `~/.cache/explainer-studio/studio_jobs/`. Studio carousels may have 2-7 slides because you choose exactly what goes in (the guided workflow still asks for 5-7).
 

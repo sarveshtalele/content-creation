@@ -35,4 +35,18 @@ def code(path, host=None):
 assert code('/') == 403 and code('/api/designs?t=wrong') == 403, 'token required'
 assert code('/?t=x', 'evil.example.com') == 403, 'foreign host refused'
 assert code('/samples/../../scripts/studio.py') in (403, 404), 'no path escape'
+
+# ---- launcher: returns at once, reuses the running app, reports status, stops cleanly (the Antigravity "app never launches" failure) ----
+import subprocess, tempfile, re
+_env = dict(os.environ, HOME=tempfile.mkdtemp(prefix='eh-'), USERPROFILE=tempfile.mkdtemp(prefix='eh-'), XDG_CACHE_HOME=tempfile.mkdtemp(prefix='eh-'))
+def _studio(*a):
+    t0 = time.time(); r = subprocess.run([sys.executable, os.path.join(SK, 'scripts', 'studio.py'), 'studio', *a], capture_output=True, text=True, encoding='utf-8', timeout=90, env=_env)
+    return r.returncode, r.stdout + r.stderr, time.time() - t0
+rc, out, dt = _studio('--no-open'); m = re.search(r'APP_URL=(\S+)', out)
+assert rc == 0 and m and dt < 45, ('launcher must return quickly with APP_URL', rc, out[-300:], dt)
+rc2, out2, _ = _studio('--no-open'); assert re.search(r'APP_URL=(\S+)', out2).group(1) == m.group(1), 'second call must reuse the running app'
+rc3, out3, _ = _studio('--status'); assert out3.strip().startswith('RUNNING'), out3
+try: assert urllib.request.urlopen(m.group(1).split('?')[0].rstrip('/') + '/health', timeout=5).status == 200
+finally: _studio('--stop')
+rc4, out4, _ = _studio('--status'); assert not out4.strip().startswith('RUNNING'), out4
 print('STUDIO TESTS OK')

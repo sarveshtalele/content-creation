@@ -63,6 +63,7 @@ async function setupReel(D) {
   const bar = cta(stage, 'reel-cta', D.brand, { x: 60, y: 1486, w: 960, h: 84, size: 26, bw: 4 });
   const cap = E(stage, '', 'top:1215px;height:230px', ''); cap.id = 'cap';
   const capIn = E(cap, '', 'font-size:44px;line-height:1.26;padding:24px 36px;max-width:900px;min-width:300px', ''); capIn.id = 'capin';
+  if (D.look === 'cinematic') Object.assign(capIn.style, { background: 'rgba(8,12,26,.78)', color: '#F3F0E8', borderColor: '#FF8A5B', boxShadow: '0 0 36px rgba(255,138,91,.35)' });
   window.DUR = D.DUR; window.EV = []; window.CAPS = D.chunks;
   window.render = t => {
     const ended = R.render(t);

@@ -104,7 +104,7 @@ def brand():
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': 'assets/photo_cutout.png' if os.path.isfile(os.path.join(SKILL, 'assets', 'photo_cutout.png')) or os.path.isfile(USER_PHOTO) else ''}
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': ''}   # no photo on covers; the profile photo appears only in the CTA / header avatar
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -156,7 +156,6 @@ def stage(work, name, data):
     for f in os.listdir(os.path.join(SKILL, 'engine')):
         if f.endswith(('.js', '.html')): shutil.copy(os.path.join(SKILL, 'engine', f), d)
     shutil.copytree(os.path.join(SKILL, 'assets'), os.path.join(d, 'assets'))
-    if os.path.isfile(USER_PHOTO): shutil.copy(USER_PHOTO, os.path.join(d, 'assets', 'photo_cutout.png'))   # the cutout the person uploaded in the studio
     if os.path.isfile(USER_AVATAR): shutil.copy(USER_AVATAR, os.path.join(d, 'assets', 'avatar.png'))   # the user's own avatar replaces the shipped one
     dump(data, os.path.join(d, 'data.json')); return d
 BAD = re.compile(r'^BAD\s+(\S+)\s+at\s+([\d.]+)s\s+\d+ chars\s+need\s+([\d.]+)s\s+got\s+([\d.]+)s', re.M)
@@ -180,7 +179,7 @@ def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
     tails, end_hold = {}, 4.4
     for it in range(5):
-        D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work)
+        D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work); D['look'] = 'light' if (story.get('reel') or {}).get('look') == 'light' else 'cinematic'
         film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920')
         if rc == 2: sys.exit('readcheck could not run:\n' + txt[-800:])
         if not bad: break
@@ -286,7 +285,36 @@ def art_files(B):
         out += [x[k] for k in ('file', 'image') if x.get(k)] + list(x.get('also') or [])
     return out
 
+def build_background(a):
+    """Reel/GIF renders take minutes; agent terminals time out. Start the same build detached, return at once, poll with `jobstatus`."""
+    work = os.path.abspath(a.dir); st = os.path.join(work, '.build.status'); log = os.path.join(work, '.build.log')
+    cur = json.load(open(st, encoding='utf-8')) if os.path.isfile(st) else None
+    if cur and cur.get('state') == 'running':
+        try: os.kill(cur['pid'], 0); print('already running; poll: studio.py jobstatus', work); return 0
+        except Exception: pass
+    cmd = [sys.executable, os.path.abspath(__file__), 'build', work, '--artifacts', a.artifacts or '']
+    if not a.artifacts: cmd = cmd[:-2]
+    if a.format: cmd += ['--format', a.format]
+    if a.slide: cmd += ['--slide', str(a.slide)]
+    wrapper = ("import subprocess,sys,json,time;st=sys.argv[1];t=time.time();r=subprocess.run(sys.argv[3:],stdout=open(sys.argv[2],'w',encoding='utf-8'),stderr=subprocess.STDOUT);"
+               "json.dump({'state':'done' if r.returncode==0 else 'failed','code':r.returncode,'seconds':round(time.time()-t)},open(st,'w'))")
+    kw = {'creationflags': 0x08 | 0x200 | 0x08000000} if os.name == 'nt' else {'start_new_session': True}
+    pr = subprocess.Popen([sys.executable, '-c', wrapper, st, log] + cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kw)
+    json.dump({'state': 'running', 'pid': pr.pid, 'started': int(time.time())}, open(st, 'w', encoding='utf-8'))
+    print(f'BUILD_STARTED pid={pr.pid}\nIt keeps running without this terminal. Poll every ~30 s: python3 studio.py jobstatus {work}\nDo not wait on it in one call.'); return 0
+
+def jobstatus(a):
+    work = os.path.abspath(a.dir); st = os.path.join(work, '.build.status'); log = os.path.join(work, '.build.log')
+    cur = json.load(open(st, encoding='utf-8')) if os.path.isfile(st) else {'state': 'none'}
+    if cur['state'] == 'running':
+        try: os.kill(cur['pid'], 0)
+        except Exception: cur['state'] = 'failed'; cur['note'] = 'process ended without finishing; see log'
+        cur['elapsed'] = int(time.time()) - cur.get('started', int(time.time()))
+    tail = open(log, encoding='utf-8', errors='replace').read()[-600:] if os.path.isfile(log) else ''
+    print(json.dumps(cur)); print(tail); return 0 if cur['state'] in ('running', 'done') else 1
+
 def build(a):
+    if getattr(a, 'background', False): return build_background(a)
     work = os.path.abspath(a.dir); ok, story, chunks, rep = do_check(work, quiet=False)
     if not ok: print('Fix story.json first.'); return 2
     default = 'gif' if 'gif' in story or 'carousel' not in story else 'carousel'
@@ -588,12 +616,13 @@ def main():
     br = sp.add_parser('brand')
     for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
-    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
+    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--background', action='store_true', help='detach and return at once (use for reel/gif: they take minutes); poll with jobstatus'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
+    js = sp.add_parser('jobstatus'); js.add_argument('dir')
     rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
     ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
-    sg = sp.add_parser('studio'); sg.add_argument('--port', type=int, default=0); sg.add_argument('--no-open', action='store_true')
-    ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true')
+    sg = sp.add_parser('studio'); sg.add_argument('--port', type=int, default=0); sg.add_argument('--no-open', action='store_true'); sg.add_argument('--foreground', action='store_true', help='run in this terminal (blocks)'); sg.add_argument('--stop', action='store_true'); sg.add_argument('--status', action='store_true'); sg.add_argument('--state', default=None, help=argparse.SUPPRESS)
+    ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true'); ew.add_argument('--foreground', action='store_true', help='run in this terminal (blocks)'); ew.add_argument('--stop', action='store_true'); ew.add_argument('--status', action='store_true'); ew.add_argument('--state', default=None, help=argparse.SUPPRESS)
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
     pl = sp.add_parser('plan'); pl.add_argument('dir')
@@ -606,9 +635,14 @@ def main():
     if a.cmd == 'readercard': return readercard_cmd(a)
     if a.cmd == 'shot': return shot_cmd(a)
     if a.cmd == 'studio':
-        import studio_app as SA; return SA.serve(a.port, not a.no_open)
+        import launch as LA
+        if not a.foreground: return LA.command('studio', a)
+        import studio_app as SA; return SA.serve(a.port, not a.no_open, a.state)
     if a.cmd == 'editor':
-        import editor as ED; return ED.serve(a.dir, a.port, not a.no_open)
+        import launch as LA
+        if not a.foreground: return LA.command('editor', a, [os.path.abspath(a.dir)], os.path.abspath(a.dir))
+        import editor as ED; return ED.serve(os.path.abspath(a.dir), a.port, not a.no_open, a.state)
+    if a.cmd == 'jobstatus': return jobstatus(a)
     if a.cmd == 'resources': return resources_cmd(a)
     if a.cmd == 'edit': return edit_cmd(a)
     if a.cmd == 'cta': return cta_cmd(a)
@@ -625,5 +659,10 @@ def main():
         print(POST.build(story, brand())); return 0
     if a.cmd == 'review': return review(a)
     if a.cmd == 'finalize': return finalize(a)
-    if a.cmd == 'build': return build(a)
+    if a.cmd == 'build':
+        rc = build(a)
+        if not getattr(a, 'background', False):
+            try: import library as LIBR; LIBR.register(a.dir)
+            except Exception: pass
+        return rc
 if __name__ == '__main__': sys.exit(main())

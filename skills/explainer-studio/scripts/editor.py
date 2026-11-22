@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); SKILL = os.path.dirname(HERE)
 MAX_BODY = 2 * 1024 * 1024
 GROUPS = ['blue', 'green', 'clay', 'sand']
 
-def serve(work, port=0, open_browser=True):
+def serve(work, port=0, open_browser=True, state_path=None):
     import studio as ST, carousel as CAR, validate_story as VS
     work = os.path.abspath(work); token = secrets.token_urlsafe(16); lock = threading.Lock()
     page = open(os.path.join(SKILL, 'editor', 'editor.html'), encoding='utf-8').read()
@@ -55,6 +55,7 @@ def serve(work, port=0, open_browser=True):
         def do_GET(self):
             u = urlparse(self.path); q = parse_qs(u.query)
             if not self._ok_host(): return self._send(403, 'bad host', 'text/plain')
+            if u.path == '/health': return self._json(200, {'ok': True, 'app': 'explainer-studio'})
             if u.path == '/':
                 if not self._auth(q): return self._send(403, 'open the link printed by studio.py editor', 'text/plain')
                 return self._send(200, page.replace('__TOKEN__', token), 'text/html; charset=utf-8')
@@ -92,6 +93,8 @@ def serve(work, port=0, open_browser=True):
             self._send(404, 'not found', 'text/plain')
 
     srv = ThreadingHTTPServer(('127.0.0.1', port), H); url = f'http://127.0.0.1:{srv.server_address[1]}/?t={token}'
+    if state_path:
+        import launch as LA; LA.write_state(state_path, srv.server_address[1], token)
     print('Editor running. Open this link (only this computer can reach it; Ctrl+C to stop):\n  ' + url)
     if open_browser:
         try: webbrowser.open(url)

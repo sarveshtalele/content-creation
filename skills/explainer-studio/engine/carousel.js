@@ -100,7 +100,7 @@ function photoEl(root, D, { left, top, w, h }) {
 // "stage" cover (poster reference 5): centred stacked headline in two weights, floating tags, ribbon arcs, photo rising from the bottom
 function titleStage(root, s, D) {
   const W_ = W, cx = W_ / 2, ink = C.ink, blue = C.blue;
-  root.prepend(E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:linear-gradient(180deg,${C.bg} 0%,${C.blueSoft} 62%,${mix(C.blue, .55)} 100%)`));
+  root.prepend(E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:linear-gradient(180deg,${C.bg} 0%,${C.bg} 50%,${C.blueSoft} 100%)`));
   const svg = svgLayer(root, W, H);
   path(svg, 'M-30 930 C120 760 330 760 420 900', { stroke: blue, w: 34 }); path(svg, 'M1110 760 C960 700 840 820 900 980', { stroke: blue, w: 34 });
   const ws = s.hook.split(/\s+/), acc = (s.accent || '').trim(), has = acc && s.hook.toLowerCase().includes(acc.toLowerCase());
@@ -202,12 +202,12 @@ const TYPES = {
       tx(root, `br${k}-v`, r.value, { x: TX + TW + 12, y: cy, w: W - X0 - (TX + TW + 12), h: 66, size: 34, weight: 700, color: P.ink, align: 'right' }); });
   },
   funnel(root, s) {   // narrowing stages: widths follow pct, label inside, value on the right
-    let y = heading(root, 'fn-h', s.title) + 30; const n = s.rows.length, gap = 14, rh = Math.min(150, Math.floor((BODY1 - y - 20 - (n - 1) * gap) / n)), FW = XW;
+    let y = heading(root, 'fn-h', s.title) + 30; const n = s.rows.length, gap = 14, rh = Math.min(n <= 4 ? 210 : 170, Math.floor((BODY1 - y - 20 - (n - 1) * gap) / n)), FW = XW, big_ = rh > 170;
     y += Math.max(0, Math.floor((BODY1 - y - (n * rh + (n - 1) * gap)) / 2) * .8);
     s.rows.forEach((r, k) => { const P = grp(k), w = Math.max(360, Math.round(FW * Math.max(0, Math.min(100, r.pct)) / 100)), x = X0 + Math.round((FW - w) / 2), cy = y + k * (rh + gap);
       E(root, 'abs', `left:${x}px;top:${cy}px;width:${w}px;height:${rh}px;border-radius:22px;background:${P.soft};border:3px solid ${P.bd}`);
-      tx(root, `fn${k}-l`, r.label, { x: x + 22, y: cy + 8, w: w - 44, h: Math.round(rh * .48), size: 32, weight: 700, color: P.ink, align: 'center', wrap: true, lh: 1.1 });
-      tx(root, `fn${k}-v`, r.value, { x: x + 22, y: cy + Math.round(rh * .5), w: w - 44, h: Math.round(rh * .42), size: 40, weight: 700, color: P.ink, align: 'center', font: 'serif' }); });
+      tx(root, `fn${k}-l`, r.label, { x: x + 22, y: cy + 8, w: w - 44, h: Math.round(rh * .48), size: big_ ? 38 : 32, weight: 700, color: P.ink, align: 'center', wrap: true, lh: 1.1 });
+      tx(root, `fn${k}-v`, r.value, { x: x + 22, y: cy + Math.round(rh * .5), w: w - 44, h: Math.round(rh * .42), size: big_ ? 52 : 40, weight: 700, color: P.ink, align: 'center', font: 'serif' }); });
   },
   compare(root, s) {
     let y = heading(root, 'cm-h', s.title) + 30; const cw = (XW - 40) / 2, tw = cw - 70, all = [...s.left.items, ...s.right.items];
@@ -299,23 +299,58 @@ const TYPES = {
     E(link, 'abs', 'left:14px;top:10px', icon('globe', 24, C.clayD, 2)); tx(link, 'sh-l', s.short || '', { x: 52, y: 4, w: lw - 64, h: 36, size: 24, weight: 500, font: MONO });
   },
   closing(root, s, i, D) {
-    const b = D.brand, z = fitSize(s.title, { w: XW, h: 180, max: 72, min: 44, weight: 700, font: 'serif', lh: 1.1 }), h = Math.ceil(measure(s.title, { size: z, weight: 700, font: 'serif', w: XW, lh: 1.1 }).h) + 6, nl = (s.lines || []).length;
-    const total = h + 34 + nl * 112 + 30 + 24 + 104, y0 = BODY0 + Math.max(10, Math.floor((BODY1 - BODY0 - total) / 2));
-    tx(root, 'cl-h', s.title, { x: X0, y: y0, w: XW, h, size: z, weight: 700, font: 'serif', wrap: true, lh: 1.1, align: 'center' });
-    let y = y0 + h + 34;
-    (s.lines || []).forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
-      E(bx, 'abs', `left:18px;top:16px;width:54px;height:54px;border-radius:50%;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon('check', 32, P.ink, 2.4)); tx(bx, `cl${k}`, t, { x: 92, y: 0, w: XW - 80 - 116, h: 86, size: 34, weight: 600 }); y += 112; });
-    y += 30;
-    cta(root, 'cl-cta', b, { x: 60, y: y + 20, w: 960, h: 104, size: 28, bw: 4 });
+    // closing slide: a large question, optional "next step" rows, and a profile card with the follow button; the group is centred in the body band
+    const b = D.brand, lines = s.lines || [], nl = lines.length, TW = XW - 40, z = fitSize(s.title, { w: TW, h: 300, max: 84, min: 48, weight: 700, font: 'serif', lh: 1.08 });
+    const h = Math.ceil(measure(s.title, { size: z, weight: 700, font: 'serif', w: TW, lh: 1.08 }).h) + 6, cardH = 220, ctaH = 104, g = 38;
+    const total = h + g + nl * 108 + (nl ? g - 12 : 0) + cardH + 24 + ctaH, y0 = BODY0 + Math.max(0, Math.floor((BODY1 - BODY0 - total) / 2));
+    tx(root, 'cl-h', s.title, { x: X0 + 20, y: y0, w: TW, h, size: z, weight: 700, font: 'serif', wrap: true, lh: 1.08, align: 'center' });
+    let y = y0 + h + g;
+    lines.forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
+      E(bx, 'abs', `left:18px;top:16px;width:54px;height:54px;border-radius:50%;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon('check', 32, P.ink, 2.4));
+      tx(bx, `cl${k}`, t, { x: 92, y: 0, w: XW - 80 - 110, h: 86, size: 32, weight: 600 }); y += 108; });
+    if (nl) y += g - 12;
+    const cd = box(root, { x: X0 + 20, y, w: TW, h: cardH, r: 30, fill: C.card, bd: C.lineD, bw: 3, shadow: false });
+    E(cd, 'abs', `left:30px;top:${(cardH - 150) / 2 - 3}px;width:150px;height:150px;border-radius:${b.avatar_shape === 'circle' ? '50%' : '26%'};background:url(${b.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${C.card};box-shadow:0 0 0 3px ${C.clay}`);
+    tx(cd, 'cl-follow', b.follow || 'Follow', { x: 212, y: 34, w: TW - 250, h: 36, size: 26, weight: 600, color: C.mid });
+    tx(cd, 'cl-name', b.name, { x: 212, y: 70, w: TW - 250, h: 58, size: 46, weight: 700 });
+    tx(cd, 'cl-tag', b.tagline || '', { x: 212, y: 134, w: TW - 250, h: 70, size: 28, weight: 500, color: C.mid, wrap: true, lh: 1.2 });
+    cta(root, 'cl-cta', b, { x: X0 + 20, y: y + cardH + 24, w: TW, h: ctaH, size: 28, bw: 4 });
   },
 };
+
+// Underfit guard. The slide heading stays pinned at the top so every slide looks the same; everything below it is scaled up (never down, up to 1.3x,
+// from its top-left corner) when it fills less than ~88% of the space under the heading, then centred there. Painted extents only (text glyphs, svg/img,
+// filled or bordered boxes), measured while the slide is briefly shown, before anything is rendered.
+function paintedRects(wrap) {
+  const rs = [], rg = document.createRange();
+  for (const e of wrap.querySelectorAll('*')) {
+    const cs = getComputedStyle(e), r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2 || (r.width >= W - 8 && r.height >= H - 8)) continue;
+    const painted = e instanceof SVGElement ? /^(circle|path|rect|ellipse|line|polygon|polyline|image)$/.test(e.tagName) : (e.tagName === 'IMG' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') || parseFloat(cs.borderTopWidth) > 0 || cs.backgroundImage !== 'none');
+    if (painted) rs.push(r);
+    for (const n of e.childNodes) if (n.nodeType === 3 && n.textContent.trim()) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width > 2) rs.push(q); }
+  }
+  return rs;
+}
+function fitBody(root, from) {
+  const all = [...root.children].slice(from); if (!all.length) return;
+  const prev = root.style.display; root.style.display = 'block';   // hidden slides have no layout, so show it while measuring
+  const head = all.find(k => /-h$/.test(k.dataset.id || '')), kids = all.filter(k => k !== head);
+  let top0 = BODY0 + 8; if (head) { const hr = head.getBoundingClientRect(); top0 = Math.ceil(hr.bottom) + 26; }
+  const wrap = E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px`); kids.forEach(k => wrap.appendChild(k));
+  const rs = paintedRects(wrap); root.style.display = prev; if (!rs.length) return;
+  const L = Math.min(...rs.map(r => r.left)), T = Math.min(...rs.map(r => r.top)), R = Math.max(...rs.map(r => r.right)), B = Math.max(...rs.map(r => r.bottom)), bw = R - L, bh = B - T, band = BODY1 - 12 - top0;
+  if (bh >= band * .88 || band < 200) return;
+  const sc = Math.max(1, Math.min(1.3, band / bh, (W - X0 - L) / bw)), top = top0 + (band - bh * sc) * .45;
+  wrap.style.transformOrigin = `${L}px ${T}px`; wrap.style.transform = `translate(0px,${top - T}px) scale(${sc})`;
+}
 
 export function buildCarousel(stage, D) {
   const c = D.carousel, slides = c.deck, n = slides.length, roots = []; applyTheme(stage, c.theme);
   slides.forEach((s, i) => {
     const root = E(stage, 'scene'); root.style.display = 'none'; root.style.opacity = '1'; roots.push(root);
-    frame(root, i, n, D.brand, s.cta || '', i === n - 1, !!c.single);
+    frame(root, i, n, D.brand, s.cta || '', i === n - 1, !!c.single); const nf = root.children.length;
     TYPES[s.type](root, s, i, D);
+    if (s.type !== 'title' && s.type !== 'closing') fitBody(root, nf);
   });
   return { DUR: n, N: n, render(t) { const k = Math.max(0, Math.min(n - 1, Math.floor(t + 1e-6))); roots.forEach((r, i) => { r.style.display = i === k ? 'block' : 'none'; }); } };
 }

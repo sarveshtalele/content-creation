@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.15.0
+
+- **The local app now launches from any agent** (Antigravity, Codex, Gemini CLI, Claude Code): `studio.py studio` and `studio.py editor` start the server detached and return at once with `APP_URL=...`. A second call reuses the running app. `--status` and `--stop` manage it. Cause of the old failure: the server ran in the foreground, so the agent's terminal call never returned.
+- **Reels and GIFs run in the background**: `studio.py build W --artifacts reel --background` returns at once; poll with `studio.py jobstatus W`. A Reel takes about three minutes, which agent terminals kill.
+- **Cinematic Reel look** (default; `reel.look: "light"` restores the old one): dark grade, every scene scaled and centred to fill the frame (the old reel left the lower half empty), slow camera push, light sweep at each scene change, vignette, impact shake and flash on key moments. Content is measured from painted pixels, not layout boxes.
+- **Carousel quality**: slide heading pinned at the top of every slide; underfilled slides scale up and centre below it; funnel rows enlarged; closing slide rebuilt (large question, next-step rows, profile card, follow button).
+- **Claude light is the default carousel theme.** Cover photo removed everywhere (your photo stays in the header avatar and the CTA). Four selectable cover templates: Poster Bold, Gradient Stage, Editorial Masthead, Terminal.
+- **Design Studio is now a full web app**: Home, Library of everything made on this computer (studio jobs and every project a build ran in), and a creation page per artifact: Carousel, Infographic or cover, GIF, Post, Reel. GIF, Post and Reel pages prepare a request for your agent and show whether this computer is ready.
+
 ## 2.14.0
 
 - **Design Studio** (`studio.py studio`): a local web app where you pick the design, see a preloaded sample of each, fill in your content and generate. 5 covers and 6 infographics, as one image or a carousel (PDF, images or both, always asked). See `docs/STUDIO.md`.
