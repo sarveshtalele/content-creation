@@ -62,7 +62,7 @@ function titlePoster(root, s) {          // full-bleed colour poster: huge hook,
 }
 
 // "bold" cover, after the poster references: one giant headline, one word on a colour box, a swoosh, a short line of copy, a 3D object built from the topic
-// and a row of topic chips. No photo, no character: just the title and related infographics.
+// and a row of topic chips. No photo: just the title and related infographics.
 function textW(t, size, weight) { const e = E(document.body, 'sans', `position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;font-size:${size}px;font-weight:${weight};letter-spacing:-.03em`); e.textContent = t; const w = e.getBoundingClientRect().width; e.remove(); return w; }
 function titleBold(root, s) {
   const x = X0, w = XW, y0 = BODY0 + 14, hue = C.blueD, acc = C.green;
@@ -248,14 +248,13 @@ const TYPES = {
   },
   closing(root, s, i, D) {
     const b = D.brand, z = fitSize(s.title, { w: XW, h: 180, max: 72, min: 44, weight: 700, font: 'serif', lh: 1.1 }), h = Math.ceil(measure(s.title, { size: z, weight: 700, font: 'serif', w: XW, lh: 1.1 }).h) + 6, nl = (s.lines || []).length;
-    const total = h + 34 + nl * 112 + 30 + 200 + 24 + 104, y0 = BODY0 + Math.max(10, Math.floor((BODY1 - BODY0 - total) / 2));
+    const total = h + 34 + nl * 112 + 30 + 24 + 104, y0 = BODY0 + Math.max(10, Math.floor((BODY1 - BODY0 - total) / 2));
     tx(root, 'cl-h', s.title, { x: X0, y: y0, w: XW, h, size: z, weight: 700, font: 'serif', wrap: true, lh: 1.1, align: 'center' });
     let y = y0 + h + 34;
     (s.lines || []).forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
       E(bx, 'abs', `left:18px;top:16px;width:54px;height:54px;border-radius:50%;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon('check', 32, P.ink, 2.4)); tx(bx, `cl${k}`, t, { x: 92, y: 0, w: XW - 80 - 116, h: 86, size: 34, weight: 600 }); y += 112; });
     y += 30;
-    E(root, 'abs', `left:${W / 2 - 95}px;top:${y - 6}px;width:190px;height:220px;background:url(${b.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 10px 12px rgba(0,0,0,.25))`);   // the seated 3D character (closing slide only)
-    cta(root, 'cl-cta', b, { x: 60, y: y + 232, w: 960, h: 104, size: 28, bw: 4 });
+    cta(root, 'cl-cta', b, { x: 60, y: y + 20, w: 960, h: 104, size: 28, bw: 4 });
   },
 };
 

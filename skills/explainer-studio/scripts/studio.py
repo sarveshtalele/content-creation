@@ -104,7 +104,7 @@ def brand():
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'character': 'assets/character.png'}
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png',}
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -247,7 +247,7 @@ def build_gif(work, story, lib, env, out, slug):
 def png_size(p):
     with open(p, 'rb') as f: h = f.read(24)
     return struct.unpack('>II', h[16:24]) if h[:8] == b'\x89PNG\r\n\x1a\n' else (0, 0)
-def build_carousel(work, story, lib, env, out, slug, only=None):
+def build_carousel(work, story, lib, env, out, slug, only=None, fmt='both'):
     """Slides as PNG stills, one PDF (the LinkedIn document upload) and the first-comment text. `only` rebuilds one slide, then the PDF from all slides."""
     b = brand(); deck = CAR.compile_deck(story); n = len(deck); size = '1080x1350'
     film = stage(work, '.film-car', {'brand': brand_for_film(b), 'logo': has_claude(work), 'carousel': {'deck': deck, 'theme': story['carousel'].get('theme', 'paper')}})
@@ -269,10 +269,13 @@ def build_carousel(work, story, lib, env, out, slug, only=None):
     ff = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'; jd = os.path.join(sd, '_jpg'); os.makedirs(jd, exist_ok=True); jpgs = []
     for k, pn in enumerate(pngs, 1):
         jp = os.path.join(jd, f'{k:02d}.jpg'); run([ff, '-y', '-v', 'error', '-i', pn, '-q:v', '2', '-update', '1', jp], env=env, quiet=True); jpgs.append(jp)
-    pdf = os.path.join(out, f'{slug}-carousel.pdf'); CAR.write_pdf(jpgs, pdf); shutil.rmtree(jd, ignore_errors=True)
+    pdf = os.path.join(out, f'{slug}-carousel.pdf')
+    if fmt in ('pdf', 'both'): CAR.write_pdf(jpgs, pdf)
+    elif os.path.isfile(pdf): os.remove(pdf)        # the user asked for images only: no stale PDF
+    shutil.rmtree(jd, ignore_errors=True)
     ct = os.path.join(out, f'{slug}-carousel-comment.txt'); open(ct, 'w', encoding='utf-8', newline='\n').write(CAR.comment_text(story, b) + '\n')
-    print(f'[carousel] done -> {pdf} ({n} slides, 1080x1350 PNG each) + first comment -> {ct}')
-    return {'file': pdf, 'also': pngs + [ct], 'n': n, 'deck': [d['type'] for d in deck], 'gates': {'layout': True}}
+    print(f'[carousel] done ({fmt}): ' + ('PDF ' + pdf + '  ' if fmt != 'images' else '') + (f'{n} PNG slides in {sd}  ' if fmt != 'pdf' else '') + f'+ first comment -> {ct}')
+    return {'file': pdf if fmt != 'images' else None, 'also': (pngs if fmt != 'pdf' else []) + [ct], 'pngs': pngs, 'fmt': fmt, 'n': n, 'deck': [d['type'] for d in deck], 'gates': {'layout': True}}
 
 def art_files(B):
     """Every file an artifact entry hands over: file, its still image, and extras (carousel slides, comment text)."""
@@ -288,6 +291,12 @@ def build(a):
     default = 'gif' if 'gif' in story or 'carousel' not in story else 'carousel'
     arts = set((['reel', 'gif', 'post'] + (['carousel'] if 'carousel' in story else [])) if a.artifacts == 'all' else (a.artifacts or default).split(','))
     if not arts <= {'reel', 'gif', 'post', 'carousel'}: sys.exit('artifacts: reel,gif,post,carousel or all')
+    ff_ = os.path.join(work, '.carousel_format')
+    if getattr(a, 'format', None): open(ff_, 'w').write(a.format)
+    elif os.path.isfile(ff_): a.format = open(ff_).read().strip()      # a rebuild after edit/cta reuses what the person chose
+    if 'carousel' in arts and getattr(a, 'format', None) is None:
+        print('ASK THE USER FIRST: do you want the carousel as a PDF (one LinkedIn document upload), as separate PNG images (one per slide), or both?\n'
+              'Nothing was built. After they answer, re-run with --format pdf | images | both.'); return 3
     slug = story['meta']['slug']; out = os.path.join(work, 'out'); res = {}
     if not story['meta'].get('url'): story['meta']['url'] = load(os.path.join(work, 'source.meta.json')).get('url', '')
     if 'post' in arts:
@@ -304,7 +313,7 @@ def build(a):
             res['gif'] = build_gif(work, story, lib, env, out, slug)
         if 'carousel' in arts:
             if 'carousel' not in story: sys.exit('story.json has no "carousel" section')
-            res['carousel'] = build_carousel(work, story, lib, env, out, slug, only=getattr(a, 'slide', None))
+            res['carousel'] = build_carousel(work, story, lib, env, out, slug, only=getattr(a, 'slide', None), fmt=a.format or 'both')
         if 'reel' in arts: res['reel'] = build_reel(work, story, lib, env, out, slug)
     bj = os.path.join(out, 'build.json'); prev = load(bj) if os.path.exists(bj) else {'artifacts': {}}
     prev['artifacts'].update({k: v for k, v in res.items() if v}); prev['eval'] = {k: rep[k] for k in ('claim_support', 'overlap_mean', 'recall@3', 'precision@3', 'mrr', 'coverage', 'gif_text_support', 'gif_coverage', 'pass')}; dump(prev, bj)
@@ -363,9 +372,9 @@ def review(a):
         G['reel.speech_matches_script'] = sp == 'verified'
         times = [round(dur * x, 2) for x in (.06, .2, .35, .5, .65, .8, .95)]; sheet(env, f, times, os.path.join(rd, 'reel_sheet.png'), 270)
     if 'carousel' in B:
-        cb = B['carousel']; pngs = [q for q in cb['also'] if q.endswith('.png')]; n = len(pngs)
+        cb = B['carousel']; pngs = cb['pngs']; n = len(pngs)
         G['carousel.5-7_slides'] = 5 <= n <= 7; G['carousel.every_slide_1080x1350'] = all(png_size(q) == (1080, 1350) for q in pngs)
-        G['carousel.pdf_pages_match'] = CAR.pdf_pages(cb['file']) == n; G['carousel.layout+readable'] = all(cb['gates'].values())
+        G['carousel.pdf_pages_match'] = (CAR.pdf_pages(cb['file']) == n) if cb['file'] else True; G['carousel.layout+readable'] = all(cb['gates'].values())
         dk = CAR.compile_deck(story); G['carousel.every_slide_has_cta'] = all(d['cta'].strip() for d in dk); G['carousel.title_first_closing_last'] = dk[0]['type'] == 'title' and dk[-1]['type'] == 'closing'
         ctf = [x for x in cb['also'] if x.endswith('comment.txt')][0]
         if (story['carousel'].get('resources') or {}).get('items'): G['carousel.comment_lists_every_link'] = all(i['url'] in open(ctf, encoding='utf-8').read() for i in story['carousel']['resources']['items'])
@@ -548,7 +557,7 @@ def plan_cmd(a):
     if re.search(r'`[^`]+`|\$ \w+|\bnpm |\bpip |\bgit \w+', src): sig.append(('terminal', 'commands in the text', 'a command transcript'))
     if re.search(r'https?://', src): sig.append(('shot', 'links in the text', 'a framed page card per recommended link'))
     if not sig: sig.append(('points / big', 'no numbers, steps or contrasts found', 'icon points for the list, one big quote for the key line'))
-    L = ['# Plan (approve before building)', '', '## Ask the person first', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
+    L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Output format: PDF (one LinkedIn document upload), separate PNG images (one per slide), or both? Do not build until they answer.', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
     L += [f'- **{t}**: {why}. Idea: {idea}.' for t, why, idea in sig]
     L += ['', 'Design choice: see docs/DESIGN_MATRIX.md (conveyor for gates, funnel for narrowing shares, tower for layers, skyline for rankings, poster slide for a bold claim).']
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
@@ -578,7 +587,7 @@ def main():
     br = sp.add_parser('brand')
     for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
-    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
+    b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
     rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
     ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')

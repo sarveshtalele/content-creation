@@ -1,10 +1,11 @@
 # Changelog
 
-## 2.13.0
+## 2.13.1
 
 - **Bold poster cover** (`title.layout: "bold"`): giant headline, one accent word on a colour box (`title.accent`), swoosh, 3D slab stack with topic icon tiles and a chip row (`title.chips`, 2-4). No photo or character on the cover.
 - New light **`sky`** carousel theme (blue/white, from the poster references).
-- CTA pill and carousel header show your profile photo (rounded square; `brand.avatar_shape: "circle"` to change). The seated 3D character appears only on the closing slide.
+- CTA pill and carousel header show your profile photo (rounded square; `brand.avatar_shape: "circle"` to change). The 3D character is removed entirely.
+- `studio.py build --artifacts carousel` now requires `--format pdf|images|both` and stops with a question otherwise; the plan asks it first.
 - Loop-slide label contrast fixed so e2e passes.
 
 ## 2.12.0
