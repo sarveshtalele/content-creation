@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.10.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.11.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)

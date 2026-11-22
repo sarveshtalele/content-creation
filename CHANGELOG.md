@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.11.0
+
+- **`studio.py cover DIR --hooks "A B" "C D" "E F"`**: video thumbnails in two looks (`face`: your photo, hook and an isometric object; `poster`: dark cinematic) and three sizes (YouTube 1280x720, Reel/Short 1080x1920, grid 1080x1350), one file per hook variant for A/B tests. Hooks are limited to 4 words; text sits clear of the platform UI zones.
+
 ## 2.10.0
 
 - **ChatGPT**: `setup.py light` installs only the browser and ffmpeg (no voice model, no Python 3.11-3.13 requirement); `studio.py doctor --for carousel|gif|reel` checks only what the chosen output needs.

@@ -553,6 +553,22 @@ def plan_cmd(a):
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
     open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
 
+def cover_cmd(a):
+    """studio.py cover DIR --hooks "HOOK ONE" "HOOK TWO" "HOOK THREE" [--look face|poster|both] [--size youtube|reel|grid|all]: video thumbnails, hook <= 4 words each."""
+    import cover as CV
+    work = os.path.abspath(a.dir); out = os.path.join(work, 'out', 'covers'); os.makedirs(out, exist_ok=True); br = brand()
+    bad = [h for h in a.hooks if not 1 <= len(h.split()) <= 4]
+    if bad: print('each hook must be 1-4 words (short hooks get clicked): ' + ' | '.join(bad)); return 1
+    looks = ['face', 'poster'] if a.look == 'both' else [a.look]; sizes = list(CV.SIZES) if a.size == 'all' else [a.size]
+    av = os.path.join(work, 'assets', 'avatar.png'); av = av if os.path.isfile(av) else (USER_AVATAR if os.path.isfile(USER_AVATAR) else os.path.join(SKILL, 'assets', 'avatar.png')); ab = CV.avatar_b64(av)
+    slug = re.sub(r'[^a-z0-9]+', '-', (load(os.path.join(work, 'story.json'))['meta'].get('slug') or 'video').lower()).strip('-') if os.path.isfile(os.path.join(work, 'story.json')) else 'video'
+    n = 0
+    for path, look, size, hook, i in CV.files(out, slug, a.hooks, looks, sizes):
+        hp = path[:-4] + '.html'; open(hp, 'w', encoding='utf-8', newline='\n').write(CV.render('poster' if look == 'poster' else 'face', size, hook, i, ab, br['name'], a.kicker or ''))
+        W, H = CV.SIZES[size]; r = run(['node', os.path.join(SKILL, 'engine', 'pageshot.mjs'), hp, path, '--size', f'{W}x{H}', '--scale', '1', '--wait', '200'], env=dict(os.environ)); os.remove(hp); n += 1
+        if r.returncode: print('cover failed: ' + path); return 1
+    print(f'{n} covers in {out}'); return 0
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     dc = sp.add_parser('doctor'); dc.add_argument('--for', dest='for_', choices=['carousel', 'gif', 'reel', 'all'], default='all');  s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
@@ -569,8 +585,10 @@ def main():
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
     pl = sp.add_parser('plan'); pl.add_argument('dir')
+    cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--hooks', nargs='+', required=True); cv.add_argument('--look', choices=['face', 'poster', 'both'], default='both'); cv.add_argument('--size', choices=['youtube', 'reel', 'grid', 'all'], default='all'); cv.add_argument('--kicker')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     a = ap.parse_args()
+    if a.cmd == 'cover': return cover_cmd(a)
     if a.cmd == 'plan': return plan_cmd(a)
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)
