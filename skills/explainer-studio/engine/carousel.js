@@ -298,6 +298,58 @@ const TYPES = {
     const lw = Math.min(XW, Math.round((s.short || '').length * 14.4 + 120)), link = box(root, { x: X0, y: yy, w: lw, h: 46, r: 23, fill: C.sand, bd: C.line, bw: 2, shadow: false });
     E(link, 'abs', 'left:14px;top:10px', icon('globe', 24, C.clayD, 2)); tx(link, 'sh-l', s.short || '', { x: 52, y: 4, w: lw - 64, h: 36, size: 24, weight: 500, font: MONO });
   },
+  // 3D ring funnel (reference: "5-step marketing funnel"): icons arrow into a stack of blue rings that narrow to a glowing spout; numbered list on the left
+  ring(root, s) {
+    const st = s.steps, n = st.length, y0 = heading(root, 'rg-h', s.title) + 18, svg = svgLayer(root, W, H);
+    const cx = 764, rx0 = 258, rx1 = 100, ry0 = 50, iR = 40, iy = y0 + iR + 4, rimY = iy + iR + 96, th = Math.min(n <= 3 ? 150 : n === 4 ? 136 : 124, Math.floor((BODY1 - 150 - rimY) / n));
+    const r = d => rx0 + (rx1 - rx0) * d / n, ryOf = rr => ry0 * rr / rx0, col = k => mix(C.blueD, .30 * k / Math.max(1, n - 1)), ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
+    const pad = k => String(k + 1).padStart(2, '0'), bot = rimY + n * th;
+    for (let g = 3; g >= 1; g--) path(svg, ell(cx, bot + 70, 70 + g * 52, 12 + g * 9), { stroke: 'none', fill: C.blue, w: 0 }).setAttribute('opacity', String(.11 * (4 - g)));
+    path(svg, `M${cx - r(n) * .42} ${bot} L${cx - r(n) * .42} ${bot + 62} A${r(n) * .42} 14 0 0 0 ${cx + r(n) * .42} ${bot + 62} L${cx + r(n) * .42} ${bot} Z`, { stroke: mix(C.blueD, .5), w: 3, fill: mix(C.blueD, .35) });
+    path(svg, ell(cx, rimY, rx0 + 6, ry0 + 3), { stroke: mix(C.blueD, .55), w: 5, fill: C.blueD }); path(svg, ell(cx, rimY + 2, rx0 - 20, ry0 - 12), { stroke: 'none', fill: mix(C.blueD, -0) }).setAttribute('opacity', '.55');
+    for (let k = 0; k < n; k++) {
+      const yt = rimY + k * th, yb = yt + th, rt = r(k), rb = r(k + 1), at = ryOf(rt), ab = ryOf(rb);
+      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt} L${cx + rb} ${yb} A${rb} ${ab} 0 0 1 ${cx - rb} ${yb} Z`, { stroke: mix(col(k), .45), w: 3, fill: col(k) });
+      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt}`, { stroke: mix(col(k), .6), w: 5 });
+      const rm = (rt + rb) / 2, yc = ((yt + at) + (yb + ab)) / 2, lab = `${pad(k)}  ${st[k].title.toUpperCase()}`, tw = rm * 1.45, z = fitSize(lab, { w: tw, h: 44, max: 32, min: 18, weight: 700, lh: 1.1 });
+      tx(root, `rg-t${k}`, lab, { x: cx - tw / 2, y: yc - 24, w: tw, h: 48, size: z, weight: 700, color: '#fff', align: 'center', ls: .02 });
+    }
+    const gap = Math.min(112, (rx0 * 1.5) / Math.max(1, n - 1));
+    st.forEach((a, k) => { const xi = cx + (k - (n - 1) / 2) * gap, tx_ = cx + (xi - cx) * .55, ty = rimY - ry0 + 4;
+      path(svg, `M${xi} ${iy + iR} C${xi} ${iy + iR + 56} ${tx_} ${ty - 56} ${tx_} ${ty}`, { stroke: C.blue, w: 3 }); path(svg, `M${tx_ - 9} ${ty - 13} L${tx_} ${ty} L${tx_ + 9} ${ty - 13}`, { stroke: C.blue, w: 3 });
+      const b = box(root, { x: xi - iR, y: iy - iR, w: iR * 2, h: iR * 2, r: iR, bd: C.blue, bw: 3, shadow: false }); E(b, 'abs', `left:${iR - 21}px;top:${iR - 21}px`, icon(a.icon || 'star', 36, C.blueD, 2)); });
+    st.forEach((a, k) => { const yc = rimY + (k + .5) * th + 18, c = E(root, 'abs', `left:${X0}px;top:${yc - 38}px;width:76px;height:76px;border-radius:50%;background:${C.blueD};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px ${C.blueSoft}`, icon(a.icon || 'star', 36, '#fff', 2));
+      tx(root, `rg-l${k}`, `${pad(k)}. ${a.title}`, { x: X0 + 98, y: yc - 42, w: 330, h: 40, size: 31, weight: 700, color: C.ink });
+      if (a.sub) tx(root, `rg-s${k}`, a.sub, { x: X0 + 98, y: yc - 2, w: 330, h: 62, size: 23, weight: 500, color: C.mid, wrap: true, lh: 1.2 });
+      if (k < n - 1) path(svg, `M${X0 + 98} ${yc + th / 2 - 8} L${X0 + 420} ${yc + th / 2 - 8}`, { stroke: C.lineD, w: 2, dash: '3 7' }); });
+  },
+  // cut-away tower funnel (reference: editorial "what is a marketing funnel"): floors narrow downward, stage banners, notes and figures on the right, altitude notes on the left
+  tower(root, s) {
+    const TEAL = '#2F8089', GOLD = '#D9A93B', INK = '#2A2620', st = s.steps, n = st.length, y0 = heading(root, 'tw-h', s.title) + 10, svg = svgLayer(root, W, H);
+    const cx = 440, rt0 = 222, rb0 = 96, ry = 40, roofY = y0 + 64, fh = Math.min(210, Math.floor((BODY1 - 130 - roofY) / n)), r = d => rt0 + (rb0 - rt0) * d / n, base = roofY + n * fh;
+    const ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
+    path(svg, `M${X0 + 160} ${roofY} L${X0 + 160} ${base}`, { stroke: INK, w: 2 });
+    for (let k = 0; k <= n; k++) path(svg, `M${X0 + 150} ${roofY + k * fh} L${X0 + 170} ${roofY + k * fh}`, { stroke: INK, w: 2 });
+    for (let k = 0; k < n; k++) {
+      const yt = roofY + k * fh, yb = yt + fh, rt = r(k), rb = r(k + 1);
+      path(svg, `M${cx - rt} ${yt} L${cx + rt} ${yt} L${cx + rb} ${yb} L${cx - rb} ${yb} Z`, { stroke: INK, w: 3, fill: k % 2 ? '#F8F3E6' : '#EFE8D4' });
+      path(svg, `M${cx - rt + 16} ${yt + 6} L${cx - rb + 14} ${yb}`, { stroke: INK, w: 1.5 }); path(svg, `M${cx + rt - 16} ${yt + 6} L${cx + rb - 14} ${yb}`, { stroke: INK, w: 1.5 });
+      path(svg, `M${cx - rb - 12} ${yb - 7} L${cx + rb + 12} ${yb - 7}`, { stroke: INK, w: 12, cap: 'butt' }); path(svg, `M${cx - rb - 12} ${yb - 7} L${cx + rb + 12} ${yb - 7}`, { stroke: '#FFFDF6', w: 8, cap: 'butt' });
+      const rm = r(k + .5), bw = Math.round(rm * 1.86), by = yt + (k ? 14 : ry + 2), col = k % 2 ? GOLD : TEAL, tg = Math.round(rm * 1.8);
+      E(root, 'abs', `left:${cx - bw / 2}px;top:${by}px;width:${bw}px;height:58px;background:${col};border:2px solid ${INK}`);
+      tx(root, `tw-t${k}`, st[k].title.toUpperCase(), { x: cx - bw / 2 + 10, y: by, w: bw - 20, h: 58, size: fitSize(st[k].title.toUpperCase(), { w: bw - 20, h: 54, max: 32, min: 18, weight: 700, font: 'serif', lh: 1.1 }), weight: 700, font: 'serif', color: k % 2 ? INK : '#fff', align: 'center' });
+      if (st[k].tag) tx(root, `tw-g${k}`, st[k].tag.toUpperCase(), { x: cx - tg / 2, y: by + 62, w: tg, h: 28, size: fitSize(st[k].tag.toUpperCase(), { w: tg - 6, h: 26, max: 19, min: 12, weight: 600, lh: 1.1 }), weight: 600, color: INK, align: 'center' });
+      const sh = Math.min(66, fh - (k ? 142 : 142 + ry)); if (sh >= 40) { const sb = box(root, { x: cx - 70, y: yb - 26 - sh, w: 140, h: sh, r: 3, fill: '#FFFDF6', bd: INK, bw: 2, shadow: false }); E(sb, 'abs', `left:${70 - 17}px;top:${(sh - 34) / 2 - 2}px`, icon(st[k].icon || 'star', 34, col === GOLD ? '#8A6510' : TEAL, 2)); }
+      if (st[k].side) tx(root, `tw-sd${k}`, st[k].side, { x: X0, y: yt + fh * .30, w: 142, h: 110, size: 21, weight: 500, font: 'serif', italic: true, color: '#5E5648', wrap: true, lh: 1.2 });
+      const RX = 722, RW = W - X0 - RX; let ny = yt + 4;
+      if (st[k].note) { const nh = H_(st[k].note, 20, RW - 28, 500, 1.25) + 20; box(root, { x: RX, y: ny, w: RW, h: nh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); tx(root, `tw-n${k}`, st[k].note, { x: RX + 14, y: ny + 6, w: RW - 28, h: nh - 12, size: 20, weight: 500, wrap: true, lh: 1.25 }); path(svg, `M${cx + rm} ${ny + nh / 2} L${RX} ${ny + nh / 2}`, { stroke: '#9C927B', w: 2, dash: '3 6' }); ny += nh + 10; }
+      if (st[k].stat) { const sw_ = RW - 78, hh = H_(st[k].stat, 21, sw_, 700, 1.2) + 24, bx = box(root, { x: RX, y: ny, w: RW, h: hh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); E(bx, 'abs', `left:14px;top:${(hh - 30) / 2 - 2}px`, icon(st[k].icon || 'star', 30, col === GOLD ? '#8A6510' : TEAL, 2)); tx(root, `tw-v${k}`, st[k].stat, { x: RX + 60, y: ny + 8, w: sw_, h: hh - 16, size: 21, weight: 700, wrap: true, lh: 1.2 }); }
+    }
+    path(svg, ell(cx, roofY, rt0 + 14, ry), { stroke: INK, w: 3, fill: '#FFFDF6' });
+    for (let k = 0; k < 17; k++) { const a = Math.PI * (k + .5) / 17; circ(svg, cx + (rt0 - 8) * Math.cos(a), roofY + (ry - 10) * Math.sin(a) + 2, 9, { fill: k % 3 === 0 ? GOLD : k % 3 === 1 ? TEAL : '#B5A98E' }); }
+    const dw = r(n) * 1.7; E(root, 'abs', `left:${cx - dw / 2}px;top:${base + 4}px;width:${dw}px;height:54px;background:#FFFDF6;border:3px solid ${INK};border-bottom:0`); E(root, 'abs', `left:${cx - 26}px;top:${base + 16}px;width:52px;height:42px;background:${TEAL};border:2px solid ${INK};border-bottom:0`);
+    path(svg, `M${X0} ${base + 58} L${W - X0} ${base + 58}`, { stroke: INK, w: 3 });
+  },
   closing(root, s, i, D) {
     // closing slide: a large question, optional "next step" rows, and a profile card with the follow button; the group is centred in the body band
     const b = D.brand, lines = s.lines || [], nl = lines.length, TW = XW - 40, z = fitSize(s.title, { w: TW, h: 300, max: 84, min: 48, weight: 700, font: 'serif', lh: 1.08 });

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.16.0
+
+- **Two new funnel infographics** built from the reference designs: **3D Ring Funnel** (`ring`: icons feed a stack of blue rings that narrow to a glowing spout, with a numbered list) and **Cut-away Tower Funnel** (`tower`: floors are stages, with banners, a note and a figure on the right and altitude notes on the left). They replace the flat bar funnel in the studio.
+- **Viral hook library** (`data/hooks.json`, from the research text): 15 carousel first-slide formulas and 65 opening lines across 9 types, with a best-fit picker. `studio.py hooks "topic or project folder" [--kind carousel|line]` returns the patterns that fit the concept. In the studio, every cover headline has "Show viral hook ideas" and the Post, GIF and Reel pages suggest opening lines as you type.
+- **Infographic-first carousels**: the studio asks you to choose the infographic types before it will generate a carousel, and agents must ask which infographic types to use before building.
+
 ## 2.15.0
 
 - **The local app now launches from any agent** (Antigravity, Codex, Gemini CLI, Claude Code): `studio.py studio` and `studio.py editor` start the server detached and return at once with `APP_URL=...`. A second call reuses the running app. `--status` and `--stop` manage it. Cause of the old failure: the server ran in the foreground, so the agent's terminal call never returned.

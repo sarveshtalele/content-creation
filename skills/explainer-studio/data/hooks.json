@@ -1,0 +1,1128 @@
+{
+ "note": "Reusable creative patterns, not guaranteed results. Performance depends on audience, subject, execution and content quality. Use real measurements for proof hooks; never invent test results. Instagram guidance: open Reels with a hook inside three seconds and track View Rate, watch time, shares and saves.",
+ "carousel": [
+  {
+   "id": "c01",
+   "category": "Curiosity gap",
+   "template": "The [topic] trick most people discover too late.",
+   "fits": [
+    "secret",
+    "trick",
+    "hidden",
+    "overlooked",
+    "nobody",
+    "underrated",
+    "surprising"
+   ]
+  },
+  {
+   "id": "c02",
+   "category": "Mistakes",
+   "template": "[Number] mistakes keeping you from [result].",
+   "fits": [
+    "mistake",
+    "wrong",
+    "error",
+    "avoid",
+    "fail",
+    "problem",
+    "fix"
+   ]
+  },
+  {
+   "id": "c03",
+   "category": "Contrarian",
+   "template": "Stop doing [common practice]. Try this instead.",
+   "fits": [
+    "stop",
+    "instead",
+    "wrong",
+    "overrated",
+    "unpopular",
+    "alternative",
+    "not",
+    "a"
+   ]
+  },
+  {
+   "id": "c04",
+   "category": "Myth-busting",
+   "template": "Everyone says [belief]. Here's what actually happens.",
+   "fits": [
+    "myth",
+    "belief",
+    "misconception",
+    "actually",
+    "truth",
+    "really",
+    "assumption"
+   ]
+  },
+  {
+   "id": "c05",
+   "category": "How-to",
+   "template": "How to achieve [result] without [common obstacle].",
+   "fits": [
+    "how",
+    "to",
+    "guide",
+    "tutorial",
+    "setup",
+    "build",
+    "use",
+    "get",
+    "started"
+   ]
+  },
+  {
+   "id": "c06",
+   "category": "Framework",
+   "template": "The [number]-step framework for [desired outcome].",
+   "fits": [
+    "framework",
+    "steps",
+    "process",
+    "method",
+    "system",
+    "stages",
+    "funnel",
+    "pipeline"
+   ]
+  },
+  {
+   "id": "c07",
+   "category": "Resource list",
+   "template": "[Number] resources I wish I had discovered earlier.",
+   "fits": [
+    "resources",
+    "tools",
+    "list",
+    "links",
+    "repos",
+    "articles",
+    "docs",
+    "reading",
+    "skills"
+   ]
+  },
+  {
+   "id": "c08",
+   "category": "Checklist",
+   "template": "Save this checklist before you [action].",
+   "fits": [
+    "checklist",
+    "before",
+    "ship",
+    "launch",
+    "review",
+    "audit",
+    "requirements"
+   ]
+  },
+  {
+   "id": "c09",
+   "category": "Comparison",
+   "template": "[Option A] vs. [Option B]: Which one should you choose?",
+   "fits": [
+    "vs",
+    "versus",
+    "compare",
+    "comparison",
+    "choose",
+    "difference",
+    "better",
+    "alternative"
+   ]
+  },
+  {
+   "id": "c10",
+   "category": "Personal experience",
+   "template": "What I learned after [experience or timeframe].",
+   "fits": [
+    "learned",
+    "lesson",
+    "experience",
+    "years",
+    "months",
+    "journey"
+   ]
+  },
+  {
+   "id": "c11",
+   "category": "Transformation",
+   "template": "From [starting problem] to [result]: here's the process.",
+   "fits": [
+    "before",
+    "after",
+    "from",
+    "to",
+    "transform",
+    "improve",
+    "growth",
+    "results"
+   ]
+  },
+  {
+   "id": "c12",
+   "category": "Evidence-led",
+   "template": "What [number] examples taught me about [topic].",
+   "fits": [
+    "examples",
+    "data",
+    "analyzed",
+    "research",
+    "study",
+    "patterns",
+    "case",
+    "metrics"
+   ]
+  },
+  {
+   "id": "c13",
+   "category": "Beginner guide",
+   "template": "Starting with [topic]? Read this first.",
+   "fits": [
+    "beginner",
+    "start",
+    "starting",
+    "basics",
+    "intro",
+    "first",
+    "new"
+   ]
+  },
+  {
+   "id": "c14",
+   "category": "Question",
+   "template": "Are you making this mistake with [topic]?",
+   "fits": [
+    "question",
+    "why",
+    "what",
+    "is",
+    "are",
+    "you",
+    "wondering"
+   ]
+  },
+  {
+   "id": "c15",
+   "category": "Practical template",
+   "template": "Steal this [framework/template/workflow] for your next [task].",
+   "fits": [
+    "template",
+    "workflow",
+    "steal",
+    "copy",
+    "reuse",
+    "prompt",
+    "playbook"
+   ]
+  }
+ ],
+ "line": [
+  {
+   "category": "Curiosity",
+   "hook": "Nobody tells you this about [topic].",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "The real reason [problem] keeps happening.",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "I didn't expect [result] from [small action].",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "Here's what happens when you [action].",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "The part of [topic] nobody shows you.",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "This is something I wish I knew before [milestone].",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Curiosity",
+   "hook": "You've been doing [activity] wrong, and here's why.",
+   "fits": [
+    "curiosity",
+    "secret",
+    "nobody",
+    "reason",
+    "happens",
+    "wish"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "Why does nobody talk about [topic]?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "Can you spot the mistake in this [example]?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "What would you do if [scenario]?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "Which one would you choose: [A] or [B]?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "Have you ever wondered how [process] works?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "Is [popular tool or method] actually worth it?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Question",
+   "hook": "What's the difference between [A] and [B]?",
+   "fits": [
+    "why",
+    "what",
+    "which",
+    "how",
+    "work",
+    "worth",
+    "difference"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "Stop doing [action] if you want [result].",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "Never do [action] without checking this.",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "Three mistakes that are costing you [result].",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "Don't start [activity] before watching this.",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "If you're a [target audience], avoid this mistake.",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "You're losing [resource] every time you [action].",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Warning",
+   "hook": "Most beginners get [topic] wrong because of this.",
+   "fits": [
+    "stop",
+    "never",
+    "mistake",
+    "avoid",
+    "wrong",
+    "losing",
+    "beginners"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "How to [achieve result] in [time].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "The fastest way to [desired result].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "One simple change that can improve [outcome].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "Steal my [process] for [result].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "Use this [script/tool/workflow] when [situation].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "You only need [number] things to [result].",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "Quick win",
+   "hook": "Here's how I'd approach [goal] starting from zero.",
+   "fits": [
+    "how",
+    "fast",
+    "quick",
+    "simple",
+    "change",
+    "steal",
+    "workflow",
+    "script",
+    "tool",
+    "zero"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "Five things you need to know about [topic].",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "Three tools I recommend for [task].",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "Seven resources worth exploring this month.",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "My top five recommendations for [audience].",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "Ranking [tools/resources] from worst to best.",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "The only four things you need to understand about [topic].",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "List",
+   "hook": "Ten things I wish I knew before [milestone].",
+   "fits": [
+    "list",
+    "top",
+    "tools",
+    "resources",
+    "recommend",
+    "ranking",
+    "things"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "I tested [tool/method] for [period]. Here's what happened.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "I analyzed [number] examples. Here's what I found.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "From [starting point] to [result]: here's what changed.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "I tried [approach] so you don't have to.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "Here's what [number] experiments taught me.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "Watch me build [result] from scratch.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Proof",
+   "hook": "Is [popular thing] worth it? Let's test it.",
+   "fits": [
+    "tested",
+    "tried",
+    "analyzed",
+    "experiment",
+    "results",
+    "built",
+    "measured"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "Unpopular opinion: [opinion].",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "You don't need [common belief] to achieve [result].",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "Everyone recommends [approach], but here's what they miss.",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "[Popular approach] is overrated. Try this instead.",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "Stop believing [common misconception].",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "Here's why I stopped using [tool/method].",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "Contrarian",
+   "hook": "The advice everyone follows is wrong for [specific audience].",
+   "fits": [
+    "unpopular",
+    "overrated",
+    "wrong",
+    "stopped",
+    "misconception",
+    "not",
+    "instead"
+   ]
+  },
+  {
+   "category": "POV",
+   "hook": "POV: You're trying to [situation].",
+   "fits": [
+    "pov",
+    "relatable",
+    "struggle",
+    "understand",
+    "engineer",
+    "developer"
+   ]
+  },
+  {
+   "category": "POV",
+   "hook": "When you finally understand [difficult concept].",
+   "fits": [
+    "pov",
+    "relatable",
+    "struggle",
+    "understand",
+    "engineer",
+    "developer"
+   ]
+  },
+  {
+   "category": "POV",
+   "hook": "If you've ever struggled with [problem], this is for you.",
+   "fits": [
+    "pov",
+    "relatable",
+    "struggle",
+    "understand",
+    "engineer",
+    "developer"
+   ]
+  },
+  {
+   "category": "POV",
+   "hook": "Things only [specific audience] will understand.",
+   "fits": [
+    "pov",
+    "relatable",
+    "struggle",
+    "understand",
+    "engineer",
+    "developer"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "I almost gave up on [goal].",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "The day [event] changed how I [activity].",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "I made one decision that changed everything.",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "Let me tell you about my biggest mistake with [topic].",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "Here's what happened after [event].",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Story",
+   "hook": "A few months ago, I was [situation]. Today, [outcome].",
+   "fits": [
+    "story",
+    "almost",
+    "gave",
+    "up",
+    "decision",
+    "mistake",
+    "changed"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "Save this before your next [activity].",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "Send this to someone learning [topic].",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "Bookmark this list for later.",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "You'll need this the next time you [situation].",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "Share this with someone who needs to understand [topic].",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  },
+  {
+   "category": "Save and share",
+   "hook": "Keep this guide handy when you're working on [task].",
+   "fits": [
+    "save",
+    "share",
+    "bookmark",
+    "reference",
+    "guide",
+    "handy"
+   ]
+  }
+ ],
+ "ai": [
+  {
+   "kind": "article",
+   "hooks": [
+    "This article explains [AI concept] better than most tutorials.",
+    "Before building your next AI agent, read this.",
+    "One article every AI engineer should bookmark.",
+    "Stop learning [topic] through random tutorials. Start here."
+   ],
+   "structure": "Article cover, problem, key concepts, diagram, practical use, who should read it, source"
+  },
+  {
+   "kind": "repo",
+   "hooks": [
+    "Five GitHub repositories worth exploring as an AI engineer.",
+    "These repositories can teach you how [technology] works.",
+    "Stop bookmarking repositories without understanding them.",
+    "Want to understand [technology]? Explore this codebase."
+   ],
+   "structure": "Repository, purpose, architecture, important files, capabilities, what you learn, link"
+  },
+  {
+   "kind": "skill",
+   "hooks": [
+    "Five skills worth installing in your AI coding environment.",
+    "You're probably underusing your AI coding assistant.",
+    "What happens when you combine AI agents with reusable skills?",
+    "A practical skill stack for AI engineers."
+   ],
+   "structure": "Skill name, purpose, capabilities, example workflow, when to use, source link"
+  }
+ ],
+ "sequences": [
+  {
+   "name": "Educational",
+   "slides": "Hook, context, step 1, step 2, step 3, example, summary, CTA"
+  },
+  {
+   "name": "Resource recommendation",
+   "slides": "Hook, why they matter, one resource per slide, who should use them, learning order, save CTA"
+  },
+  {
+   "name": "Myth-busting",
+   "slides": "Common belief, what people misunderstand, the real explanation, evidence, correct approach, takeaway and CTA"
+  },
+  {
+   "name": "Case study",
+   "slides": "Outcome, starting situation, challenge, approach, implementation, verified results, limits, CTA"
+  },
+  {
+   "name": "Comparison",
+   "slides": "A vs B, both options, criterion 1, criterion 2, pros and cons, who should choose what, verdict and CTA"
+  }
+ ]
+}

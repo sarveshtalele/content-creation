@@ -618,6 +618,7 @@ def main():
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
     b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--background', action='store_true', help='detach and return at once (use for reel/gif: they take minutes); poll with jobstatus'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
     js = sp.add_parser('jobstatus'); js.add_argument('dir')
+    hk = sp.add_parser('hooks', help='viral hook patterns that fit a topic (from data/hooks.json)'); hk.add_argument('text', nargs='?', default='', help='topic, or a project folder with source.md'); hk.add_argument('--kind', choices=['carousel', 'line'], default='carousel', help='carousel = first-slide formulas; line = opening line for a post, Reel or GIF'); hk.add_argument('-n', type=int, default=5)
     rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
     ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
@@ -643,6 +644,11 @@ def main():
         if not a.foreground: return LA.command('editor', a, [os.path.abspath(a.dir)], os.path.abspath(a.dir))
         import editor as ED; return ED.serve(os.path.abspath(a.dir), a.port, not a.no_open, a.state)
     if a.cmd == 'jobstatus': return jobstatus(a)
+    if a.cmd == 'hooks':
+        import hooks as HK; t = a.text
+        if os.path.isdir(t) and os.path.isfile(os.path.join(t, 'source.md')): t = open(os.path.join(t, 'source.md'), encoding='utf-8', errors='replace').read()[:6000]
+        for x in HK.suggest(t, a.kind, a.n): print(f"{x['category']:<18} {x['text']}")
+        print('\nPick the one that fits the real concept, fill every [placeholder] with the real topic and real numbers (carousel hook <= 60 characters). These are patterns, not guaranteed results.'); return 0
     if a.cmd == 'resources': return resources_cmd(a)
     if a.cmd == 'edit': return edit_cmd(a)
     if a.cmd == 'cta': return cta_cmd(a)

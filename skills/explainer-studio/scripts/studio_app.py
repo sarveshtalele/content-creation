@@ -56,6 +56,9 @@ def serve(port=0, open_browser=True, state_path=None):
                 b = ST.brand(); return self._json(200, {'designs': DS.public(), 'themes': DS.THEMES, 'icons': DS.ICONS, 'brand': {'name': b.get('name', ''), 'tagline': b.get('tagline', '')}, 'customPhoto': os.path.isfile(ST.USER_PHOTO)})
             if u.path == '/api/library':
                 it, idx = LB.items(); lib_index.clear(); lib_index.update(idx); return self._json(200, {'items': it})
+            if u.path == '/api/hooks':
+                import hooks as HK; qs = (q.get('text') or [''])[0][:6000]
+                return self._json(200, {'carousel': HK.suggest(qs, 'carousel', 5) if qs.strip() else [], 'line': HK.suggest(qs, 'line', 6) if qs.strip() else [], 'library': HK.load(), })
             if u.path == '/api/ready': return self._json(200, readiness())
             if u.path.startswith('/lib/'):
                 p = lib_index.get(u.path[5:]); 
@@ -80,12 +83,12 @@ def serve(port=0, open_browser=True, state_path=None):
                 if u.path == '/api/request':
                     kind = body.get('kind'); 
                     if kind not in ('gif', 'reel', 'post'): return self._json(400, {'error': 'Unknown kind.'})
-                    topic = (body.get('topic') or '').strip()[:300]; src = (body.get('source') or '').strip()[:4000]; note = (body.get('notes') or '').strip()[:1000]
+                    topic = (body.get('topic') or '').strip()[:300]; src = (body.get('source') or '').strip()[:4000]; note = (body.get('notes') or '').strip()[:1000]; hook = (body.get('hook') or '').strip()[:200]
                     if len(topic) < 4: return self._json(400, {'error': 'Describe the topic in a few words.'})
                     rd = os.path.join(ST.EH, 'requests'); os.makedirs(rd, exist_ok=True)
-                    json.dump({'kind': kind, 'topic': topic, 'source': src, 'notes': note, 'at': int(_t.time())}, open(os.path.join(rd, f'{int(_t.time())}-{kind}.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+                    json.dump({'kind': kind, 'topic': topic, 'source': src, 'notes': note, 'hook': hook, 'at': int(_t.time())}, open(os.path.join(rd, f'{int(_t.time())}-{kind}.json'), 'w', encoding='utf-8'), ensure_ascii=False)
                     word = {'gif': 'a LinkedIn GIF', 'reel': 'a cinematic Reel', 'post': 'a LinkedIn post'}[kind]
-                    prompt = f'Use explainer-studio to make {word} about: {topic}.' + (f' Source: {src}.' if src else '') + (f' Notes: {note}.' if note else '') + ' Ask me before building anything that needs a choice, then run the build in the background and tell me when it is done.'
+                    prompt = f'Use explainer-studio to make {word} about: {topic}.' + (f' Source: {src}.' if src else '') + (f' Notes: {note}.' if note else '') + (f' Open with this pattern, filled with the real topic and real numbers: "{hook}".' if hook else '') + ' Ask me before building anything that needs a choice, then run the build in the background and tell me when it is done.'
                     return self._json(200, {'ok': True, 'prompt': prompt})
             self._send(404, 'not found', 'text/plain')
 

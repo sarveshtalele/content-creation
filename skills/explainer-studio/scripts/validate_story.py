@@ -182,7 +182,7 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
+CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'ring', 'tower', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
 CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold', 'stage', 'editorial')
 def _pct(v, w, val):
@@ -217,6 +217,13 @@ def v_carousel(v, c, icons):
         elif ty in ('bars', 'funnel'):
             for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
                 _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
+        elif ty == 'ring':
+            for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 5)):
+                _S(v, f'{w}.steps[{j}].title', st_.get('title'), 2, 18); _S(v, f'{w}.steps[{j}].sub', st_.get('sub', ''), 0, 44); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
+        elif ty == 'tower':
+            for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 4)):
+                _S(v, f'{w}.steps[{j}].title', st_.get('title'), 3, 16); _S(v, f'{w}.steps[{j}].tag', st_.get('tag', ''), 0, 26); _S(v, f'{w}.steps[{j}].note', st_.get('note', ''), 0, 52)
+                _S(v, f'{w}.steps[{j}].stat', st_.get('stat', ''), 0, 26); _S(v, f'{w}.steps[{j}].side', st_.get('side', ''), 0, 34); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
         elif ty == 'compare':
             for sd in ('left', 'right'):
                 x = s_.get(sd) if isinstance(s_.get(sd), dict) else {}; _S(v, f'{w}.{sd}.head', x.get('head'), 3, 26)

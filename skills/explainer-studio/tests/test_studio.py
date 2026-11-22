@@ -36,6 +36,11 @@ assert code('/') == 403 and code('/api/designs?t=wrong') == 403, 'token required
 assert code('/?t=x', 'evil.example.com') == 403, 'foreign host refused'
 assert code('/samples/../../scripts/studio.py') in (403, 404), 'no path escape'
 
+# ---- hook library: best-fit picker returns different, relevant patterns ----
+import hooks as HK
+_h = HK.suggest('Compare Claude Code vs Cursor: which should you choose', 'carousel', 3); assert _h and _h[0]['category'] == 'Comparison', _h
+_l = HK.suggest('I tested an agent for 30 days', 'line', 4); assert _l and _l[0]['category'] == 'Proof', _l
+assert len(HK.load()['carousel']) == 15 and len(HK.load()['line']) >= 60
 # ---- launcher: returns at once, reuses the running app, reports status, stops cleanly (the Antigravity "app never launches" failure) ----
 import subprocess, tempfile, re
 _env = dict(os.environ, HOME=tempfile.mkdtemp(prefix='eh-'), USERPROFILE=tempfile.mkdtemp(prefix='eh-'), XDG_CACHE_HOME=tempfile.mkdtemp(prefix='eh-'))
