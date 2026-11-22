@@ -4,7 +4,7 @@ export { clamp, lerp, seg, eo, back, ss, eio };
 
 export const C = {
   bg: '#FAF9F5', card: '#FFFFFF', line: '#E3E0D3', lineD: '#C9C5B5', ink: '#141413', mid: '#5E5D59',
-  clay: '#D97757', clayD: '#B5532F', claySoft: '#F8E6DD',
+  clay: '#D97757', clayD: '#A8481F', claySoft: '#F8E6DD',
   blue: '#6A9BCC', blueD: '#3C6C9C', blueSoft: '#E4EDF6',
   green: '#788C5D', greenD: '#52663A', greenSoft: '#E8EEDD',
   sand: '#F0EEE6',

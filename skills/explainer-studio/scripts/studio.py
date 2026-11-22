@@ -159,8 +159,8 @@ def stage(work, name, data):
     if os.path.isfile(USER_AVATAR): shutil.copy(USER_AVATAR, os.path.join(d, 'assets', 'avatar.png'))   # the user's own avatar replaces the shipped one
     dump(data, os.path.join(d, 'data.json')); return d
 BAD = re.compile(r'^BAD\s+(\S+)\s+at\s+([\d.]+)s\s+\d+ chars\s+need\s+([\d.]+)s\s+got\s+([\d.]+)s', re.M)
-def readcheck(lib, env, film, size, q=None):
-    cmd = ['node', os.path.join(lib, 'core/render/readcheck.mjs'), film, '--size', size] + (['--q', q] if q else [])
+def readcheck(lib, env, film, size, q=None, fast=False):
+    cmd = ['node', os.path.join(lib, 'core/render/readcheck.mjs'), film, '--size', size] + (['--q', q] if q else []) + (['--latin-cps', '20', '--pad', '0.9'] if fast else [])      # a Reel is read at video pace: 20 characters a second, 0.9 s to take it in
     r = run(cmd, cwd=lib, env=env, quiet=True); txt = r.stdout + r.stderr
     return [(m.group(1), float(m.group(3)) - float(m.group(4))) for m in BAD.finditer(txt)], txt, r.returncode
 def validate_layout(lib, env, film, size, q, top, bottom, side):
@@ -177,10 +177,10 @@ def has_claude(work):
     return bool(re.search(r'\bclaude\b', open(os.path.join(work, 'source_full.txt'), encoding='utf-8').read(), re.I))
 def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
-    tails, end_hold = {}, 3.2
+    tails, end_hold = {}, 2.8
     for it in range(5):
         D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work); D['look'] = 'light' if (story.get('reel') or {}).get('look') == 'light' else 'cinematic'
-        film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920')
+        film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920', fast=True)
         if rc == 2: sys.exit('readcheck could not run:\n' + txt[-800:])
         if not bad: break
         for i, deficit in bad:

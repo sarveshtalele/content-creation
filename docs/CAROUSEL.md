@@ -12,6 +12,7 @@ Slide 1 is the title with the hook, the last slide is the closing CTA (your bran
 | type | use it for |
 |---|---|
 | `points` | 3-5 numbered ideas |
+| `grid` | numbered card poster: banner, legend, 4/6/9 cards each with a mini diagram (`kicker`, `legend[]`, `cards[]{motif,caption,title,sub,group}`) |
 | `stat` | one number (ring gauge + 100-cell waffle) |
 | `bars` | a few values compared |
 | `compare` | two sides (before/after, generic/specific) |

@@ -8,7 +8,11 @@ for (let k = 0; k < N; k++) {
   await page.evaluate(t => window.render(t), k + .5);
   const r = await page.evaluate(async () => {
     const lum = c => { const m = c.match(/[\d.]+/g).map(Number); const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(m[0]) + .7152 * f(m[1]) + .0722 * f(m[2]); };
-    const bgOf = el => { for (let e = el; e; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; const m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > .6)) return c; } return 'rgb(250,249,245)'; };
+    document.querySelectorAll('svg').forEach(v => { v.style.pointerEvents = 'auto'; v.querySelectorAll('*').forEach(n => { n.style.pointerEvents = 'auto'; }); });
+    const svgFill = n => { let f = getComputedStyle(n).fill; if (!f || f === 'none') return null; const g = f.match(/url\(["']?#([^"')]+)/); if (g) { const gr = document.getElementById(g[1]), st = gr && gr.querySelectorAll('stop'); if (!st || !st.length) return null; f = st[Math.floor(st.length / 2)].getAttribute('stop-color'); const t = document.createElement('i'); t.style.color = f; document.body.appendChild(t); f = getComputedStyle(t).color; t.remove(); } const o = parseFloat(getComputedStyle(n).fillOpacity); return o < .6 ? null : f; };
+    const under = el => { const r = el.getBoundingClientRect(); for (const n of document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)) { if (n === el || el.contains(n) || n.contains(el) && n !== el && !n.matches('.scene *')) { if (n === el || el.contains(n)) continue; }
+        if (n instanceof SVGGraphicsElement && !(n instanceof SVGSVGElement)) { const f = svgFill(n); if (f) return f; } else if (n instanceof HTMLElement) { const c = getComputedStyle(n).backgroundColor, m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > .6)) return c; } } return null; };
+    const bgOf = el => { const u = under(el); if (u) return u; for (let e = el; e; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; const m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > .6)) return c; } return 'rgb(250,249,245)'; };
     const vis = [...document.querySelectorAll('.scene')].find(s => s.style.display !== 'none');
     const imgs = [...vis.querySelectorAll('*')].map(e => ({ e, u: (getComputedStyle(e).backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1] })).filter(x => x.u);
     const res = { images: [], lowContrast: [], small: [] };

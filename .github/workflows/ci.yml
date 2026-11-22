@@ -21,6 +21,7 @@ jobs:
           python skills/explainer-studio/tests/test_platform.py
           python skills/explainer-studio/tests/test_security.py
           python skills/explainer-studio/tests/test_studio.py
+          python skills/explainer-studio/tests/test_content.py
       - name: Offline self-test (ingest, check, pick, post for every fixture)
         run: python skills/explainer-studio/scripts/selftest.py
       - name: Installer
@@ -39,4 +40,8 @@ jobs:
           C="$RUNNER_TEMP/c"; python skills/explainer-studio/scripts/studio.py ingest skills/explainer-studio/fixtures/carousel.md --out "$C"
           cp skills/explainer-studio/fixtures/carousel.story.json "$C/story.json"
           python skills/explainer-studio/scripts/studio.py build "$C" --artifacts carousel --format both
+          python skills/explainer-studio/scripts/studio.py e2e "$C"
+          G="$RUNNER_TEMP/g"; python skills/explainer-studio/scripts/studio.py ingest skills/explainer-studio/fixtures/grid.md --out "$G"
+          cp skills/explainer-studio/fixtures/grid.story.json "$G/story.json"
+          python skills/explainer-studio/scripts/studio.py build "$G" --artifacts gif
           test -s "$C"/out/*-carousel.pdf && ls "$C"/out/carousel/*.png | wc -l

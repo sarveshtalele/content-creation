@@ -35,7 +35,7 @@
   {
    "id": "b4",
    "role": "how",
-   "say": "Every connection starts with a handshake. The server replies with its choice and its certificate.",
+   "say": "Every connection starts with a handshake. The server sends its certificate.",
    "cite": [
     [
      "c03",
@@ -46,7 +46,7 @@
   {
    "id": "b5",
    "role": "how",
-   "say": "Next, your browser checks that certificate. If the name doesn't match, you get a warning.",
+   "say": "Your browser checks that certificate. A wrong name triggers a warning.",
    "cite": [
     [
      "c04",
@@ -57,7 +57,7 @@
   {
    "id": "b6",
    "role": "how",
-   "say": "Then both sides agree on a shared secret, with fresh keys every session.",
+   "say": "Both sides agree on a shared secret, with fresh keys each session.",
    "cite": [
     [
      "c05",
@@ -68,7 +68,7 @@
   {
    "id": "b7",
    "role": "how",
-   "say": "And it's quick. TLS 1.3 completes the handshake in one round trip.",
+   "say": "And it's quick. TLS 1.3 needs one round trip.",
    "cite": [
     [
      "c06",
@@ -94,7 +94,7 @@
   {
    "id": "b9",
    "role": "takeaway",
-   "say": "So the padlock protects the path between you and the server, nothing more.",
+   "say": "The padlock protects the path between you and the server, nothing more.",
    "cite": [
     [
      "c08",

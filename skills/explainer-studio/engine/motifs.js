@@ -62,11 +62,11 @@ export function motif(svg, kind, x, y, w, h, P, seed = 1) {
 
 // jagged top edge for the title banner
 export function banner(root, svg, { x, y, w, h, title, kicker, id = 'gr' }) {
-  let d = `M${x} ${y + 14}`; const n = 34; for (let i = 1; i <= n; i++) d += ` L${x + w * i / n} ${y + (i % 2 ? 0 : 12) + (i % 3) * 2}`;
-  d += ` L${x + w} ${y + h} L${x} ${y + h} Z`; path(svg, d, { stroke: 'none', fill: C.clay });
+  const n = 34, pts = [`0 14px`]; for (let i = 1; i <= n; i++) pts.push(`${(100 * i / n).toFixed(2)}% ${(i % 2 ? 0 : 12) + (i % 3) * 2}px`); pts.push('100% 100%', '0 100%');
+  const bg = E(root, 'abs', `left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${C.clayD};clip-path:polygon(${pts.join(',')})`);   // a real filled element, so the contrast gate sees the colour behind the white title
   const sz = fitSize(title, { w: w - 60, h: h - 56, max: 64, min: 34, weight: 700, font: 'serif', lh: 1.05 });
-  tx(root, id + '-h', title, { x: x + 30, y: y + 18, w: w - 60, h: Math.ceil(measure(title, { size: sz, weight: 700, font: 'serif', w: w - 60, lh: 1.05 }).h) + 4, size: sz, weight: 700, font: 'serif', color: '#fff', align: 'center', wrap: true, lh: 1.05 });
-  if (kicker) tx(root, id + '-k', kicker, { x: x + 30, y: y + h - 42, w: w - 60, h: 34, size: 24, weight: 700, color: '#fff', align: 'center' });
+  tx(bg, id + '-h', title, { x: 30, y: 18, w: w - 60, h: Math.ceil(measure(title, { size: sz, weight: 700, font: 'serif', w: w - 60, lh: 1.05 }).h) + 4, size: sz, weight: 700, font: 'serif', color: '#fff', align: 'center', wrap: true, lh: 1.05 });
+  if (kicker) tx(bg, id + '-k', kicker, { x: 30, y: h - 42, w: w - 60, h: 34, size: 24, weight: 700, color: '#fff', align: 'center' });
 }
 
 export function legend(root, svg, items, { x, y, w, id = 'gr' }) {

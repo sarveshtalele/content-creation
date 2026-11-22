@@ -202,7 +202,7 @@ export function buildReel(stage, D) {
         s.root.style.opacity = String(Math.min(a, b));
         s.root.style.transform = cin ? `scale(${1 + (1 - a) * .06 - (1 - b) * .03})` : `translateY(${(1 - a) * 26 - (1 - b) * 22}px)`;
         let dx = 0, dy = 0; if (cin) { for (const h of hits) { const q = t - h; if (q >= 0 && q < .32) { const d = 1 - q / .32; dx += Math.sin(q * 95) * 9 * d; dy += Math.cos(q * 80) * 6 * d; fl = Math.max(fl, .34 * (1 - seg(t, h, h + .2))); } } }
-        const f = s.f, push = cin ? 1 + .05 * k : 1; f.wrap.style.transform = `translate(${f.tx + dx}px,${f.ty + dy}px) scale(${f.s * push})`;
+        const f = s.f, push = cin ? 1 + .02 * k : 1; f.wrap.style.transform = `translate(${f.tx + dx}px,${f.ty + dy}px) scale(${f.s * push})`;
         s.update(t);
         if (cin && s.idx > 0) sw = Math.max(sw, seg(t, s.t0 + .02, s.t0 + .95) * (1 - seg(t, s.t0 + .95, s.t0 + 1.05)) > 0 ? eo(seg(t, s.t0 + .02, s.t0 + .95)) : 0);
       }

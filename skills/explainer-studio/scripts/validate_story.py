@@ -8,7 +8,7 @@ NEED_CITE = {'stakes', 'answer', 'how', 'proof'}
 S = lambda lo, hi: ('str', lo, hi)
 ITEM = lambda **kw: ('obj', kw)
 SPEC = {
-  'narration': {'lines': [6, 12], 'words_per_line': [5, 24], 'max_sentence_words': 18, 'total_words': [60, 130], 'reel_seconds': [22, 55], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
+  'narration': {'lines': [6, 12], 'words_per_line': [5, 24], 'max_sentence_words': 18, 'total_words': [60, 115], 'reel_seconds': [22, 55], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
   'reel_scenes': {
     'hook':   {'q': S(10, 130), 'sub': S(0, 110), 'chips': ('list', 0, 4, S(2, 24))},
     'flow':   {'title': S(0, 48), 'steps': ('list', 2, 4, ITEM(label=S(2, 22), sub=S(0, 34), icon='icon')), 'loop': 'bool'},
@@ -224,7 +224,7 @@ def v_carousel(v, c, icons):
                 _S(v, f'{w}.steps[{j}].title', st_.get('title'), 2, 18); _S(v, f'{w}.steps[{j}].sub', st_.get('sub', ''), 0, 44); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
         elif ty == 'tower':
             for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 4)):
-                _S(v, f'{w}.steps[{j}].title', st_.get('title'), 3, 16); _S(v, f'{w}.steps[{j}].tag', st_.get('tag', ''), 0, 26); _S(v, f'{w}.steps[{j}].note', st_.get('note', ''), 0, 52)
+                _S(v, f'{w}.steps[{j}].title', st_.get('title'), 3, 16); _S(v, f'{w}.steps[{j}].tag', st_.get('tag', ''), 0, 18); _S(v, f'{w}.steps[{j}].note', st_.get('note', ''), 0, 52)
                 _S(v, f'{w}.steps[{j}].stat', st_.get('stat', ''), 0, 26); _S(v, f'{w}.steps[{j}].side', st_.get('side', ''), 0, 34); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
         elif ty == 'compare':
             for sd in ('left', 'right'):

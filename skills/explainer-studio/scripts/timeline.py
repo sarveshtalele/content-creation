@@ -1,7 +1,7 @@
 """timeline: story + TTS durations -> data.json for the engine (scene windows, per-part appear times, caption chunks). Deterministic."""
 import re
 from common import *
-LEAD, GAP, SCENE_GAP, FIRST_PAD = 0.35, 0.25, 0.3, 0.2
+LEAD, GAP, SCENE_GAP, FIRST_PAD = 0.3, 0.22, 0.2, 0.2
 def parts(sc):
     t, p = sc['type'], sc.get('p', {})
     return {'hook': 1 + bool(p.get('sub')) + len(p.get('chips', [])), 'flow': len(p.get('steps', [])) + bool(p.get('loop')), 'map': 1 + len(p.get('items', [])),
@@ -10,12 +10,12 @@ def items_of(sc):
     p = sc.get('p', {}); t = sc['type']
     return {"hook": [None] * parts(sc), "flow": p.get("steps", []) + ([None] if p.get("loop") else []), "map": [None] + p.get("items", []),
             'cards': p.get('items', []), 'list': p.get('items', []), 'chips': p.get('items', []), 'dialog': p.get('turns', []), 'big': [None] * parts(sc)}[t]
-def build(story, dur, tails=None, end_hold=3.2, last_tail=1.5):
+def build(story, dur, tails=None, end_hold=2.8, last_tail=1.5):
     tails = tails or {}; beats = {b['id']: b for b in story['beats']}; order = [b['id'] for b in story['beats']]
     start, end = {}, {}; t = LEAD; scs = story['scenes']
     for i, sc in enumerate(scs):
         for bid in sc['beats']: start[bid] = t; end[bid] = t + dur[bid]; t = end[bid] + GAP
-        tail = tails.get(sc['id'], 0.55) if i < len(scs) - 1 else last_tail + tails.get(sc['id'], 0)
+        tail = tails.get(sc['id'], 0.4) if i < len(scs) - 1 else last_tail + tails.get(sc['id'], 0)
         t = end[sc['beats'][-1]] + tail + SCENE_GAP
     last_end = end[order[-1]]
     end_t0 = last_end + last_tail + tails.get(scs[-1]['id'], 0)

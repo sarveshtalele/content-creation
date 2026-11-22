@@ -14,6 +14,7 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `isoflow` | an ordered flow across isometric slabs | `gif.isoflow{stops[3-5]{title, sub, icon, group}}` |
 | `orbit` | a core with 4-6 things around it | `gif.orbit{hub{title, sub?}, items[4-6]{title, sub, icon, group}}` |
 | `stairs` | levels or stages that climb | `gif.stairs{steps[3-5]{title, sub, icon, group}}` (lowest first) |
+| `grid` | 4, 6 or 9 numbered cards, each a small diagram (a poster of ideas, tools or algorithms) | `gif.grid{legend[0-4]{label,group}, cards[4\|6\|9]{motif, caption, title, sub, group}}`; motif is one of `bars curve tree flow cluster network loop steps split pixels` |
 | `tower` | a building of floors, each room a small scene | `gif.tower{hub{title}, floors[3-5]{title, sub, icon, group, scene}}` (top floor first) |
 | `skyline` | a ranking or size comparison | `gif.skyline{buildings[3-5]{title, sub, value, size 1-10, icon, group}}` (value is shown on the roof, e.g. `82%`) |
 | `conveyor` | items passing through gates | `gif.conveyor{tally, gates[3-4]{title, sub, icon, group, stat{value, pct}}}` (first gate first; `stat` is the share that passes the gate, taken from the source, e.g. `88%` / `88`) |

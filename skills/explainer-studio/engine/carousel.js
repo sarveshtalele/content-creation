@@ -56,7 +56,7 @@ function titlePoster(root, s) {          // full-bleed colour poster: huge hook,
   E(bgp, 'abs', `left:48px;top:52px;width:104px;height:104px;border-radius:30px;background:${C.onAcc};display:flex;align-items:center;justify-content:center;transform:rotate(-6deg)`, icon(s.icon || 'bolt', 58, C.clay, 2.2));
   const k = s.kicker ? 70 : 0, iw = w - 96, hz = fitSize(s.hook, { w: iw, h: 560, max: 112, min: 56, weight: 800, font: 'serif', lh: 1.04 }), hh = Math.ceil(measure(s.hook, { size: hz, weight: 800, font: 'serif', w: iw, lh: 1.04 }).h) + 8;
   const sz = s.sub ? fitSize(s.sub, { w: iw, h: 130, max: 38, min: 24, weight: 600, lh: 1.25 }) : 0, sh = s.sub ? H_(s.sub, sz, iw, 600) + 8 : 0;
-  let yy = 200; if (s.kicker) { const kk = E(bgp, 'tx sans', `left:48px;top:${yy}px;position:absolute;display:inline-flex;align-items:center;white-space:nowrap;font-size:26px;font-weight:800;letter-spacing:.08em;color:${C.clay};background:${C.onAcc};border-radius:30px;padding:8px 22px`); const sp = E(kk, '', 'display:block', '', 'span'); sp.textContent = s.kicker; kk.dataset.id = 'ti-kicker'; kk.dataset.text = s.kicker; yy += k; }
+  let yy = 200; if (s.kicker) { const kk = E(bgp, 'tx sans', `left:48px;top:${yy}px;position:absolute;display:inline-flex;align-items:center;white-space:nowrap;font-size:26px;font-weight:800;letter-spacing:.08em;color:${C.clayD};background:${C.onAcc};border-radius:30px;padding:8px 22px`); const sp = E(kk, '', 'display:block', '', 'span'); sp.textContent = s.kicker; kk.dataset.id = 'ti-kicker'; kk.dataset.text = s.kicker; yy += k; }
   tx(bgp, 'ti-hook', s.hook, { x: 48, y: yy, w: iw, h: hh, size: hz, weight: 800, font: 'serif', wrap: true, lh: 1.04, color: C.onAcc }); yy += hh + 26;
   if (s.sub) tx(bgp, 'ti-sub', s.sub, { x: 48, y: yy, w: iw, h: sh, size: sz, weight: 600, color: C.onAcc, wrap: true, lh: 1.25, css: 'align-items:flex-start;opacity:.92;' });
   E(bgp, 'abs', `right:48px;bottom:44px;width:96px;height:96px;border-radius:50%;background:${C.onAcc};display:flex;align-items:center;justify-content:center`, arrow(C.clay, 52));
@@ -74,7 +74,7 @@ function titleBold(root, s, D) {
   const split = t => { const ws = t.split(/\s+/).filter(Boolean), n = Math.max(1, Math.ceil(t.length / 16)), out = []; let cur = [], target = t.length / n; ws.forEach(wd => { cur.push(wd); if (cur.join(' ').length >= target && out.length < n - 1) { out.push(cur.join(' ')); cur = []; } }); if (cur.length) out.push(cur.join(' ')); return out; };
   const parts = ai < 0 ? split(hk).map(t => ({ t })) : [...(hk.slice(0, ai).trim() ? split(hk.slice(0, ai).trim()).map(t => ({ t })) : []), { t: hk.slice(ai, ai + accent.length), hi: true }, ...(hk.slice(ai + accent.length).trim() ? split(hk.slice(ai + accent.length).trim()).map(t => ({ t })) : [])];
   const sz = Math.min(...parts.map(p => fitSize(p.t, { w: w - 40, h: 170, max: hk.length > 36 ? 84 : 112, min: 54, weight: 900, lh: 1 })), hk.length > 36 ? 84 : 112), lh = Math.ceil(sz * 1.2) + 1;
-  let y = y0; if (s.kicker) { tx(root, 'ti-kick', s.kicker.toUpperCase(), { x, y, w, h: 44, size: 28, weight: 800, color: C.blue, css: 'letter-spacing:.22em;' }); y += 60; }
+  let y = y0; if (s.kicker) { tx(root, 'ti-kick', s.kicker.toUpperCase(), { x, y, w, h: 44, size: 28, weight: 800, color: C.blueD, css: 'letter-spacing:.22em;' }); y += 60; }
   parts.forEach((p, k) => {
     if (p.hi) { const mw = textW(p.t, sz, 900), bx = E(root, 'abs', `left:${x - 12}px;top:${y + 24}px;width:${Math.ceil(mw) + 36}px;height:${lh - 22}px;background:${acc};transform:rotate(-1.6deg);border-radius:8px`);
       tx(bx, 'ti-l' + k, p.t, { x: 12, y: -14, w: Math.ceil(mw) + 24, h: lh, size: sz, weight: 900, color: '#fff', css: 'letter-spacing:-.03em;' }); y += lh + 4; return; }
@@ -100,7 +100,7 @@ function photoEl(root, D, { left, top, w, h }) {
 }
 // "stage" cover (poster reference 5): centred stacked headline in two weights, floating tags, ribbon arcs, photo rising from the bottom
 function titleStage(root, s, D) {
-  const W_ = W, cx = W_ / 2, ink = C.ink, blue = C.blue;
+  const W_ = W, cx = W_ / 2, ink = C.ink, blue = C.blueD;
   root.prepend(E(root, 'abs', `left:0;top:0;width:${W}px;height:${H}px;background:linear-gradient(180deg,${C.bg} 0%,${C.bg} 50%,${C.blueSoft} 100%)`));
   const svg = svgLayer(root, W, H);
   path(svg, 'M-30 930 C120 760 330 760 420 900', { stroke: blue, w: 34 }); path(svg, 'M1110 760 C960 700 840 820 900 980', { stroke: blue, w: 34 });
@@ -338,7 +338,7 @@ const TYPES = {
   },
   // cut-away tower funnel (reference: editorial "what is a marketing funnel"): floors narrow downward, stage banners, notes and figures on the right, altitude notes on the left
   tower(root, s) {
-    const TEAL = '#2F8089', GOLD = '#D9A93B', INK = '#2A2620', st = s.steps, n = st.length, y0 = heading(root, 'tw-h', s.title) + 10, svg = svgLayer(root, W, H);
+    const TEAL = C.blueD, GOLD = C.clay, INK = C.ink, st = s.steps, n = st.length, y0 = heading(root, 'tw-h', s.title) + 10, svg = svgLayer(root, W, H);
     const cx = 440, rt0 = 222, rb0 = 96, ry = 40, roofY = y0 + 64, fh = Math.min(210, Math.floor((BODY1 - 130 - roofY) / n)), r = d => rt0 + (rb0 - rt0) * d / n, base = roofY + n * fh;
     const ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
     path(svg, `M${X0 + 160} ${roofY} L${X0 + 160} ${base}`, { stroke: INK, w: 2 });
@@ -351,7 +351,7 @@ const TYPES = {
       const rm = r(k + .5), bw = Math.round(rm * 1.86), by = yt + (k ? 14 : ry + 2), col = k % 2 ? GOLD : TEAL, tg = Math.round(rm * 1.8);
       E(root, 'abs', `left:${cx - bw / 2}px;top:${by}px;width:${bw}px;height:58px;background:${col};border:2px solid ${INK}`);
       tx(root, `tw-t${k}`, st[k].title.toUpperCase(), { x: cx - bw / 2 + 10, y: by, w: bw - 20, h: 58, size: fitSize(st[k].title.toUpperCase(), { w: bw - 20, h: 54, max: 32, min: 18, weight: 700, font: 'serif', lh: 1.1 }), weight: 700, font: 'serif', color: k % 2 ? INK : '#fff', align: 'center' });
-      if (st[k].tag) tx(root, `tw-g${k}`, st[k].tag.toUpperCase(), { x: cx - tg / 2, y: by + 62, w: tg, h: 28, size: fitSize(st[k].tag.toUpperCase(), { w: tg - 6, h: 26, max: 19, min: 12, weight: 600, lh: 1.1 }), weight: 600, color: INK, align: 'center' });
+      if (st[k].tag) tx(root, `tw-g${k}`, st[k].tag, { x: cx - tg / 2, y: by + 62, w: tg, h: 28, size: fitSize(st[k].tag, { w: tg - 6, h: 26, max: 22, min: 20, weight: 600, lh: 1.1 }), weight: 600, color: INK, align: 'center' });
       const sh = Math.min(66, fh - (k ? 142 : 142 + ry)); if (sh >= 40) { const sb = box(root, { x: cx - 70, y: yb - 26 - sh, w: 140, h: sh, r: 3, fill: '#FFFDF6', bd: INK, bw: 2, shadow: false }); E(sb, 'abs', `left:${70 - 17}px;top:${(sh - 34) / 2 - 2}px`, icon(st[k].icon || 'star', 34, col === GOLD ? '#8A6510' : TEAL, 2)); }
       if (st[k].side) tx(root, `tw-sd${k}`, st[k].side, { x: X0, y: yt + fh * .30, w: 142, h: 110, size: 21, weight: 500, font: 'serif', italic: true, color: '#5E5648', wrap: true, lh: 1.2 });
       const RX = 722, RW = W - X0 - RX; let ny = yt + 4;
