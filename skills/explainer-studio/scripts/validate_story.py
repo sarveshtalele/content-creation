@@ -24,7 +24,7 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
     'columns': 'catalogue by category: gif.hub{title,sub?,tagline}, gif.columns[3-4]{label,icon,group,items[2-3]{title<=22,sub<=60,icon}}',
     'pipeline': 'top-down workflow: gif.pipeline{start{title,sub?,icon},stages[2-4]{label,group,link?,nodes[2-4]{title<=24,sub<=44}},result{title,sub?,icon}}',
@@ -33,6 +33,7 @@ SPEC = {
     'isoflow': 'a flow across isometric slabs, one stop per slab: gif.isoflow{stops[3-5]{title<=24,sub<=50,icon,group}} (first to last)',
     'orbit': 'a glossy core with tilted 3D rings and 4-6 cards around it: gif.orbit{hub{title<=22,sub?<=24},items[4-6]{title<=24,sub<=44,icon,group}}',
     'tower': 'isometric cutaway building, one room per floor with a small scene (stack, process, levels): gif.tower{hub{title<=26},floors[3-5]{title<=22,sub<=50,icon,group,scene}} (top floor first); scene in SCENES list',
+    'funnel': 'stages that narrow top to bottom (conversion, filtering, shrinking pool): gif.funnel{stages[3-5]{title<=24,sub<=60,value<=6 chars,pct 0-100 (share of the first stage, from the source),icon,group}}',
     'skyline': 'isometric city, tower height shows a ranking or size: gif.skyline{buildings[3-5]{title<=20,sub<=44,value<=6 chars,size 1-10,icon,group}}',
     'conveyor': 'isometric belt through 3-4 gates (processing, review, hand-off): gif.conveyor{tally<=34 (panel heading),gates[3-4]{title<=22,sub<=50,icon,group,stat{value<=8 e.g. "88%",pct 0-100 = share passing}}} (first gate first)',
     'stairs': 'isometric blocks climbing left to right (levels, stages, maturity): gif.stairs{steps[3-5]{title<=22,sub<=50,icon,group}} (lowest first)',
@@ -282,7 +283,7 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
-TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor')
+TEMPLATES = ('hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
 VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
@@ -336,6 +337,12 @@ def v_skyline(v, g, icons):
         if not isinstance(b, dict): continue
         _S(v, f'gif.skyline.buildings[{i}].value', b.get('value'), 1, 6)
         if not (isinstance(b.get('size'), int) and not isinstance(b.get('size'), bool) and 1 <= b['size'] <= 10): v.e(f'gif.skyline.buildings[{i}].size must be an integer 1-10')
+def v_funnel(v, g, icons):
+    R = g.get('funnel', {}).get('stages'); _nodes(v, 'gif.funnel.stages', R, 3, 5, 24, 60, icons)
+    for i, r in enumerate(R if isinstance(R, list) else []):
+        if not isinstance(r, dict): continue
+        _S(v, f'gif.funnel.stages[{i}].value', r.get('value'), 1, 6)
+        if not (isinstance(r.get('pct'), (int, float)) and not isinstance(r.get('pct'), bool) and 0 <= r['pct'] <= 100): v.e(f'gif.funnel.stages[{i}].pct must be a number 0-100 (share of the first stage)')
 def v_conveyor(v, g, icons):
     C_ = g.get('conveyor', {}); _S(v, 'gif.conveyor.tally', C_.get('tally'), 8, 34); G_ = C_.get('gates'); _nodes(v, 'gif.conveyor.gates', G_, 3, 4, 22, 50, icons)
     for i, x in enumerate(G_ if isinstance(G_, list) else []):
@@ -351,7 +358,7 @@ def v_gif(v, g, icons):
     if 'source' in g: v.w('gif.source is ignored: the GIF no longer shows a source line')
     if tpl == 'framework': return v_framework(v, g, icons)
     if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
-    if tpl in ('exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor'): return {'exploded': v_exploded, 'isoflow': v_isoflow, 'orbit': v_orbit, 'stairs': v_stairs, 'tower': v_tower, 'skyline': v_skyline, 'conveyor': v_conveyor}[tpl](v, g, icons)
+    if tpl in ('exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel'): return {'exploded': v_exploded, 'isoflow': v_isoflow, 'orbit': v_orbit, 'stairs': v_stairs, 'tower': v_tower, 'skyline': v_skyline, 'conveyor': v_conveyor, 'funnel': v_funnel}[tpl](v, g, icons)
     if tpl == 'columns':
         h = g.get('hub', {}); _S(v, 'gif.hub.title', h.get('title'), 2, 22); _S(v, 'gif.hub.tagline', h.get('tagline'), 4, 34)
         if h.get('sub') is not None: _S(v, 'gif.hub.sub', h['sub'], 4, 40)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.0
+
+- **ChatGPT**: `setup.py light` installs only the browser and ffmpeg (no voice model, no Python 3.11-3.13 requirement); `studio.py doctor --for carousel|gif|reel` checks only what the chosen output needs.
+- **Motion**: every GIF template now has cards that float gently once they arrive (shared, in `gif_common.js`). A drifting background and camera zoom were tried and dropped: they cut the GIF from 900 px to 640 px and pushed the title out of the safe zone.
+- **New `funnel` GIF template** (3-5 narrowing stages with shares and values), with a fixture, validator rules and a picker score.
+
 ## 2.9.0
 
 - **ChatGPT is supported** through the zipped skill upload; README and install notes updated.

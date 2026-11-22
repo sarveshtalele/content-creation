@@ -1,0 +1,6 @@
+{"meta":{"title":"Why most sign-ups never become customers","slug":"signup-funnel"},"gif":{"template":"funnel","title":"Most trials end before data","subtitle":"Of 1,000 visitors only 72 are still paying","funnel":{"stages":[
+{"title":"Visit pricing page","sub":"1,000 people see the plans","value":"1,000","pct":100,"icon":"search","group":"blue"},
+{"title":"Start a free trial","sub":"400 of them start a free trial","value":"400","pct":60,"icon":"rocket","group":"green"},
+{"title":"Connect a data source","sub":"240 connect the step that predicts everything","value":"240","pct":45,"icon":"database","group":"clay"},
+{"title":"Reach a paid plan","sub":"Only 96 reach a paid plan","value":"96","pct":30,"icon":"bolt","group":"blue"},
+{"title":"Paying for three months","sub":"72 are still paying after three months","value":"72","pct":22,"icon":"shield","group":"green"}]}}}

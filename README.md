@@ -10,7 +10,7 @@ Add a narrated Reel or a LinkedIn post only when you want them.
 [Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.9.0-D97757)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.10.0-D97757)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
@@ -125,7 +125,7 @@ Needs `node >= 20` (with npm), `python` 3.11 to 3.13 (what CI tests), `git`. `ff
 
 Troubleshooting: `python` not found on Windows, use `py -3`. Voice install fails on Python 3.14, install 3.12 (setup picks it automatically when present). Browser download blocked by a proxy, set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary. Long Windows paths break the offline voice engine, keep the repository close to the drive root or set `EXPLAINER_HOME` to a short path.
 
-**ChatGPT.** Supported: run `python3 install.py --zip`, then in ChatGPT go to Skills > Create > Upload and add `explainer-studio-skill.zip`. The full pipeline runs there when the sandbox can start a browser (Playwright). `studio.py doctor` checks this first and says exactly what is missing, so nothing fails halfway.
+**ChatGPT.** Supported. Run `python3 install.py --zip`, then in ChatGPT go to Skills > Create > Upload and add `explainer-studio-skill.zip`. In its sandbox run `python3 scripts/setup.py light` (browser and ffmpeg only; no 350 MB voice model), then `python3 scripts/studio.py doctor --for gif`. Carousels (PDF and PNG) and GIFs run there; Reels need the voice model, so build those in a local agent. `doctor --for carousel|gif|reel` checks only what that output needs.
 
 ## Use it
 

@@ -2,7 +2,8 @@
 """One-time setup, identical on macOS, Linux and Windows (safe to re-run).
 Installs: node deps + headless browser, Python voice env, voice model (SHA-256 verified), ffmpeg >= 7.
 Needs: node >= 20 with npm, python 3.11-3.13. Everything heavy lives in ~/.cache/explainer-studio (override: EXPLAINER_HOME).
-usage: python setup.py [asr]      (asr = also install the optional speech-to-text check)"""
+usage: python setup.py [light|asr]   light = carousels, stills and GIFs only (node deps + browser + ffmpeg; no voice model, no Python 3.11-3.13 needed: the mode for ChatGPT and other small sandboxes)
+                                     asr = also install the optional speech-to-text check"""
 import hashlib, os, shutil, subprocess, sys, urllib.request
 
 WIN = os.name == 'nt'
@@ -84,17 +85,20 @@ def main():
     say('[2/5] headless browser')
     if not run([node, os.path.join(ND, 'node_modules', 'playwright-core', 'cli.js'), 'install', 'chromium-headless-shell'], check=False):
         say('WARNING: browser download failed. Set PLAYWRIGHT_CHROME to a chrome-headless-shell binary, or fix the network and re-run.')
-    say('[3/5] python voice environment')
-    py = pick_python(); vpy = os.path.join(VENV, 'Scripts', 'python.exe') if WIN else os.path.join(VENV, 'bin', 'python')
-    if not os.path.exists(vpy): run(py + ['-m', 'venv', VENV])
-    run([vpy, '-m', 'pip', 'install', '-q', '--upgrade', 'pip'])
-    run([vpy, '-m', 'pip', 'install', '-q', 'kokoro-onnx', 'numpy', 'soundfile', 'soxr', 'scipy'])
-    say('[4/5] voice model (about 350 MB, resumable)')
-    for f, want in SHA.items():
-        p = os.path.join(MODELS, f)
-        if not (os.path.exists(p) and os.path.getsize(p)): download(f'{BASE}/{f}', p)
-        if sha_of(p) != want:
-            os.remove(p); die(f'CHECKSUM MISMATCH for {f}: deleted it. Re-run setup, or check your network or proxy.')
+    LIGHT = len(sys.argv) > 1 and sys.argv[1] == 'light'
+    if LIGHT: say('[3/5] voice environment skipped (light mode)'); say('[4/5] voice model skipped (light mode)')
+    if not LIGHT: say('[3/5] python voice environment')
+    if not LIGHT:
+        py = pick_python(); vpy = os.path.join(VENV, 'Scripts', 'python.exe') if WIN else os.path.join(VENV, 'bin', 'python')
+        if not os.path.exists(vpy): run(py + ['-m', 'venv', VENV])
+        run([vpy, '-m', 'pip', 'install', '-q', '--upgrade', 'pip'])
+        run([vpy, '-m', 'pip', 'install', '-q', 'kokoro-onnx', 'numpy', 'soundfile', 'soxr', 'scipy'])
+        say('[4/5] voice model (about 350 MB, resumable)')
+        for f, want in SHA.items():
+            p = os.path.join(MODELS, f)
+            if not (os.path.exists(p) and os.path.getsize(p)): download(f'{BASE}/{f}', p)
+            if sha_of(p) != want:
+                os.remove(p); die(f'CHECKSUM MISMATCH for {f}: deleted it. Re-run setup, or check your network or proxy.')
     say('[5/5] ffmpeg >= 7')
     import re
     m = re.search(r'ffmpeg version n?(\d+)', out(['ffmpeg', '-version']) if shutil.which('ffmpeg') else '')
@@ -106,8 +110,9 @@ def main():
         else:
             run([npm, 'install', '--no-audit', '--no-fund', '--silent', 'ffprobe-static'], cwd=ND)
             link(os.path.join(ND, 'node_modules', 'ffprobe-static', 'bin', sys.platform if sys.platform in ('win32', 'darwin') else 'linux', out([node, '-p', 'process.arch']), 'ffprobe' + EXE), os.path.join(BIN, 'ffprobe' + EXE))
-    if len(sys.argv) > 1 and sys.argv[1] == 'asr': run([vpy, '-m', 'pip', 'install', '-q', 'sherpa-onnx'])
+    if LIGHT: pass
+    elif len(sys.argv) > 1 and sys.argv[1] == 'asr': run([vpy, '-m', 'pip', 'install', '-q', 'sherpa-onnx'])
     else: say(f'Optional speech-to-text verification: python "{os.path.join(HERE, "setup.py")}" asr   (not required)')
-    say(f'Done. Next: python "{os.path.join(HERE, "studio.py")}" doctor')
+    say(f'Done. Next: python "{os.path.join(HERE, "studio.py")}" doctor' + (' --for gif' if LIGHT else ''))
 
 if __name__ == '__main__': main()

@@ -60,6 +60,8 @@ def run(cmd, cwd=None, env=None, quiet=False):
 
 # ───────────────────────── doctor ─────────────────────────
 def doctor(a):
+    need_for = getattr(a, 'for_', None) or 'all'   # carousel: browser only; gif: + ffmpeg; all/reel: + voice
+    voice = need_for in ('all', 'reel'); ffm = need_for in ('all', 'reel', 'gif')
     ok = True; rows = []
     def row(name, good, info, need=True):
         nonlocal ok; rows.append(f'{"OK " if good else ("-- " if not need else "BAD")} {name:<22} {info}'); ok &= good or not need
@@ -69,9 +71,9 @@ def doctor(a):
     lib = find_lib(); row('bundled runtime', bool(lib), lib or 'missing runtime/ folder (re-clone the repository)')
     if lib:
         env = env_for(lib); fx = shutil.which('ffmpeg', path=env['PATH']); fv = ffver(fx) if fx else 0
-        row('ffmpeg >= 7', fv >= 7, f'{fx} (v{fv})' if fx else 'missing -> ' + SETUP)
-        row('voice model', os.path.exists(os.path.join(EH, 'models', 'kokoro-v1.0.onnx')) and os.path.exists(os.path.join(EH, 'models', 'voices-v1.0.bin')), os.path.join(EH, 'models') + ' (' + SETUP + ')')
-        py = lib_py(); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0, py + ('' if r.returncode == 0 else ' (run: ' + SETUP + ')'))
+        row('ffmpeg >= 7', fv >= 7 or not ffm, f'{fx} (v{fv})' if fx else 'missing -> ' + SETUP)
+        row('voice model', not voice or os.path.exists(os.path.join(EH, 'models', 'kokoro-v1.0.onnx')) and os.path.exists(os.path.join(EH, 'models', 'voices-v1.0.bin')), os.path.join(EH, 'models') + ' (' + SETUP + ')')
+        py = lib_py(); r = run([py, '-c', 'import kokoro_onnx, numpy, soundfile, soxr, scipy'], quiet=True); row('python voice deps', r.returncode == 0 or not voice, py + ('' if r.returncode == 0 else ' (run: ' + SETUP + ')'))
         if WIN: row('sh (Reel only)', bool(sh_exe()), sh_exe() or 'install Git for Windows to build Reels; GIF and post work without it', need=False)
         row('node deps (playwright)', os.path.isdir(os.path.join(lib, 'node_modules', 'playwright-core')), 'runtime/node_modules (' + SETUP + ')')
         r = run([py, '-c', 'import sherpa_onnx'], quiet=True); row('speech check (optional)', r.returncode == 0 and os.path.isdir(os.path.join(EH, 'asr')), 'verifies the audio says the script; skipped if absent', need=False)
@@ -553,7 +555,7 @@ def plan_cmd(a):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
-    sp.add_parser('doctor'); s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
+    dc = sp.add_parser('doctor'); dc.add_argument('--for', dest='for_', choices=['carousel', 'gif', 'reel', 'all'], default='all');  s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
     for n in ('check', 'eval', 'post', 'pick', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
     br = sp.add_parser('brand')
