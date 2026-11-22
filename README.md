@@ -64,7 +64,7 @@ flowchart LR
 
 1. **Ingest** reads the source once and splits it into cited chunks.
 2. **The decision matrix** (`data/matrix.json`) scores 19 content shapes, such as narrowing numbers, agent loops, A versus B, hierarchy or trends. It then ranks the GIF templates, carousel charts, Reel motion, hook families, the opening visual and the carousel structure that fit those shapes ([docs/DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md)).
-3. **You choose.** The agent shows the ranked options and asks before it builds anything.
+3. **You choose.** The agent shows the ranked options and the [design catalogue](skills/explainer-studio/studio/catalog.html), a page with every design, its ID and a real sample. It asks which design IDs to use and does not build until you answer.
 4. **The agent writes one compact `story.json`** from the source. That is the only step that uses the model. Everything else is deterministic code.
 5. **Check, render, review.** Text grounding, length limits and number grounding run first. The engine then renders in headless Chromium. Finally, the review gates check layout (overflow, overlap, empty cards), reading time, file size and speech-to-text.
 
@@ -151,7 +151,18 @@ python3 skills/explainer-studio/scripts/studio.py brand --name "Your Name" --tag
 
 These are the same commands in Claude Code (`/`), Codex prompts and Antigravity workflows.
 
+### Design catalogue
+
+```bash
+python3 skills/explainer-studio/scripts/studio.py catalog   # regenerates studio/catalog.html and prints its path
+```
+
+The catalogue shows every GIF template, carousel cover and slide (including the 21 charts), Reel cover layout, Reel look and motion, and walkthrough option, each with the ID you give your agent. The Design Studio also serves it at `/catalog`.
+
 ### Design Studio web app
+
+Create media by chatting with your agent. Use the web app to check designs against your source, edit content and re-render.
+
 
 ```bash
 python3 skills/explainer-studio/scripts/studio.py studio    # prints a private 127.0.0.1 link

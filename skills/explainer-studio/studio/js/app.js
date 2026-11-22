@@ -6,7 +6,7 @@ const PAGES = { home, library, gif: gifPage, carousel: carouselPage, reel: reelP
 const TITLES = { home: 'Home', library: 'Library', gif: 'GIF', carousel: 'Carousel', reel: 'Reel', cover: 'Reel cover', walkthrough: 'Walkthrough video', post: 'Post' };
 
 async function boot() {
-  S.D = await api('/api/designs'); $('#who').textContent = S.D.brand.name;
+  S.D = await api('/api/designs'); $('#who').textContent = S.D.brand.name; $('#catLink').href = u('/catalog');
   addEventListener('hashchange', route); route();
   api('/api/ready').then(r => { S.READY = r; const h = (location.hash || '#/home').slice(2); if (['home', 'gif', 'reel', 'carousel'].includes(h)) route(); });
 }
@@ -22,8 +22,8 @@ const MEDIA = [['gif', 'GIF', 'A looping diagram for LinkedIn, chosen from 15 te
 
 function home(m) {
   const fan = el('div', { class: 'fan', role: 'img', 'aria-label': 'Sample designs' }, ['chart-sankey', 'info-cone', 'chart-mindmap', 'chart-radar'].map(id => el('img', { src: u('/samples/' + id + '.jpg'), alt: '' })));
-  m.append(el('section', { class: 'hero' }, el('div', {}, el('h1', { text: 'Turn any source into visuals people stop for.' }),
-    el('p', { class: 'lede', text: 'Paste an article, docs page or notes. The decision matrix reads its shape (steps, comparisons, numbers, layers) and ranks the best GIF, carousel charts, Reel motion and hooks for it. You choose; everything is built on this computer with your branding.' })), fan));
+  m.append(el('section', { class: 'hero' }, el('div', {}, el('h1', { text: 'Create in chat. Choose, check and edit here.' }),
+    el('p', { class: 'lede', text: 'Ask Claude Code, Codex or Antigravity for a GIF, carousel, Reel, cover, walkthrough or post: /explainer <link or text>. Before it builds anything, your agent shows the ranked designs and asks which to use. Use this app to see every design, check what fits your source, edit content and re-render. Everything runs on this computer with your branding.' }), el('div', { class: 'row' }, el('a', { class: 'btn pri', href: u('/catalog'), target: '_blank', rel: 'noopener', text: 'Open the design catalogue' }), el('a', { class: 'btn ghost', href: '#/library', text: 'Open the library' }))), fan));
   const ta = el('textarea', { id: 'src', placeholder: 'Paste the text you want to explain (or a few sentences about the topic)…', style: 'min-height:150px' }); ta.value = S.source;
   const go = el('button', { class: 'btn pri', type: 'button', text: 'Analyse my content' }), out = el('div');
   m.append(el('div', { class: 'card pad', style: 'margin-bottom:26px' }, el('h2', { text: 'Start with your content' }), el('p', { class: 'muted', text: 'Your text stays on this computer.' }), el('div', { class: 'fld' }, el('label', { for: 'src', class: 'sr' }, 'Source text'), ta), go, out));

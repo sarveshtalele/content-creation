@@ -72,8 +72,9 @@ const L = {
     const a = path(svg, `M${cx} ${cy - R}a${R} ${R} 0 1 1 -0.01 0`, { stroke: 'url(#cv-rg)', w: 44 }); a.setAttribute('stroke-dasharray', `${Lc * .78} ${Lc}`);
     const vz = fitSize(nm.value, { w: 400, h: 240, max: 230, min: 90, weight: 700, font: 'serif', lh: 1 });
     tx(root, 'cv-num', nm.value, { x: cx - 210, y: cy - 130, w: 420, h: 260, size: vz, weight: 700, font: 'serif', align: 'center', color: C.clayD, lh: 1 });
-    const ly = cy + R + 80, lz = fitSize(nm.label, { w: XW, h: 200, max: 52, min: 34, weight: 700, lh: 1.15 });
-    tx(root, 'cv-lab', nm.label, { x: X0, y: ly, w: XW, h: Math.min(200, hookH(nm.label, lz, XW, 'sans', 700, 1.15)), size: lz, weight: 700, wrap: true, lh: 1.15, align: 'center' });
+    if (nm.label === c.hook) nm.label = c.sub || '';   // never repeat the hook under the figure
+    const ly = cy + R + 80, lz = fitSize(nm.label || ' ', { w: XW, h: 200, max: 52, min: 34, weight: 700, lh: 1.15 });
+    if (nm.label) tx(root, 'cv-lab', nm.label, { x: X0, y: ly, w: XW, h: Math.min(200, hookH(nm.label, lz, XW, 'sans', 700, 1.15)), size: lz, weight: 700, wrap: true, lh: 1.15, align: 'center' });
     brandPill(root, D.brand, 1468);
   },
   split(root, D) {

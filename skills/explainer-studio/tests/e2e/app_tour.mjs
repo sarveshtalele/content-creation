@@ -23,7 +23,7 @@ try {
   // Home: analyse a source
   await go('home'); check(await page.locator('h1').innerText() !== '', 'Home loads');
   await page.fill('#src', SRC); await pause(); await page.getByRole('button', { name: 'Analyse my content' }).click();
-  await page.waitForSelector('.reco', { timeout: 30000 }); await pause(1500);
+  await page.waitForSelector('.reco', { timeout: 90000 });   // the first analysis can wait on the app's startup health check await pause(1500);
   check((await page.locator('.shapes').innerText()).includes('Narrowing numbers'), 'Decision matrix finds "Narrowing numbers"');
   check((await page.locator('.reco').innerText()).toLowerCase().includes('funnel'), 'Funnel recommended for the GIF');
   await page.mouse.wheel(0, 600); await pause(1200);
@@ -68,6 +68,9 @@ try {
 
   // Library
   await go('library'); check(await page.locator('.item').count() >= 1, 'Library lists what was made'); await pause(1200);
+  await page.goto(URL.replace('/?', '/catalog?')); await page.waitForSelector('h1'); await pause(900);
+  const cat = await page.evaluate(async () => { const im = [...document.images]; im.forEach(i => i.loading = 'eager'); await Promise.all(im.map(i => i.decode().catch(() => null))); return { n: im.length, broken: im.filter(i => !i.naturalWidth).length }; });
+  check(cat.n >= 50 && cat.broken === 0, `Design catalogue shows every design (${cat.n} samples, ${cat.broken} broken)`); await page.mouse.wheel(0, 1400); await pause(1200);
   check(errors.length === 0, 'No JavaScript errors in the app' + (errors.length ? ': ' + errors.slice(0, 3).join(' | ') : ''));
 } catch (e) { check(false, 'Tour stopped: ' + String(e.message || e).split('\n')[0]); }
 

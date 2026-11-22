@@ -51,7 +51,8 @@ def serve(port=0, open_browser=True, state_path=None):
             if u.path == '/avatar':      # the profile photo shown in the header; carries no secrets
                 a = ST.USER_AVATAR if os.path.isfile(ST.USER_AVATAR) else os.path.join(SKILL, 'assets', 'avatar.png'); return self._send(200, open(a, 'rb').read(), 'image/png')
             if u.path.startswith('/fonts/'): return self._static('fonts', u.path[7:])
-            if u.path.startswith('/js/'): return self._static('js', u.path[4:])          # the app's own modules; no data in them     # fonts carry no secrets; the page needs them before it can send a token header
+            if u.path.startswith('/js/'): return self._static('js', u.path[4:])
+            if u.path.startswith('/samples/'): return self._static('samples', u.path[9:])   # rendered sample designs; no data in them (the catalogue page loads them)          # the app's own modules; no data in them     # fonts carry no secrets; the page needs them before it can send a token header
             if not self._auth(q): return self._send(403, 'bad token', 'text/plain')
             if u.path == '/api/designs':
                 b = ST.brand(); return self._json(200, {'designs': DS.public(), 'themes': DS.THEMES, 'gifStyles': DS.GIF_STYLES, 'icons': DS.ICONS, 'brand': {'name': b.get('name', ''), 'tagline': b.get('tagline', '')}, 'customPhoto': os.path.isfile(ST.USER_PHOTO)})
@@ -61,6 +62,8 @@ def serve(port=0, open_browser=True, state_path=None):
                 import hooks as HK; qs = (q.get('text') or [''])[0][:6000]
                 return self._json(200, {'carousel': HK.suggest(qs, 'carousel', 5) if qs.strip() else [], 'line': HK.suggest(qs, 'line', 6) if qs.strip() else [], 'library': HK.load(), })
             if u.path == '/api/ready': return self._json(200, readiness())
+            if u.path == '/catalog':
+                import catalog as CT; return self._send(200, open(CT.build(), 'rb').read(), 'text/html; charset=utf-8')
             if u.path == '/api/job':
                 j = JOBS.get((q.get('id') or [''])[0])
                 if not j: return self._json(404, {'error': 'unknown job'})

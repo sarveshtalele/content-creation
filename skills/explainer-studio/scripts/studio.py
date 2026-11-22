@@ -633,10 +633,13 @@ def main():
     pl = sp.add_parser('plan'); pl.add_argument('dir')
     cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--layout', choices=['hero', 'question', 'number', 'split', 'face']); cv.add_argument('--hook')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
+    sp.add_parser('catalog', help='regenerate studio/catalog.html (every design with its ID and sample) and print its path')
     wk = sp.add_parser('walkthrough', help='run a step-by-step guide with Playwright, verify each step, render a walkthrough Reel'); wk.add_argument('dir'); wk.add_argument('--steps', required=True); wk.add_argument('--device', choices=['mobile', 'desktop'], default='mobile'); wk.add_argument('--strict', action='store_true')
     a = ap.parse_args()
     if a.cmd == 'cover': return cover_cmd(a)
     if a.cmd == 'walkthrough': return walkthrough_cmd(a)
+    if a.cmd == 'catalog':
+        import catalog as CT; p = CT.build(); print(p); print('Show this page to the person and ask which design IDs to use before building.'); return 0
     if a.cmd == 'plan': return plan_cmd(a)
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)

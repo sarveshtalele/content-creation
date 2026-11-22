@@ -31,7 +31,7 @@ def data(story, hook=None, layout=None):
     num = None
     for t in [hook, sub] + ([big['big'], big.get('sub', '')] if big else []):
         m = NUM.search(t or '')
-        if m: num = {'value': m.group(1).strip(), 'label': t}; break
+        if m and (len(re.sub(r'\D', '', m.group(1))) >= 2 or m.group(1).strip()[-1:] in '%xkmbKMB'): num = {'value': m.group(1).strip(), 'label': t}; break   # a lone digit is not a headline figure
     out = {'hook': hook, 'sub': sub, 'kicker': cv.get('kicker', ''), 'chips': chips, 'icons': [i['icon'] for p in lists for i in _items(p) if i['icon']][:4]}
     if flow: out['flow'] = {'title': flow['title'], 'steps': _items(flow)[:4]}
     if num: out['number'] = num

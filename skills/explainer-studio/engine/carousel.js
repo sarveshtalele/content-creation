@@ -127,16 +127,38 @@ function titleEditorial(root, s, D) {
   lines.forEach((l, k) => { tx(root, 'ti-l' + k, l.toUpperCase(), { x, y, w, h: Math.ceil(sz * 1.12), size: Math.floor(sz * .86), weight: 800, color: ink, align: 'center', font: 'serif', css: 'letter-spacing:-.01em;' }); y += Math.ceil(sz * 1.16); });
   path(svg, `M${x} ${y + 10} H${x + w}`, { stroke: rule, w: 2 });
   if (s.sub) tx(root, 'ti-sub', s.sub.toUpperCase().slice(0, 60), { x, y: y + 22, w, h: 40, size: 20, weight: 600, color: ink, align: 'center', css: 'letter-spacing:.2em;' });
-  const fl = (s.chips && s.chips.length >= 2 ? s.chips : [{ label: 'First' }, { label: 'Second' }, { label: 'Third' }]).slice(0, 4), n = fl.length, top = y + 100, hgt = Math.min(185, Math.floor((1150 - top) / n)), cx = 540;
-  const tint = [teal, gold, teal, gold];
-  for (let k = 0; k < n; k++) { const t = top + k * hgt, wt = 760 - k * 140, wb = 760 - (k + 1) * 140, yb = t + hgt;
-    path(svg, `M${cx - wt / 2} ${t} L${cx + wt / 2} ${t} L${cx + wb / 2} ${yb} L${cx - wb / 2} ${yb} Z`, { stroke: ink, w: 3, fill: k % 2 ? '#FBF8EE' : '#EFE8D4' });
-    path(svg, `M${cx - wt / 2 + 18} ${t + 16} H${cx + wt / 2 - 18}`, { stroke: ink, w: 2 });
-    const bw = Math.min(380, Math.max(210, wb - 24)); E(root, 'abs', `left:${cx - bw / 2}px;top:${t + 52}px;width:${bw}px;height:56px;background:${tint[k]};display:flex;align-items:center;justify-content:flex-start;padding-left:14px`, icon(fl[k].icon || 'bolt', 30, k % 2 ? ink : '#fff', 2.2));
-    tx(root, 'ti-f' + k, (fl[k].label || '').toUpperCase(), { x: cx - bw / 2 + 60, y: t + 52, w: bw - 64, h: 56, size: 20, weight: 800, color: k % 2 ? ink : '#fff', font: 'serif', css: 'letter-spacing:.02em;' });
-    if (k === 0 || k === n - 1) tx(root, 'ti-n' + k, k === 0 ? 'Wide at the top' : 'A loyal core', { x: x, y: t + 60, w: 130, h: 60, size: 22, weight: 500, color: ink, font: 'serif', italic: true, wrap: true, lh: 1.15 });
+  // curved trumpet funnel: flared mouth with a 3D rim, gradient bands, people pouring in (a few dropping out), callouts on curved leaders, a glowing core
+  const fl = (s.chips && s.chips.length >= 2 ? s.chips : [{ label: 'First' }, { label: 'Second' }, { label: 'Third' }]).slice(0, 4), n = fl.length, cx = 540;
+  const top = y + (s.sub ? 150 : 110), stemY = BODY1 - 70, mouth = 300, neck = 46, bodyH = stemY - 60 - top, hw = t => neck + (mouth - neck) * Math.pow(1 - t, 1.9), Y = t => top + t * bodyH;
+  const tint = [teal, gold, '#C8553D', '#3C6C9C'], defs = document.createElementNS(svgNS, 'defs'); svg.appendChild(defs);
+  const shade = (hex, f) => { const v = parseInt(hex.slice(1), 16), c = i => Math.max(0, Math.min(255, Math.round(((v >> i) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
+  const grad = (id, hex) => { const g = document.createElementNS(svgNS, 'linearGradient'); g.setAttribute('id', id); g.setAttribute('x1', '0'); g.setAttribute('x2', '1');
+    [[0, shade(hex, .7)], [.22, mix(hex, .45)], [.34, mix(hex, .18)], [.62, hex], [1, shade(hex, .62)]].forEach(([o, c]) => { const t = document.createElementNS(svgNS, 'stop'); t.setAttribute('offset', o); t.setAttribute('stop-color', c); g.appendChild(t); }); defs.appendChild(g); return `url(#${id})`; };
+  const f1 = v => v.toFixed(1), side = (t0, t1, sgn, rev) => { const pts = []; for (let i = 0; i <= 14; i++) { const t = t0 + (t1 - t0) * i / 14; pts.push(`${f1(cx + sgn * hw(t))} ${f1(Y(t))}`); } if (rev) pts.reverse(); return pts.join(' L'); };
+  const ry = r => r * .17;
+  path(svg, `M${cx - mouth - 40} ${stemY + 52}a${mouth + 40} 22 0 1 0 ${2 * (mouth + 40)} 0a${mouth + 40} 22 0 1 0 ${-2 * (mouth + 40)} 0`, { stroke: 'none', fill: ink, sharp: true }).setAttribute('opacity', '.06');   // floor shadow
+  for (let k = n - 1; k >= 0; k--) {   // bottom band first so each band's front lip sits over the one below
+    const t0 = k / n + (k ? .012 : 0), t1 = (k + 1) / n - .012, r0 = hw(t0), r1 = hw(t1), hex = tint[k % 4];
+    path(svg, `M${side(t0, t1, -1)} A${f1(r1)} ${f1(ry(r1))} 0 0 0 ${f1(cx + r1)} ${f1(Y(t1))} L${side(t0, t1, 1, true)} A${f1(r0)} ${f1(ry(r0))} 0 0 1 ${f1(cx - r0)} ${f1(Y(t0))}Z`, { stroke: shade(hex, .7), w: 2.5, fill: grad('ed-g' + k, hex), sharp: true });
+    if (k) path(svg, `M${f1(cx - r0)} ${f1(Y(t0))}A${f1(r0)} ${f1(ry(r0))} 0 0 1 ${f1(cx + r0)} ${f1(Y(t0))}`, { stroke: mix(hex, .55), w: 4, sharp: true });
+    E(root, 'abs', `left:${cx - 30}px;top:${f1((Y(t0) + Y(t1)) / 2 - 2)}px;width:60px;height:36px;display:flex;align-items:center;justify-content:center;font:800 26px Lora,serif;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.3)`, String(k + 1).padStart(2, '0'));
   }
-  if (D && D.brand && D.brand.photo) E(root, 'abs', `left:${x + w - 150}px;top:${top + n * hgt - 130}px;width:150px;height:150px;border-radius:50%;background:url(${D.brand.photo}) center 20%/cover;border:4px solid ${ink};box-shadow:0 0 0 4px ${paper}`);
+  path(svg, `M${cx - mouth} ${top}a${mouth} ${ry(mouth)} 0 1 0 ${2 * mouth} 0a${mouth} ${ry(mouth)} 0 1 0 ${-2 * mouth} 0`, { stroke: shade(teal, .65), w: 4, fill: '#FFFDF6', sharp: true });   // the open mouth
+  path(svg, `M${cx - mouth + 22} ${top + 5}a${mouth - 22} ${ry(mouth) - 8} 0 1 0 ${2 * (mouth - 22)} 0a${mouth - 22} ${ry(mouth) - 8} 0 1 0 ${-2 * (mouth - 22)} 0`, { stroke: 'none', fill: shade(teal, .45), sharp: true });
+  path(svg, `M${cx - mouth + 40} ${top - 6}A${mouth - 40} ${ry(mouth) - 14} 0 0 1 ${cx + mouth - 40} ${top - 6}`, { stroke: '#fff', w: 3, sharp: true }).setAttribute('opacity', '.7');
+  for (let i = 0; i < 16; i++) { const a = i / 15, px = cx - 210 + 420 * a + Math.sin(i * 1.7) * 18, py = top - 52 - Math.sin(a * Math.PI) * 26 + (i % 3) * 9; circ(svg, px, py, 7 + (i % 3), { fill: tint[i % 4], stroke: paper, w: 2 }); }   // people pouring in
+  [[.3, -1], [.55, 1], [.78, -1]].slice(0, n - 1).forEach(([t, sg], i) => { const x0 = cx + sg * hw(t), y0 = Y(t), x1 = x0 + sg * 120, y1 = y0 + 70;   // a few drop out
+    path(svg, `M${f1(x0 + sg * 6)} ${f1(y0)}Q${f1(x0 + sg * 90)} ${f1(y0 - 30)} ${f1(x1)} ${f1(y1)}`, { stroke: ink, w: 2, dash: '3 7', sharp: true }); circ(svg, x1, y1 + 10, 8, { fill: tint[(i + 1) % 4], stroke: paper, w: 2 }); });
+  path(svg, `M${cx - neck} ${f1(Y(1))}L${cx - neck * .8} ${stemY}A${neck * .8} 9 0 0 0 ${cx + neck * .8} ${stemY}L${cx + neck} ${f1(Y(1))}Z`, { stroke: shade(tint[(n - 1) % 4], .7), w: 2.5, fill: grad('ed-st', tint[(n - 1) % 4]), sharp: true });
+  for (let g = 3; g >= 1; g--) circ(svg, cx, stemY + 34, 18 + g * 12, { fill: gold }).setAttribute('opacity', String(.12 * (4 - g)));
+  E(root, 'abs', `left:${cx - 26}px;top:${stemY + 8}px;width:52px;height:52px;border-radius:50%;background:${gold};border:3px solid ${paper};display:flex;align-items:center;justify-content:center`, icon('star', 28, '#fff', 2.4));
+  fl.forEach((f, k) => {   // callouts alternate sides, tied to their band by a curved leader
+    const t = (k + .5) / n, sg = k % 2 ? 1 : -1, yb = Y(t), ex = cx + sg * (hw(t) + 8), cw = 290, bx = sg < 0 ? x : x + w - cw, by = yb - 38, hex = tint[k % 4];
+    path(svg, `M${f1(ex)} ${f1(yb)}C${f1(ex + sg * 60)} ${f1(yb)} ${f1((sg < 0 ? bx + cw : bx) - sg * 50)} ${f1(by + 38)} ${f1(sg < 0 ? bx + cw : bx)} ${f1(by + 38)}`, { stroke: hex, w: 3, sharp: true }); circ(svg, ex, yb, 6, { fill: '#fff', stroke: hex, w: 3 });
+    const b = box(root, { x: bx, y: by, w: cw, h: 76, r: 38, fill: '#FFFDF6', bd: hex, bw: 3, shadow: false, css: 'box-shadow:0 10px 22px rgba(23,24,28,.10);' });
+    E(b, 'abs', `left:10px;top:${(76 - 6 - 52) / 2}px;width:52px;height:52px;border-radius:50%;background:${hex};display:flex;align-items:center;justify-content:center`, icon(f.icon || 'bolt', 28, '#fff', 2.2));
+    tx(b, 'ti-f' + k, (f.label || '').toUpperCase(), { x: 74, y: 0, w: cw - 90, h: 70, size: fitSize((f.label || '').toUpperCase(), { w: cw - 90, h: 60, max: 24, min: 16, weight: 800, font: 'serif', lh: 1.1 }), weight: 800, color: ink, font: 'serif', css: 'letter-spacing:.02em;' });
+  });
 }
 function titleTerminal(root, s) {        // the hook typed into a terminal window
   const x = X0, w = XW, y = BODY0 + 6, h = BODY1 - BODY0 - 6, iw = w - 90;
@@ -200,13 +222,14 @@ const TYPES = {
     const cols = 20, rows = 5, cell = 40, g = 6, gw = cols * cell + (cols - 1) * g, gx = (W - gw) / 2, gy = Math.max(ly + 24, BODY1 - rows * (cell + g) - 6);    // waffle: 100 cells, one per percent
     for (let k = 0; k < 100; k++) { const r_ = Math.floor(k / cols), c_ = k % cols; E(root, 'abs', `left:${gx + c_ * (cell + g)}px;top:${gy + r_ * (cell + g)}px;width:${cell}px;height:${cell}px;border-radius:10px;background:${k < pc ? C.clay : C.line}`); }
   },
-  bars(root, s) {
-    let y = heading(root, 'br-h', s.title) + 30; const n = s.rows.length, pitch = Math.min(150, Math.floor((BODY1 - y) / n)), TW = 560, TX = X0 + 250;
-    s.rows.forEach((r, k) => { const P = grp(k), cy = y + k * pitch;
-      tx(root, `br${k}-l`, r.label, { x: X0, y: cy, w: 236, h: 64, size: 30, weight: 700, wrap: true, lh: 1.1 });
-      E(root, 'abs', `left:${TX}px;top:${cy + 12}px;width:${TW}px;height:42px;border-radius:21px;background:${C.line}`);
-      E(root, 'abs', `left:${TX}px;top:${cy + 12}px;width:${Math.round(TW * Math.max(0, Math.min(100, r.pct)) / 100)}px;height:42px;border-radius:21px;background:${P.bd}`);
-      tx(root, `br${k}-v`, r.value, { x: TX + TW + 12, y: cy, w: W - X0 - (TX + TW + 12), h: 66, size: 34, weight: 700, color: P.ink, align: 'right' }); });
+  bars(root, s) {   // label above a thick rounded bar, value at its end; rows share the band evenly
+    let y = heading(root, 'br-h', s.title) + 40; const n = s.rows.length, pitch = Math.min(250, Math.floor((BODY1 - y - 10) / n)), bh = Math.min(84, Math.round(pitch * .4)), TW = XW - 170;
+    y += Math.max(0, Math.floor((BODY1 - y - n * pitch) / 2));
+    s.rows.forEach((r, k) => { const P = grp(k), cy = y + k * pitch, bw = Math.max(bh, Math.round(TW * Math.max(0, Math.min(100, r.pct)) / 100));
+      tx(root, `br${k}-l`, r.label, { x: X0, y: cy, w: TW, h: 54, size: 36, weight: 700 });
+      E(root, 'abs', `left:${X0}px;top:${cy + 62}px;width:${TW}px;height:${bh}px;border-radius:${bh / 2}px;background:${C.sand}`);
+      E(root, 'abs', `left:${X0}px;top:${cy + 62}px;width:${bw}px;height:${bh}px;border-radius:${bh / 2}px;background:linear-gradient(90deg,${P.bd},${P.ink});box-shadow:0 8px 18px ${P.bd}44`);
+      tx(root, `br${k}-v`, r.value, { x: X0 + TW + 10, y: cy + 62 + (bh - 70) / 2, w: 160, h: 70, size: r.value.length > 5 ? 40 : 52, weight: 700, font: 'serif', color: P.ink, align: 'right' }); });
   },
   funnel(root, s) { return TYPES.cone(root, coneSteps(s)); },
   compare(root, s) {

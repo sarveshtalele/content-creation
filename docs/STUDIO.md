@@ -36,6 +36,7 @@ Every output carries your brand CTA pill (photo, name, tagline) at the bottom.
 | `POST /api/walk {spec, device}` → `GET /api/job?id=` | background Playwright walkthrough, its live log and files |
 | `POST /api/request {kind, topic, source, notes, hook, design, extra}` | a ready-to-paste request for your agent |
 | `GET /api/library`, `GET /api/ready` | library items; readiness from `studio.py doctor` |
+| `GET /catalog` | the design catalogue page (every design with its ID and sample) |
 
 ## Files
 
