@@ -231,7 +231,7 @@ def build_gif(work, story, lib, env, out, slug):
     r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', size, '--fps', '10', '--workers', workers(), '--q', 'mode=gif', '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('gif render failed')
     png = os.path.join(out, f'{slug}-linkedin.png')                      # the complete diagram as one still image: the last full frame before the closing fade (default output)
-    dur_v = float((probe(env, vid, 'format=duration').get('format') or {}).get('duration') or 0)
+    dur_v = duration_of(env, vid)
     ff_ = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'
     run([ff_, '-y', '-v', 'error', '-ss', str(max(0.0, dur_v - 2.5)), '-i', vid, '-frames:v', '1', png], env=env, quiet=True)
     fin = os.path.join(out, f'{slug}-linkedin.gif')
@@ -311,9 +311,14 @@ def sha(p):
         for c in iter(lambda: f.read(1 << 20), b''): h.update(c)
     return h.hexdigest()
 def probe(env, f, entries):
-    r = run(['ffprobe', '-v', 'error', '-show_entries', entries, '-of', 'json', f], env=env, quiet=True)
-    try: return json.loads(r.stdout)
-    except Exception: return {}
+    try: r = run(['ffprobe', '-v', 'error', '-show_entries', entries, '-of', 'json', f], env=env, quiet=True); return json.loads(r.stdout)
+    except Exception: return {}   # ffprobe missing (ffmpeg-static ships only ffmpeg): callers fall back to duration_of()
+def duration_of(env, f):
+    d = (probe(env, f, 'format=duration').get('format') or {}).get('duration')
+    if d: return float(d)
+    try: r = run(['ffmpeg', '-hide_banner', '-i', f], env=env, quiet=True); t = (r.stderr or '') + (r.stdout or '')
+    except Exception: return 0.0
+    m = re.search(r'Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)', t); return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3)) if m else 0.0
 def frame_hash(env, f, t, tmp):
     run(['ffmpeg', '-y', '-v', 'error', '-ss', str(t), '-i', f, '-frames:v', '1', tmp], env=env, quiet=True)
     return sha(tmp) if os.path.exists(tmp) else None
