@@ -36,7 +36,7 @@ def _kill(pid):
     except Exception: pass
 
 def start(kind, extra_args, key='', port=0, open_browser=True, foreground_cmd=None):
-    """Returns (exit code, url). Reuses a running instance; otherwise detaches a new one and waits (max 25 s) until it answers."""
+    """Returns (exit code, url). Reuses a running instance; otherwise detaches a new one and waits (max 60 s; slow first starts on CI runners) until it answers."""
     sp = state_path(kind, key); st = read_state(sp)
     if alive(st): return 0, st['url'], True
     if os.path.exists(sp): os.remove(sp)
@@ -46,7 +46,7 @@ def start(kind, extra_args, key='', port=0, open_browser=True, foreground_cmd=No
     if os.name == 'nt': kw['creationflags'] = 0x00000008 | 0x00000200 | 0x08000000      # DETACHED_PROCESS | NEW_PROCESS_GROUP | NO_WINDOW
     else: kw['start_new_session'] = True
     p = subprocess.Popen(cmd, **kw); t0 = time.time()
-    while time.time() - t0 < 25:
+    while time.time() - t0 < 60:
         st = read_state(sp)
         if st and alive(st): break
         if p.poll() is not None: break
