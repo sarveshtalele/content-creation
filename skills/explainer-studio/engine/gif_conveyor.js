@@ -14,6 +14,8 @@ const fmt = (st, k) => st.pre + (st.num * k).toLocaleString('en-US', { minimumFr
 
 export function buildConveyor(stage, D) {
   const S = scene(stage, D), V = S.g.conveyor, G = V.gates, n = G.length;
+  // studio look (grey infinity floor, soft light pool, orange belt): replaces the flat paper background for this template
+  const studio = E(S.root, 'abs', 'left:0;top:0;width:1080px;height:1350px;background:radial-gradient(900px 700px at 55% 45%,#F4F5F7,#D5D9DF 70%,#BCC1C9);'); S.root.insertBefore(studio, S.root.firstChild);
   header(S);
   const A0 = [90, 400], B0 = [990, 860], dx = B0[0] - A0[0], dy = B0[1] - A0[1], O = [42, -21], TH = 20, POST = 124, CW = 316, CH = 128, SL = dy / dx;
   const at = f => [A0[0] + dx * f, A0[1] + dy * f], fr = i => (i + .72) / (n + .44);
@@ -25,10 +27,10 @@ export function buildConveyor(stage, D) {
   // belt
   const belt = el(S.svg, 'g', {}); belt.style.opacity = '0';
   const sa = [A0[0] + O[0], A0[1] + O[1]], sb = [A0[0] - O[0], A0[1] - O[1]], ea = [B0[0] + O[0], B0[1] + O[1]], eb = [B0[0] - O[0], B0[1] - O[1]];
-  poly(belt, [sb, eb, [eb[0], eb[1] + TH], [sb[0], sb[1] + TH]], mix(C.lineD, .3), C.lineD);
-  poly(belt, [eb, ea, [ea[0], ea[1] + TH], [eb[0], eb[1] + TH]], mix(C.lineD, .1), C.lineD);
-  poly(belt, [sa, ea, eb, sb], mix(C.ink, .82), C.lineD);
-  const rollers = []; for (let i = 0; i < 34; i++) rollers.push(el(belt, 'line', { stroke: mix(C.ink, .65), 'stroke-width': 3, 'stroke-linecap': 'round' }));
+  poly(belt, [sb, eb, [eb[0], eb[1] + TH], [sb[0], sb[1] + TH]], '#C8651F', '#9A4A12');
+  poly(belt, [eb, ea, [ea[0], ea[1] + TH], [eb[0], eb[1] + TH]], '#E67A25', '#9A4A12');
+  poly(belt, [sa, ea, eb, sb], '#F5923E', '#C8651F');
+  const rollers = []; for (let i = 0; i < 34; i++) rollers.push(el(belt, 'line', { stroke: '#FFC48A', 'stroke-width': 3, 'stroke-linecap': 'round' }));
   const ROLL = 26;
   S.A.push(u => { belt.style.opacity = String(seg(u, .2, .7)); rollers.forEach((r, i) => { const s = ((i * ROLL + u * 34) % (34 * ROLL)) / (34 * ROLL), p = at(s); r.setAttribute('x1', p[0] + O[0] * .94); r.setAttribute('y1', p[1] + O[1] * .94); r.setAttribute('x2', p[0] - O[0] * .94); r.setAttribute('y2', p[1] - O[1] * .94); }); });
   S.at(.7);

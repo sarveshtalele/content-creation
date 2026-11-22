@@ -104,7 +104,7 @@ def brand():
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png'}
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'character': 'assets/character.png'}
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -550,6 +550,7 @@ def plan_cmd(a):
     if not sig: sig.append(('points / big', 'no numbers, steps or contrasts found', 'icon points for the list, one big quote for the key line'))
     L = ['# Plan (approve before building)', '', '## Ask the person first', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
     L += [f'- **{t}**: {why}. Idea: {idea}.' for t, why, idea in sig]
+    L += ['', 'Design choice: see docs/DESIGN_MATRIX.md (conveyor for gates, funnel for narrowing shares, tower for layers, skyline for rankings, poster slide for a bold claim).']
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
     open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
 

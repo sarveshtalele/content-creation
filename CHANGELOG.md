@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.12.0
+
+- **3D character** (`assets/character.png`) replaces the round photo in the CTA pill, the carousel header and the closing slide; `pageshot.mjs --transparent` added.
+- **Conveyor** restyled: grey studio floor and an orange belt (from the reference reel screenshot).
+- `docs/DESIGN_MATRIX.md`: which design fits which content, and `studio.py plan` points to it.
+
 ## 2.11.0
 
 - **`studio.py cover DIR --hooks "A B" "C D" "E F"`**: video thumbnails in two looks (`face`: your photo, hook and an isometric object; `poster`: dark cinematic) and three sizes (YouTube 1280x720, Reel/Short 1080x1920, grid 1080x1350), one file per hook variant for A/B tests. Hooks are limited to 4 words; text sits clear of the platform UI zones.

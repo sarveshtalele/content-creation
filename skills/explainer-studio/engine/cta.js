@@ -6,7 +6,9 @@ export function cta(parent, id, brand, { x, y, w, h, size = 26, bw = 4 }) {
   const b = box(parent, { x, y, w, h, r: h / 2, fill: '#FBFAF7', bd: OR, bw, shadow: false,
     css: `display:flex;align-items:center;justify-content:space-between;padding:0 ${pad + 6}px 0 ${pad}px;gap:${Math.round(h * .2)}px` });
   const av = h - 2 * pad - bw;
-  E(b, '', `width:${av}px;height:${av}px;border-radius:50%;background:url(${brand.avatar || 'assets/avatar.png'}) center/cover;flex:none;border:2px solid #fff`);
+  // the 3D character stands on the pill like a sticker: no circle, head and shoulders rise above the top edge
+  const ch = Math.round(av * 1.62), cw = Math.round(ch * 800 / 868), holder = E(b, '', `width:${Math.round(cw * .8)}px;height:${av}px;flex:none;position:relative`);
+  E(holder, 'abs', `left:${-Math.round(cw * .1)}px;bottom:${-Math.round(pad * .5) - bw}px;width:${cw}px;height:${ch}px;background:url(${brand.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 4px 5px rgba(0,0,0,.28))`);
   const mk = (suffix, html, text, css) => {
     const d = E(b, 'tx sans', `white-space:nowrap;font-size:${size}px;color:#141413;flex:none;${css}`, '');
     E(d, '', 'display:block', html, 'span'); d.dataset.id = id + suffix; d.dataset.text = text; return d;

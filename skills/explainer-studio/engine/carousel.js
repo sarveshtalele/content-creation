@@ -22,8 +22,8 @@ const grp = i => PAL[GROUPS[i % 3]];
 const arrow = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M4 12h15M13 6l6 6-6 6"/></svg>`;
 
 function frame(root, i, n, brand, ctaText, last) {
-  E(root, 'abs', `left:${X0}px;top:36px;width:56px;height:56px;border-radius:50%;background:url(${brand.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${C.card};box-shadow:0 0 0 2px ${C.line}`);
-  tx(root, 'fr-name', brand.name, { x: X0 + 70, y: 36, w: 560, h: 56, size: 26, weight: 700 });
+  E(root, 'abs', `left:${X0 - 4}px;top:22px;width:70px;height:76px;background:url(${brand.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))`);
+  tx(root, 'fr-name', brand.name, { x: X0 + 80, y: 36, w: 560, h: 56, size: 26, weight: 700 });
   tx(root, 'fr-count', `${i + 1} / ${n}`, { x: W - X0 - 160, y: 36, w: 160, h: 56, size: 26, weight: 600, color: C.mid, align: 'right' });
   const gap = 8, sw = (XW - gap * (n - 1)) / n;
   for (let k = 0; k < n; k++) E(root, 'abs', `left:${X0 + k * (sw + gap)}px;top:104px;width:${sw}px;height:7px;border-radius:4px;background:${k <= i ? C.clay : C.line}`);
@@ -222,7 +222,7 @@ const TYPES = {
     (s.lines || []).forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
       E(bx, 'abs', `left:18px;top:16px;width:54px;height:54px;border-radius:50%;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon('check', 32, P.ink, 2.4)); tx(bx, `cl${k}`, t, { x: 92, y: 0, w: XW - 80 - 116, h: 86, size: 34, weight: 600 }); y += 112; });
     y += 30;
-    E(root, 'abs', `left:${W / 2 - 56}px;top:${y + 44}px;width:112px;height:112px;border-radius:50%;background:url(${b.avatar || 'assets/avatar.png'}) center/cover;image-rendering:auto;border:5px solid ${C.card};box-shadow:0 0 0 3px ${C.clay}`);
+    E(root, 'abs', `left:${W / 2 - 90}px;top:${y + 20}px;width:180px;height:196px;background:url(${b.character || 'assets/character.png'}) center bottom/contain no-repeat;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3))`);
     cta(root, 'cl-cta', b, { x: 60, y: y + 224, w: 960, h: 104, size: 28, bw: 4 });
   },
 };

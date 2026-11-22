@@ -10,6 +10,6 @@ const browser = await chromium.launch({ executablePath: EXE, args: ARGS });
 try {
   const ctx = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: scale, locale: 'en-US', colorScheme: 'light' });
   const page = await ctx.newPage(); await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 }); await page.waitForTimeout(wait);
-  await page.screenshot({ path: out, fullPage: a.includes('--full'), clip: a.includes('--full') ? undefined : { x: 0, y: 0, width: vw, height: vh } });
+  await page.screenshot({ path: out, fullPage: a.includes('--full'), omitBackground: a.includes('--transparent'), clip: a.includes('--full') ? undefined : { x: 0, y: 0, width: vw, height: vh } });
   const bytes = fs.statSync(out).size; console.log(`SHOT ${out} ${vw}x${vh}@${scale}x ${bytes} bytes title=${JSON.stringify(await page.title())}`);
 } finally { await browser.close(); }
