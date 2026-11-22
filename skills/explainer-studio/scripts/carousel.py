@@ -33,13 +33,20 @@ def compile_deck(story):
     c = story['carousel']; cd = c.get('cta_default'); deck = []
     t = dict(c['title']); deck.append({'type': 'title', 'hook': t['hook'], 'sub': t.get('sub', ''), 'kicker': t.get('kicker', ''), 'icon': t.get('icon', 'bolt'), 'layout': t.get('layout', 'classic'), 'prompt': t.get('prompt', ''), 'accent': t.get('accent', ''), 'photo': bool(t.get('photo')), 'chips': t.get('chips', []), 'window': t.get('window', ''), 'cta': t.get('cta') or cd or DEFAULT_CTA['title']})
     for s in c.get('slides') or []:
-        d = dict(s); d['short'] = short_url(s['url']) if s.get('url') else ''; d['cta'] = s.get('cta') or cd or DEFAULT_CTA['mid']; deck.append(d)
+        d = dict(s); d['short'] = short_url(s['url']) if s.get('url') else ''; d['cta'] = s.get('cta') or cd or ''; deck.append(d)
     R = c.get('resources') or {}; its = R.get('items') or []; pg = pages(its); off = 0
     for k, grp in enumerate(pg):
         title = R.get('title', 'Resources') + (f' ({k + 1}/{len(pg)})' if len(pg) > 1 else '')
-        deck.append({'type': 'resources', 'title': title, 'offset': off, 'items': [{'name': x['name'], 'why': x['why'], 'short': short_url(x['url'])} for x in grp], 'cta': R.get('cta') or cd or DEFAULT_CTA['mid']}); off += len(grp)
+        deck.append({'type': 'resources', 'title': title, 'offset': off, 'items': [{'name': x['name'], 'why': x['why'], 'short': short_url(x['url'])} for x in grp], 'cta': R.get('cta') or cd or ''}); off += len(grp)
     cl = c['closing']; kind = cl.get('kind', 'follow')
     deck.append({'type': 'closing', 'title': cl['title'], 'lines': cl.get('lines', []), 'cta': cl.get('cta') or DEFAULT_CTA['last_comments' if kind == 'comments' else 'last_follow']})
+    # every slide carries a call to action: the author's own line if given, otherwise one that points at the next slide ("Next: <its title>"), and the cover invites the swipe
+    def trunc(t, n=40): t = ' '.join(str(t).split()); return t if len(t) <= n else t[:n].rsplit(' ', 1)[0].rstrip(',:;.-') + '...'
+    for i, d in enumerate(deck[:-1]):
+        if d.get('cta'): continue
+        if c.get('single'): d['cta'] = DEFAULT_CTA['last_follow']; continue      # one image on its own: no "swipe"
+        nxt = deck[i + 1]; nt = nxt.get('title') or nxt.get('hook') or ''
+        d['cta'] = 'Swipe to start' if i == 0 and d['type'] == 'title' else (('Next: ' + trunc(nt)) if nt and nxt['type'] != 'closing' else DEFAULT_CTA['mid'])
     return deck
 
 def comment_text(story, brand):

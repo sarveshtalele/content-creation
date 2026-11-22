@@ -1,6 +1,7 @@
-__pycache__/
+
 *.pyc
-.film-*/
-.cache/
 *.zip
+.cache/
+.film-*/
+__pycache__/
 node_modules/

@@ -38,4 +38,16 @@ assert 'GIF template (gif.template' in src and "body.get('design')" in src
 
 # --- narration word cap and pacing constants
 import timeline as TL; assert (TL.LEAD, TL.GAP) == (.35, .25) or TL.LEAD < .5
+# --- every carousel slide has a call to action, and middle slides point at the next one
+import carousel as CAR
+st, _ = DS.assemble([{'design': i, 'values': DS.BY_ID[i]['sample']} for i in ('cover-bold', 'info-grid', 'info-compare')], None, 'paper', False, 'Sarvesh Talele')
+dk = CAR.compile_deck(st); assert all(d['cta'].strip() for d in dk), [d['cta'] for d in dk]
+assert dk[1]['cta'].startswith('Next: ') and dk[-1]['cta'], [d['cta'] for d in dk]
+st1, _ = DS.assemble([{'design': 'info-grid', 'values': DS.BY_ID['info-grid']['sample']}], None, 'paper', True, 'x'); assert 'swip' not in ' '.join(d['cta'].lower() for d in CAR.compile_deck(st1))
+
+# --- the plugin zip has the manifests and skills/<name>/SKILL.md at its root (what GitHub and plugin uploaders require)
+import zipfile
+subprocess.run([sys.executable, os.path.join(SK, '..', '..', 'install.py'), '--plugin-zip'], capture_output=True)
+zp = os.path.join(SK, '..', '..', 'explainer-studio-plugin.zip'); names = zipfile.ZipFile(zp).namelist()
+assert '.claude-plugin/plugin.json' in names and '.codex-plugin/plugin.json' in names and 'skills/explainer-studio/SKILL.md' in names
 print('CONTENT TESTS OK')
