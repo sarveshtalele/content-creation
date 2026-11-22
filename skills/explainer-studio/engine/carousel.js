@@ -5,6 +5,7 @@ import { PAL } from './gif_common.js';
 import { iso, mix } from './gif_3d.js';
 import { cta } from './cta.js';
 import { banner, legend, cards } from './motifs.js';
+import { charts } from './charts.js';
 
 const THEMES = {
   paper: { sub: C.sub, onAcc: '#FFFFFF', dots: '#E4E1D4' },
@@ -20,20 +21,17 @@ function applyTheme(stage, name) {
   Object.assign(PAL.clay, { bd: C.clay, ink: C.clayD, soft: C.claySoft }); Object.assign(PAL.sand, { bd: C.lineD, ink: C.mid, soft: C.sand });
   stage.style.backgroundColor = C.bg; stage.style.backgroundImage = `radial-gradient(${C.dots} 2px,transparent 2.3px)`;
 }
-const W = 1080, H = 1350, X0 = 48, XW = W - 2 * X0, BODY0 = 128, BODY1 = 1170, GROUPS = ['blue', 'clay', 'green'];
+const W = 1080, H = 1350, X0 = 48, XW = W - 2 * X0, BODY0 = 128, BODY1 = 1196, GROUPS = ['blue', 'clay', 'green'];
 const grp = i => PAL[GROUPS[i % 3]];
 const arrow = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M4 12h15M13 6l6 6-6 6"/></svg>`;
 
-function frame(root, i, n, brand, ctaText, last, single) {
+function frame(root, i, n, brand, single) {
   E(root, 'abs', `left:${X0}px;top:36px;width:56px;height:56px;border-radius:${brand.avatar_shape === 'circle' ? '50%' : '26%'};background:url(${brand.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${C.card};box-shadow:0 0 0 2px ${C.line}`);
   tx(root, 'fr-name', brand.name, { x: X0 + 70, y: 36, w: 560, h: 56, size: 26, weight: 700 });
   if (!single) tx(root, 'fr-count', `${i + 1} / ${n}`, { x: W - X0 - 160, y: 36, w: 160, h: 56, size: 26, weight: 600, color: C.mid, align: 'right' });
   const gap = 8, sw = (XW - gap * (n - 1)) / n;
   for (let k = 0; k < (single ? 0 : n); k++) E(root, 'abs', `left:${X0 + k * (sw + gap)}px;top:104px;width:${sw}px;height:7px;border-radius:4px;background:${k <= i ? C.clay : C.line}`);
-  const b = box(root, { x: X0, y: 1196, w: XW, h: 88, r: 44, fill: C.claySoft, bd: C.clay, bw: 3, shadow: false });
-  tx(b, 'fr-cta', ctaText, { x: 36, y: 0, w: XW - 36 - 96, h: 82, size: 30, weight: 700, color: C.clayD });
-  if (!last) E(b, 'abs', `left:${XW - 76}px;top:15px;width:52px;height:52px;border-radius:50%;background:${C.clay};display:flex;align-items:center;justify-content:center`, arrow(C.onAcc, 30));
-  else E(b, 'abs', `left:${XW - 76}px;top:15px;width:52px;height:52px;border-radius:50%;background:${C.clay};display:flex;align-items:center;justify-content:center`, icon('check', 32, C.onAcc, 2.4));
+  cta(root, 'fr-brand', brand, { x: X0, y: 1226, w: XW, h: 84, size: 26, bw: 4 });   // the author's CTA, the only call to action, on every slide
 }
 const heading = (root, id, text, y = BODY0 + 8, max = 60) => {
   const sz = fitSize(text, { w: XW, h: 150, max, min: 38, weight: 700, font: 'serif', lh: 1.1 }), h = Math.ceil(measure(text, { size: sz, weight: 700, font: 'serif', w: XW, lh: 1.1 }).h) + 6;
@@ -156,6 +154,8 @@ function titleTerminal(root, s) {        // the hook typed into a terminal windo
 }
 
 const H_ = (t, size, w, weight = 500, lh = 1.25) => Math.ceil(measure(t, { size, weight, w, lh }).h);
+// every funnel slide (cone, ring, tower, funnel rows) is drawn as the cone; old fields map onto title / sub / value
+const coneSteps = s => ({ title: s.title, steps: (s.steps || (s.rows || []).map(r => ({ title: r.label, value: r.value }))).map(a => ({ title: a.title, icon: a.icon, sub: a.sub || a.note || a.tag || '', value: a.value || a.stat || '' })) });
 const TYPES = {
   title(root, s, i, D) {
     if (s.layout === 'bold') return titleBold(root, s, D);
@@ -208,23 +208,17 @@ const TYPES = {
       E(root, 'abs', `left:${TX}px;top:${cy + 12}px;width:${Math.round(TW * Math.max(0, Math.min(100, r.pct)) / 100)}px;height:42px;border-radius:21px;background:${P.bd}`);
       tx(root, `br${k}-v`, r.value, { x: TX + TW + 12, y: cy, w: W - X0 - (TX + TW + 12), h: 66, size: 34, weight: 700, color: P.ink, align: 'right' }); });
   },
-  funnel(root, s) {   // narrowing stages: widths follow pct, label inside, value on the right
-    let y = heading(root, 'fn-h', s.title) + 30; const n = s.rows.length, gap = 14, rh = Math.min(n <= 4 ? 210 : 170, Math.floor((BODY1 - y - 20 - (n - 1) * gap) / n)), FW = XW, big_ = rh > 170;
-    y += Math.max(0, Math.floor((BODY1 - y - (n * rh + (n - 1) * gap)) / 2) * .8);
-    s.rows.forEach((r, k) => { const P = grp(k), w = Math.max(360, Math.round(FW * Math.max(0, Math.min(100, r.pct)) / 100)), x = X0 + Math.round((FW - w) / 2), cy = y + k * (rh + gap);
-      E(root, 'abs', `left:${x}px;top:${cy}px;width:${w}px;height:${rh}px;border-radius:22px;background:${P.soft};border:3px solid ${P.bd}`);
-      tx(root, `fn${k}-l`, r.label, { x: x + 22, y: cy + 8, w: w - 44, h: Math.round(rh * .48), size: big_ ? 38 : 32, weight: 700, color: P.ink, align: 'center', wrap: true, lh: 1.1 });
-      tx(root, `fn${k}-v`, r.value, { x: x + 22, y: cy + Math.round(rh * .5), w: w - 44, h: Math.round(rh * .42), size: big_ ? 52 : 40, weight: 700, color: P.ink, align: 'center', font: 'serif' }); });
-  },
+  funnel(root, s) { return TYPES.cone(root, coneSteps(s)); },
   compare(root, s) {
     let y = heading(root, 'cm-h', s.title) + 30; const cw = (XW - 40) / 2, tw = cw - 70, all = [...s.left.items, ...s.right.items];
-    const iz = Math.min(...all.map(t => fitSize(t, { w: tw, h: 190, max: 38, min: 22, weight: 500, lh: 1.25 })));
-    const hs = [s.left, s.right].map(sd => sd.items.map(t => H_(t, iz, tw) + 26)), ch = Math.min(BODY1 - y - 10, 118 + Math.max(...hs.map(a => a.reduce((x, q) => x + q, 0))) + 20);
+    const iz = Math.min(...all.map(t => fitSize(t, { w: tw, h: 220, max: 42, min: 22, weight: 500, lh: 1.25 })));
+    const hs = [s.left, s.right].map(sd => sd.items.map(t => H_(t, iz, tw) + 26)), ch = Math.min(BODY1 - y - 10, Math.max(640, 118 + Math.max(...hs.map(a => a.reduce((x, q) => x + q, 0))) + 20));
     y += Math.max(0, Math.floor((BODY1 - y - ch) / 2) * .9);
     [s.left, s.right].forEach((side, k) => { const P = PAL[k ? 'clay' : 'blue'], x = X0 + k * (cw + 40), b = box(root, { x, y, w: cw, h: ch, r: 28, bd: P.bd, bw: 3 });
       E(b, 'abs', `left:0;top:0;width:${cw - 6}px;height:96px;border-radius:24px 24px 0 0;background:${P.soft}`);
       tx(b, `cm${k}-h`, side.head, { x: 20, y: 8, w: cw - 46, h: 80, size: 36, weight: 700, color: P.ink, wrap: true, lh: 1.1 });
-      let yy = 118; side.items.forEach((t, j) => { const h = hs[k][j]; E(b, 'abs', `left:20px;top:${yy + 14}px;width:14px;height:14px;border-radius:50%;background:${P.bd}`); tx(b, `cm${k}-${j}`, t, { x: 46, y: yy, w: tw, h: h - 8, size: iz, weight: 500, wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); yy += h; }); });
+      const free = Math.max(0, ch - 118 - 24 - hs[k].reduce((x, q) => x + q, 0)), extra = Math.min(70, free / side.items.length);
+      let yy = 118 + Math.min(40, extra / 2); side.items.forEach((t, j) => { const h = hs[k][j] + extra; E(b, 'abs', `left:20px;top:${yy + 14}px;width:14px;height:14px;border-radius:50%;background:${P.bd}`); tx(b, `cm${k}-${j}`, t, { x: 46, y: yy, w: tw, h: h - extra - 8, size: iz, weight: 500, wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); yy += h; }); });
     E(root, 'abs', `left:${W / 2 - 34}px;top:${y + 20}px;width:68px;height:68px;border-radius:50%;background:${C.ink};color:${C.bg};display:flex;align-items:center;justify-content:center;font:700 26px Inter,sans-serif`, 'VS');
   },
   flow(root, s) {
@@ -282,15 +276,18 @@ const TYPES = {
       if (r.sub) tx(b, `sk${k}-s`, r.sub, { x: 98, y: top0 + th + 4, w: w - 120, h: sh, size: 26, weight: 500, color: C.sub, wrap: true, lh: 1.2, css: 'align-items:flex-start;' }); });
   },
   terminal(root, s) {
-    let y = heading(root, 'tm-h', s.title) + 26; const w = XW, iw = w - 110, sz = 31, lines = s.lines, hs = lines.map(t => Math.ceil(measure(t, { size: sz, weight: 500, font: MONO, w: iw, lh: 1.25 }).h) + 8);
-    const body = hs.reduce((a, v) => a + v + 26, 0), ph = 62 + 56 + 24 + body + 30, top = y + Math.max(0, Math.floor((BODY1 - y - ph) / 2) * .8);
+    let y = heading(root, 'tm-h', s.title) + 26; const w = XW, iw = w - 110, lines = s.lines, band = (BODY1 - y) * .9, hsOf = z => lines.map(t => Math.ceil(measure(t, { size: z, weight: 500, font: MONO, w: w - 72 - Math.round(z * 1.5), lh: 1.25 }).h) + 8);
+    let sz = 31, hs = hsOf(31), gp = 26;   // grow the lines (and the gaps) until the window fills about 90% of the space under the heading
+    for (let z = 42; z > 31; z--) { const h_ = hsOf(z); if (142 + h_.reduce((a, v) => a + v + 26, 0) + 30 <= band) { sz = z; hs = h_; break; } }
+    gp = Math.max(26, Math.min(60, Math.floor((band - 172 - hs.reduce((a, v) => a + v, 0)) / lines.length)));
+    const body = hs.reduce((a, v) => a + v + gp, 0), ph = 62 + 56 + 24 + body + 30, top = y + Math.max(0, Math.floor((BODY1 - y - ph) / 2) * .8);
     const t = box(root, { x: X0, y: top, w, h: ph, r: 30, fill: DARK, bd: C.lineD, bw: 3, shadow: false, bg: true });
     E(t, 'abs', `left:0;top:0;width:100%;height:62px;background:#151B2A;border-radius:28px 28px 0 0`); dots3(t, 28, 22);
     tx(t, 'tm-win', s.window || 'claude', { x: 150, y: 8, w: w - 300, h: 46, size: 22, weight: 600, font: MONO, color: '#8793AD', align: 'center' });
     tx(t, 'tm-p', '> ' + (s.prompt || ''), { x: 36, y: 82, w: w - 72, h: 50, size: 34, weight: 700, font: MONO, color: '#6FD08A' });
     let yy = 62 + 56 + 24;
-    lines.forEach((l, k) => { E(t, 'abs', `left:36px;top:${yy + 2}px;width:40px;height:${hs[k] - 4}px;color:${C.clay};font:700 ${sz}px 'JetBrains Mono',monospace;display:flex;align-items:flex-start`, `${k + 1}.`);
-      tx(t, `tm${k}`, l, { x: 84, y: yy, w: iw - 14, h: hs[k], size: sz, weight: 500, font: MONO, color: '#E7E3D8', wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); yy += hs[k] + 26; });
+    lines.forEach((l, k) => { const nx = 36 + Math.round(sz * 1.5); E(t, 'abs', `left:36px;top:${yy + 2}px;width:${nx - 40}px;height:${hs[k] - 4}px;color:${C.clay};font:700 ${sz}px 'JetBrains Mono',monospace;display:flex;align-items:flex-start`, `${k + 1}.`);
+      tx(t, `tm${k}`, l, { x: nx, y: yy, w: w - nx - 36, h: hs[k], size: sz, weight: 500, font: MONO, color: '#E7E3D8', wrap: true, lh: 1.25, css: 'align-items:flex-start;' }); yy += hs[k] + gp; });
     E(t, 'abs', `left:36px;top:${ph - 52}px;width:20px;height:30px;background:${C.clay}`);
   },
   shot(root, s) {
@@ -305,78 +302,55 @@ const TYPES = {
     const lw = Math.min(XW, Math.round((s.short || '').length * 14.4 + 120)), link = box(root, { x: X0, y: yy, w: lw, h: 46, r: 23, fill: C.sand, bd: C.line, bw: 2, shadow: false });
     E(link, 'abs', 'left:14px;top:10px', icon('globe', 24, C.clayD, 2)); tx(link, 'sh-l', s.short || '', { x: 52, y: 4, w: lw - 64, h: 36, size: 24, weight: 500, font: MONO });
   },
-  // 3D ring funnel in the Claude palette: each ring is a lit cylinder (light edge, dark side), icons feed it from above, numbered list on the left
-  ring(root, s) {
-    const st = s.steps, n = st.length, y0 = heading(root, 'rg-h', s.title) + 18, svg = svgLayer(root, W, H);
-    const cx = 764, rx0 = 258, rx1 = 104, ry0 = 52, iR = 40, iy = y0 + iR + 4, rimY = iy + iR + 96, th = Math.min(n <= 3 ? 150 : n === 4 ? 136 : 124, Math.floor((BODY1 - 150 - rimY) / n));
-    const r = d => rx0 + (rx1 - rx0) * d / n, ryOf = rr => ry0 * rr / rx0, ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
-    const shade = (hex, f) => { const v = parseInt(hex.slice(1), 16); const c = i => Math.max(0, Math.min(255, Math.round(((v >> i) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
-    const defs = document.createElementNS(svgNS, 'defs'); svg.appendChild(defs);
-    const grad = (id, hex) => { const g = document.createElementNS(svgNS, 'linearGradient'); g.setAttribute('id', id); g.setAttribute('x1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y1', '0'); g.setAttribute('y2', '0');
-      [[0, shade(hex, 1.0)], [.22, mix(hex, .22)], [.5, hex], [1, shade(hex, .72)]].forEach(([o, c]) => { const t = document.createElementNS(svgNS, 'stop'); t.setAttribute('offset', o); t.setAttribute('stop-color', c); g.appendChild(t); }); defs.appendChild(g); return `url(#${id})`; };
-    const pad = k => String(k + 1).padStart(2, '0'), bot = rimY + n * th, base = k => grp(k).ink;
-    for (let g = 3; g >= 1; g--) path(svg, ell(cx, bot + 74, 64 + g * 54, 12 + g * 9), { stroke: 'none', fill: C.clay, w: 0 }).setAttribute('opacity', String(.10 * (4 - g)));
-    path(svg, ell(cx, bot + 20, r(n) * .5, 12), { stroke: 'none', fill: '#000' }).setAttribute('opacity', '.10');
-    path(svg, `M${cx - r(n) * .42} ${bot} L${cx - r(n) * .42} ${bot + 60} A${r(n) * .42} 14 0 0 0 ${cx + r(n) * .42} ${bot + 60} L${cx + r(n) * .42} ${bot} Z`, { stroke: shade(base(n - 1), .7), w: 3, fill: grad('rg-sp', base(n - 1)) });
-    path(svg, ell(cx, rimY, rx0 + 8, ry0 + 4), { stroke: shade(base(0), .75), w: 5, fill: C.card }); path(svg, ell(cx, rimY + 3, rx0 - 14, ry0 - 9), { stroke: 'none', fill: shade(base(0), .55) });
-    for (let k = 0; k < n; k++) {
-      const yt = rimY + k * th, yb = yt + th, rt = r(k), rb = r(k + 1), at = ryOf(rt), ab = ryOf(rb), f = grad('rg-g' + k, base(k));
-      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt} L${cx + rb} ${yb} A${rb} ${ab} 0 0 1 ${cx - rb} ${yb} Z`, { stroke: shade(base(k), .7), w: 3, fill: f });
-      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt}`, { stroke: mix(grp(k).bd, .55), w: 5 });
-      const rm = (rt + rb) / 2, yc = ((yt + at) + (yb + ab)) / 2, lab = `${pad(k)}  ${st[k].title.toUpperCase()}`, tw = rm * 1.45, z = fitSize(lab, { w: tw, h: 44, max: 32, min: 18, weight: 700, lh: 1.1 });
-      tx(root, `rg-t${k}`, lab, { x: cx - tw / 2, y: yc - 24, w: tw, h: 48, size: z, weight: 700, color: '#fff', align: 'center' });
+  ring(root, s) { return TYPES.cone(root, coneSteps(s)); },
+  tower(root, s) { return TYPES.cone(root, coneSteps(s)); },
+  // Glossy 3D cone funnel (v3): rounded slices stacked with a small gap, lit from the left (highlight streak, dark right edge), an open rim on top
+  // and a short spout. Each slice carries its number; a card on the right (smooth leader, dot on the slice) holds icon, title, line and figure.
+  cone(root, s) {
+    const st = s.steps, n = st.length, y0 = heading(root, 'cn-h', s.title) + 34, svg = svgLayer(root, W, H), defs = document.createElementNS(svgNS, 'defs'); svg.appendChild(defs);
+    const cx = 318, rx0 = 266, rx1 = 92, K = .2, gap = 12, spout = 78, rimH = Math.round(rx0 * K) + 6, yTop = y0 + rimH, th = Math.floor((BODY1 - 26 - spout - yTop - gap * (n - 1)) / n);
+    const rad = d => rx0 + (rx1 - rx0) * d / n, shade = (hex, f) => { const v = parseInt(hex.slice(1), 16), c = i => Math.max(0, Math.min(255, Math.round(((v >> i) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
+    const grad = (id, hex) => { const g = document.createElementNS(svgNS, 'linearGradient'); g.setAttribute('id', id); g.setAttribute('x1', '0'); g.setAttribute('x2', '1');
+      [[0, shade(hex, .74)], [.16, mix(hex, .18)], [.3, mix(hex, .5)], [.42, mix(hex, .12)], [.7, hex], [1, shade(hex, .6)]].forEach(([o, c]) => { const t = document.createElementNS(svgNS, 'stop'); t.setAttribute('offset', o); t.setAttribute('stop-color', c); g.appendChild(t); }); defs.appendChild(g); return `url(#${id})`; };
+    const ell = (x, y, a, b) => `M${x - a} ${y}a${a} ${b} 0 1 0 ${2 * a} 0a${a} ${b} 0 1 0 ${-2 * a} 0`;
+    const glow = document.createElementNS(svgNS, 'radialGradient'); glow.setAttribute('id', 'cn-glow'); [[0, C.claySoft, 1], [1, C.claySoft, 0]].forEach(([o, c, a]) => { const t = document.createElementNS(svgNS, 'stop'); t.setAttribute('offset', o); t.setAttribute('stop-color', c); t.setAttribute('stop-opacity', a); glow.appendChild(t); }); defs.appendChild(glow);
+    const bot = yTop + n * th + (n - 1) * gap, sw = rx1 * .5;
+    path(svg, ell(cx, (yTop + bot) / 2, rx0 + 60, (bot - yTop) / 2 + 90), { stroke: 'none', fill: 'url(#cn-glow)' });
+    [3, 2, 1].forEach(g => path(svg, ell(cx, bot + spout + 6, sw + 40 * g, 10 + 7 * g), { stroke: 'none', fill: C.ink }).setAttribute('opacity', String(.035 * (4 - g))));
+    const sp = grad('cn-sp', grp(n - 1).bd);   // spout: a short rounded cylinder
+    path(svg, `M${cx - sw} ${bot - 6}L${cx - sw} ${bot + spout - 12}A${sw} ${sw * K * 1.6} 0 0 0 ${cx + sw} ${bot + spout - 12}L${cx + sw} ${bot - 6}Z`, { stroke: shade(grp(n - 1).bd, .7), w: 3, fill: sp });
+    const mids = [];
+    for (let k = n - 1; k >= 0; k--) {
+      const hex = grp(k).bd, yt = yTop + k * (th + gap), yb = yt + th, rt = rad(k), rb = rad(k + 1), at = rt * K, ab = rb * K;
+      path(svg, `M${cx - rt} ${yt}A${rt} ${at} 0 0 0 ${cx + rt} ${yt}L${cx + rb} ${yb}A${rb} ${ab} 0 0 1 ${cx - rb} ${yb}Z`, { stroke: shade(hex, .72), w: 3, fill: grad('cn-g' + k, hex) });
+      path(svg, `M${cx - rb + 10} ${yb + ab * .45}A${rb - 10} ${ab - 3} 0 0 0 ${cx + rb - 10} ${yb + ab * .45}`, { stroke: '#fff', w: 3 }).setAttribute('opacity', '.35');   // soft rim light under the lip
+      path(svg, ell(cx, yt, rt, at), { stroke: shade(hex, .72), w: 3, fill: k ? mix(hex, .55) : C.card });
+      if (!k) { path(svg, ell(cx, yt + 4, rt - 18, at - 7), { stroke: 'none', fill: shade(hex, .45) }); path(svg, `M${cx - rt + 26} ${yt - 3}A${rt - 26} ${at - 9} 0 0 1 ${cx + rt - 26} ${yt - 3}`, { stroke: '#fff', w: 3 }).setAttribute('opacity', '.6'); }
+      const lab = String(k + 1).padStart(2, '0'), yc = (yt + at * .5 + yb + ab) / 2;
+      E(root, 'abs', `left:${cx - 80}px;top:${yc - 32}px;width:160px;height:64px;display:flex;align-items:center;justify-content:center;font:700 ${th > 120 ? 50 : 40}px Lora,serif;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25)`, lab);
+      mids[k] = { yc, ex: cx + (rt + rb) / 2 };
     }
-    const gap = Math.min(112, (rx0 * 1.5) / Math.max(1, n - 1));
-    st.forEach((a, k) => { const P = grp(k), xi = cx + (k - (n - 1) / 2) * gap, tx_ = cx + (xi - cx) * .55, ty = rimY - ry0 + 4;
-      path(svg, `M${xi} ${iy + iR} C${xi} ${iy + iR + 56} ${tx_} ${ty - 56} ${tx_} ${ty}`, { stroke: P.bd, w: 3 }); path(svg, `M${tx_ - 9} ${ty - 13} L${tx_} ${ty} L${tx_ + 9} ${ty - 13}`, { stroke: P.bd, w: 3 });
-      const b = box(root, { x: xi - iR, y: iy - iR, w: iR * 2, h: iR * 2, r: iR, bd: P.bd, bw: 3, shadow: false }); E(b, 'abs', `left:${iR - 21}px;top:${iR - 21}px`, icon(a.icon || 'star', 36, P.ink, 2)); });
-    st.forEach((a, k) => { const P = grp(k), yc = rimY + (k + .5) * th + 18;
-      E(root, 'abs', `left:${X0}px;top:${yc - 38}px;width:76px;height:76px;border-radius:50%;background:${P.ink};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px ${P.soft}`, icon(a.icon || 'star', 36, '#fff', 2));
-      tx(root, `rg-l${k}`, `${pad(k)}. ${a.title}`, { x: X0 + 98, y: yc - 42, w: 330, h: 40, size: 31, weight: 700, color: C.ink });
-      if (a.sub) tx(root, `rg-s${k}`, a.sub, { x: X0 + 98, y: yc - 2, w: 330, h: 62, size: 23, weight: 500, color: C.mid, wrap: true, lh: 1.2 });
-      if (k < n - 1) path(svg, `M${X0 + 98} ${yc + th / 2 - 8} L${X0 + 420} ${yc + th / 2 - 8}`, { stroke: C.lineD, w: 2, dash: '3 7' }); });
-  },
-  // cut-away tower funnel (reference: editorial "what is a marketing funnel"): floors narrow downward, stage banners, notes and figures on the right, altitude notes on the left
-  tower(root, s) {
-    const TEAL = C.blueD, GOLD = C.clay, INK = C.ink, st = s.steps, n = st.length, y0 = heading(root, 'tw-h', s.title) + 10, svg = svgLayer(root, W, H);
-    const cx = 440, rt0 = 232, rb0 = 120, ry = 40, roofY = y0 + 64, fh = Math.min(236, Math.floor((BODY1 - 76 - roofY) / n)), r = d => rt0 + (rb0 - rt0) * d / n, base = roofY + n * fh;
-    const ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
-    path(svg, `M${X0 + 160} ${roofY} L${X0 + 160} ${base}`, { stroke: INK, w: 2 });
-    for (let k = 0; k <= n; k++) path(svg, `M${X0 + 150} ${roofY + k * fh} L${X0 + 170} ${roofY + k * fh}`, { stroke: INK, w: 2 });
-    for (let k = 0; k < n; k++) {
-      const yt = roofY + k * fh, yb = yt + fh, rt = r(k), rb = r(k + 1);
-      path(svg, `M${cx - rt} ${yt} L${cx + rt} ${yt} L${cx + rb} ${yb} L${cx - rb} ${yb} Z`, { stroke: INK, w: 3, fill: k % 2 ? '#F8F3E6' : '#EFE8D4' });
-      path(svg, `M${cx - rt + 18} ${yt + 4} L${cx + rt - 18} ${yt + 4} L${cx + rb - 16} ${yb - 14} L${cx - rb + 16} ${yb - 14} Z`, { stroke: 'none', fill: C.blueSoft }).setAttribute('opacity', '.55');
-      for (let m = 1; m < 8; m++) { const f = m / 8; path(svg, `M${cx - rt + 18 + (2 * rt - 36) * f} ${yt + 4} L${cx - rb + 16 + (2 * rb - 32) * f} ${yb - 14}`, { stroke: C.lineD, w: 1.4 }); }
-      [-1, 1].forEach(sd => { const d = `M${cx + sd * (rt - 14)} ${yt + 4} L${cx + sd * (rb - 12)} ${yb - 10}`; path(svg, d, { stroke: INK, w: 7, cap: 'butt' }); path(svg, d, { stroke: '#FFFDF6', w: 3, cap: 'butt' }); });
-      path(svg, `M${cx - rb - 14} ${yb - 7} L${cx + rb + 14} ${yb - 7}`, { stroke: INK, w: 14, cap: 'butt' }); path(svg, `M${cx - rb - 14} ${yb - 7} L${cx + rb + 14} ${yb - 7}`, { stroke: '#FFFDF6', w: 9, cap: 'butt' });
-      { const rl = rb - 22, ty = yb - 34; path(svg, `M${cx - rl} ${ty} L${cx + rl} ${ty}`, { stroke: INK, w: 2.4 }); for (let q = 0; q <= 14; q++) { const xx = cx - rl + (2 * rl) * q / 14; path(svg, `M${xx} ${ty} L${xx} ${yb - 14}`, { stroke: INK, w: 1.3 }); } }
-      const plant = (px, py, z, tone) => { path(svg, `M${px} ${py} L${px} ${py - 22 * z}`, { stroke: '#5B4A32', w: 3 * z }); [[0, -30, 11], [-9, -22, 9], [9, -22, 9], [0, -40, 8]].forEach(([dx, dy, rr]) => circ(svg, px + dx * z, py + dy * z, rr * z, { fill: tone })); path(svg, `M${px - 9 * z} ${py} L${px + 9 * z} ${py} L${px + 6 * z} ${py + 10 * z} L${px - 6 * z} ${py + 10 * z} Z`, { stroke: INK, w: 1.6, fill: '#E8DCC0' }); };
-      plant(cx - rb * .82, yb - 40, .9, C.green); plant(cx + rb * .82, yb - 40, .9, C.greenD);
-      if (fh > 150 && rb > 170) { [-1, 1].forEach(sd => { const px = cx + sd * (rb * .74), pw = 40, ph = 66, py = yb - 50 - ph; box(root, { x: px - pw / 2, y: py, w: pw, h: ph, r: 2, fill: '#FFFDF6', bd: INK, bw: 1.6, shadow: false }); for (let q = 0; q < 4; q++) E(root, 'abs', `left:${px - 14}px;top:${py + 12 + q * 12}px;width:${q === 3 ? 14 : 28}px;height:4px;background:${C.lineD}`); }); }
-      const rm = r(k + .5), bw = Math.round(rm * 1.86), by = yt + (k ? 14 : ry + 2), col = k % 2 ? GOLD : TEAL, tg = Math.round(rm * 1.8);
-      E(root, 'abs', `left:${cx - bw / 2}px;top:${by}px;width:${bw}px;height:58px;background:${col};border:2px solid ${INK}`);
-      tx(root, `tw-t${k}`, st[k].title.toUpperCase(), { x: cx - bw / 2 + 10, y: by, w: bw - 20, h: 58, size: fitSize(st[k].title.toUpperCase(), { w: bw - 20, h: 54, max: 32, min: 18, weight: 700, font: 'serif', lh: 1.1 }), weight: 700, font: 'serif', color: k % 2 ? INK : '#fff', align: 'center' });
-      if (st[k].tag) tx(root, `tw-g${k}`, st[k].tag, { x: cx - tg / 2, y: by + 62, w: tg, h: 28, size: fitSize(st[k].tag, { w: tg - 6, h: 26, max: 22, min: 20, weight: 600, lh: 1.1 }), weight: 600, color: INK, align: 'center' });
-      const sh = Math.min(66, fh - (k ? 142 : 142 + ry)); if (sh >= 40) { const sb = box(root, { x: cx - 70, y: yb - 26 - sh, w: 140, h: sh, r: 3, fill: '#FFFDF6', bd: INK, bw: 2, shadow: false }); E(sb, 'abs', `left:${70 - 17}px;top:${(sh - 34) / 2 - 2}px`, icon(st[k].icon || 'star', 34, col === GOLD ? '#8A6510' : TEAL, 2)); }
-      if (st[k].side) tx(root, `tw-sd${k}`, st[k].side, { x: X0, y: yt + fh * .30, w: 142, h: 110, size: 21, weight: 500, font: 'serif', italic: true, color: '#5E5648', wrap: true, lh: 1.2 });
-      const RX = 722, RW = W - X0 - RX; let ny = yt + 4;
-      if (st[k].note) { const nh = H_(st[k].note, 20, RW - 28, 500, 1.25) + 20; box(root, { x: RX, y: ny, w: RW, h: nh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); tx(root, `tw-n${k}`, st[k].note, { x: RX + 14, y: ny + 6, w: RW - 28, h: nh - 12, size: 20, weight: 500, wrap: true, lh: 1.25 }); path(svg, `M${cx + rm} ${ny + nh / 2} L${RX} ${ny + nh / 2}`, { stroke: '#9C927B', w: 2, dash: '3 6' }); ny += nh + 10; }
-      if (st[k].stat) { const sw_ = RW - 78, hh = H_(st[k].stat, 21, sw_, 700, 1.2) + 24, bx = box(root, { x: RX, y: ny, w: RW, h: hh, r: 3, fill: '#FFFDF6', bd: '#9C927B', bw: 2, shadow: false }); E(bx, 'abs', `left:14px;top:${(hh - 30) / 2 - 2}px`, icon(st[k].icon || 'star', 30, col === GOLD ? '#8A6510' : TEAL, 2)); tx(root, `tw-v${k}`, st[k].stat, { x: RX + 60, y: ny + 8, w: sw_, h: hh - 16, size: 21, weight: 700, wrap: true, lh: 1.2 }); }
-    }
-    path(svg, ell(cx, roofY - 20, rt0 - 6, ry * .62), { stroke: INK, w: 2, fill: C.blueSoft }).setAttribute('opacity', '.5'); for (let q = 0; q <= 18; q++) { const xx = cx - (rt0 - 6) + (2 * rt0 - 12) * q / 18; path(svg, `M${xx} ${roofY - 20} L${xx} ${roofY + 2}`, { stroke: INK, w: 1.2 }); }
-    path(svg, ell(cx, roofY, rt0 + 14, ry), { stroke: INK, w: 3, fill: '#FFFDF6' });
-    for (let row = 0; row < 2; row++) for (let k = 0; k < 19 - row * 3; k++) { const a = Math.PI * (k + .5) / (19 - row * 3), rr = rt0 - 6 - row * 40; circ(svg, cx + rr * Math.cos(a), roofY + (ry - 8 - row * 11) * Math.sin(a) + 3, 8.5 - row, { fill: (k + row) % 3 === 0 ? GOLD : (k + row) % 3 === 1 ? TEAL : C.green }); }
-    const dw = r(n) * 1.7; E(root, 'abs', `left:${cx - dw / 2}px;top:${base + 4}px;width:${dw}px;height:54px;background:#FFFDF6;border:3px solid ${INK};border-bottom:0`); E(root, 'abs', `left:${cx - 26}px;top:${base + 16}px;width:52px;height:42px;background:${TEAL};border:2px solid ${INK};border-bottom:0`);
-    for (let q = 1; q < 4; q++) path(svg, `M${cx - 26 + q * 13} ${base + 16} L${cx - 26 + q * 13} ${base + 58}`, { stroke: INK, w: 1.4 });
-    [[-1, C.green], [1, C.greenD]].forEach(([sd, tone]) => [dw / 2 + 34, dw / 2 + 92].forEach((o, j) => { const px = cx + sd * o, py = base + 52; path(svg, `M${px} ${py} L${px} ${py - 20}`, { stroke: '#5B4A32', w: 3 }); [[0, -30, 12], [-10, -22, 10], [10, -22, 10], [0, -42, 9]].forEach(([dx, dy, rr]) => circ(svg, px + dx * (j ? .8 : 1), py + dy * (j ? .8 : 1) + 8, rr * (j ? .8 : 1), { fill: j ? tone : C.greenD })); }));
-    path(svg, `M${X0} ${base + 58} L${W - X0} ${base + 58}`, { stroke: INK, w: 3 });
+    const CX0 = 652, CW = W - X0 - CX0, ch = Math.min(th + gap - 10, 214), anyV = st.some(a => a.value);
+    const subS = Math.min(...st.map(a => a.sub ? fitSize(a.sub, { w: CW - 40, h: ch - 82 - (anyV ? 0 : 0), max: 25, min: 19, weight: 500, lh: 1.22 }) : 25));
+    const vwOf = a => a.value && a.value.length <= 8 ? 120 : 0, tz = Math.min(...st.map(a => fitSize(a.title, { w: CW - 96 - vwOf(a), h: 56, max: 30, min: 20, weight: 700, lh: 1.08 })));
+    st.forEach((a, k) => {
+      const P = grp(k), { yc, ex } = mids[k], y = Math.round(Math.max(y0 - 8, Math.min(BODY1 - 12 - ch, yc - ch / 2)));
+      path(svg, `M${ex} ${yc}C${ex + 90} ${yc} ${CX0 - 90} ${y + ch / 2} ${CX0 - 4} ${y + ch / 2}`, { stroke: P.bd, w: 3, dash: '2 9' }); circ(svg, ex, yc, 8, { fill: C.card, stroke: P.bd, w: 4 });
+      const b = box(root, { x: CX0, y, w: CW, h: ch, r: 26, bd: P.bd, bw: 3, css: `box-shadow:0 10px 24px rgba(20,20,19,.08);` });
+      E(b, 'abs', `left:16px;top:16px;width:52px;height:52px;border-radius:16px;background:${P.soft};display:flex;align-items:center;justify-content:center`, icon(a.icon || 'star', 30, P.ink, 2.1));
+      const vw = vwOf(a);
+      tx(b, `cn${k}-t`, a.title, { x: 80, y: 14, w: CW - 96 - vw, h: 56, size: tz, weight: 700, wrap: true, lh: 1.08 });
+      if (vw) tx(b, `cn${k}-v`, a.value, { x: CW - 16 - vw, y: 12, w: vw, h: 60, size: a.value.length > 5 ? 32 : 42, weight: 700, font: 'serif', color: P.ink, align: 'right' });
+      let yy = 80;
+      if (a.sub) { const hh = Math.min(ch - yy - (a.value && !vw ? 46 : 12), H_(a.sub, subS, CW - 40, 500, 1.22) + 4); tx(b, `cn${k}-s`, a.sub, { x: 20, y: yy, w: CW - 40, h: hh, size: subS, weight: 500, color: C.sub, wrap: true, lh: 1.22, css: 'align-items:flex-start;' }); yy += hh + 6; }
+      if (a.value && !vw) tx(b, `cn${k}-v`, a.value, { x: 20, y: ch - 44, w: CW - 40, h: 34, size: fitSize(a.value, { w: CW - 40, h: 34, max: 24, min: 18, weight: 700, lh: 1.1 }), weight: 700, color: P.ink });
+    });
   },
   closing(root, s, i, D) {
     // closing slide: a large question, optional "next step" rows, and a profile card with the follow button; the group is centred in the body band
     const b = D.brand, lines = s.lines || [], nl = lines.length, TW = XW - 40, z = fitSize(s.title, { w: TW, h: 300, max: 84, min: 48, weight: 700, font: 'serif', lh: 1.08 });
-    const h = Math.ceil(measure(s.title, { size: z, weight: 700, font: 'serif', w: TW, lh: 1.08 }).h) + 6, cardH = 220, ctaH = 104, g = 38;
-    const total = h + g + nl * 108 + (nl ? g - 12 : 0) + cardH + 24 + ctaH, y0 = BODY0 + Math.max(0, Math.floor((BODY1 - BODY0 - total) / 2));
+    const h = Math.ceil(measure(s.title, { size: z, weight: 700, font: 'serif', w: TW, lh: 1.08 }).h) + 6, cardH = 220, ctaH = 0, g = 38;   // the brand CTA pill sits in the frame on every slide
+    const total = h + g + nl * 108 + (nl ? g - 12 : 0) + cardH, y0 = BODY0 + Math.max(0, Math.floor((BODY1 - BODY0 - total) / 2));
     tx(root, 'cl-h', s.title, { x: X0 + 20, y: y0, w: TW, h, size: z, weight: 700, font: 'serif', wrap: true, lh: 1.08, align: 'center' });
     let y = y0 + h + g;
     lines.forEach((t, k) => { const P = grp(k), bx = box(root, { x: X0 + 40, y, w: XW - 80, h: 92, r: 46, bd: P.bd, bw: 3, shadow: false });
@@ -388,10 +362,10 @@ const TYPES = {
     tx(cd, 'cl-follow', b.follow || 'Follow', { x: 212, y: 34, w: TW - 250, h: 36, size: 26, weight: 600, color: C.mid });
     tx(cd, 'cl-name', b.name, { x: 212, y: 70, w: TW - 250, h: 58, size: 46, weight: 700 });
     tx(cd, 'cl-tag', b.tagline || '', { x: 212, y: 134, w: TW - 250, h: 70, size: 28, weight: 500, color: C.mid, wrap: true, lh: 1.2 });
-    cta(root, 'cl-cta', b, { x: X0 + 20, y: y + cardH + 24, w: TW, h: ctaH, size: 28, bw: 4 });
   },
 };
 
+Object.assign(TYPES, charts({ heading, grp, H_, X0, XW, W, BODY1 }));
 // Underfit guard. The slide heading stays pinned at the top so every slide looks the same; everything below it is scaled up (never down, up to 1.3x,
 // from its top-left corner) when it fills less than ~88% of the space under the heading, then centred there. Painted extents only (text glyphs, svg/img,
 // filled or bordered boxes), measured while the slide is briefly shown, before anything is rendered.
@@ -422,7 +396,7 @@ export function buildCarousel(stage, D) {
   const c = D.carousel, slides = c.deck, n = slides.length, roots = []; applyTheme(stage, c.theme);
   slides.forEach((s, i) => {
     const root = E(stage, 'scene'); root.style.display = 'none'; root.style.opacity = '1'; roots.push(root);
-    frame(root, i, n, D.brand, s.cta || '', i === n - 1, !!c.single); const nf = root.children.length;
+    frame(root, i, n, D.brand, !!c.single); const nf = root.children.length;
     TYPES[s.type](root, s, i, D);
     if (s.type !== 'title' && s.type !== 'closing') fitBody(root, nf);
   });

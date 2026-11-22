@@ -1,0 +1,8 @@
+{"title": "Add and finish your first task in Taskly", "sub": "A four-step guide, checked in a real browser",
+ "steps": [
+  {"say": "Open Taskly", "action": "goto", "url": "./app.html", "expect": {"text": "No tasks yet"}},
+  {"say": "Tap New task", "action": "click", "target": "#new", "expect": {"visible": "#t"}},
+  {"say": "Type the task name", "action": "fill", "target": "#t", "value": "Write the release notes"},
+  {"say": "Add the task", "action": "click", "target": "#add", "expect": {"text": "Write the release notes"}},
+  {"say": "Tap the task to finish it", "action": "click", "target": "#list li", "expect": {"text": "1 of 1 done"}}
+ ]}

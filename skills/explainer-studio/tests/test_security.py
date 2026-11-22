@@ -22,8 +22,8 @@ _, parts = ingest.read_repo(d, 'demo'); assert 'TOPSECRET' not in json.dumps(par
 import editor as _ed, inspect
 _src = inspect.getsource(_ed)
 assert "('127.0.0.1', port)" in _src and 'compare_digest' in _src and "('out', 'final')" in _src and '_ok_host' in _src, 'editor must bind loopback, check token, host and serve only out/final'
-# carousel helpers: slide paths and deck length
+# carousel helpers: deck length (cover + 2 slides + 2 resource pages + closing)
 import carousel as _car
 _c = {'slides': [{}, {}], 'resources': {'items': [{}] * 5}}
-assert _car.slide_path(_c, 1) == 'carousel.title.cta' and _car.slide_path(_c, 2) == 'carousel.slides[0].cta' and _car.slide_path(_c, 4) == 'carousel.resources.cta' and _car.slide_path(_c, 6) == 'carousel.closing.cta'
+assert _car.deck_len(_c) == 6
 print('SECURITY TESTS OK')

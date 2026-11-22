@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.0.0
+
+- **Decision matrix** (`data/matrix.json`, [docs/DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md)): 19 content shapes scored from the source; ranked GIF templates, carousel charts, Reel motion, hook families, visual hook and carousel structure per format. `studio.py pick` lists every GIF template ranked with a reason (with a variety penalty for the last three builds) and asks you to choose; `--template NAME` prints the skeleton.
+- **21 chart slides** (`engine/charts.js`): lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle/pictogram, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap. Declarative limits in the validator; **data charts refuse any figure that is not in the source**.
+- **Glossy 3D cone funnel** replaces the tower and ring funnels (old slide types draw as the cone); the GIF funnel uses the same look.
+- **Rounded, smooth design system**: every connector elbow is rounded in `kit.path`, polygons are rounded paths, SVG joins are round; long URLs and commands break at `/ . : _ -`.
+- **Reel**: Claude light theme by default (`reel.look: cinematic` for the dark grade), kinetic word-by-word hook with a highlight sweep, masked scene reveals, camera push and drift, parallax, animated counters, particles on connectors.
+- **Designed Reel cover** (`engine/cover.js`): hero, question, number (only with a real figure), split and face layouts; `studio.py cover`.
+- **Walkthrough video** (`studio.py walkthrough`): Playwright performs a step-by-step guide, verifies each step (expected vs actual), and renders a Reel with a cursor, highlight, camera zoom, before/after screenshots, Verified/Failed badges, a summary checklist and an E2E report.
+- **One CTA everywhere**: the author's brand pill at the bottom of every carousel slide, Reel, GIF, cover and walkthrough frame. The text CTA strip and `studio.py cta` are removed.
+- **Hook library**: 12 visual hooks, 16 Reel formats and 37 carousel structures added; `studio.py hooks DIR --kind line|carousel|visual|format|structure` boosts the families the matrix chose.
+- **Design Studio rebuilt**: one workspace per media (GIF, Carousel, Reel, Reel cover, Walkthrough video, Post) plus Home analysis and Library; plain JS modules; new `/api/analyze`, `/api/cover`, `/api/walk`, `/api/job`.
+- **Plugin packaging**: slash commands in `commands/` for Claude Code, Codex prompts and Antigravity workflows; `install.py install|update|reinstall|uninstall|clean|status|zip`; builds go to `dist/`. Example outputs removed from the repository.
+- **Tests**: `tests/test_matrix.py`; `tests/e2e/run_all.py` builds every media with gates and evaluations into a showcase; `tests/e2e/app_tour.mjs` drives the web app with Playwright and records a video.
+
 ## 2.17.0
 
 - **Plugin zip for GitHub**: `python install.py --zip` now also builds `explainer-studio-plugin.zip` with `.claude-plugin/`, `.codex-plugin/`, `.agent-plugin/` and `skills/explainer-studio/` at the root, which is what GitHub and plugin uploaders accept (the old zip, with the skill folder at the root, is only for ChatGPT).

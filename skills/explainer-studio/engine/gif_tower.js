@@ -3,9 +3,9 @@ import { C, E, box, tx, enter, seg, eo, measure } from './kit.js';
 import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP, BOTTOM } from './gif_common.js';
 import { mix, rayRect, uniformSub } from './gif_3d.js';
 import { drawScene } from './gif_scenes.js';
-import { svgNS } from './kit.js';
+import { svgNS, roundPts } from './kit.js';
 
-const poly = (g, pts, fill, stroke, sw = 3, op = 1) => { const p = document.createElementNS(svgNS, 'polygon'); p.setAttribute('points', pts.map(q => q.join(',')).join(' ')); p.setAttribute('fill', fill); p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', sw); p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('opacity', op); g.appendChild(p); return p; };
+const poly = (g, pts, fill, stroke, sw = 3, op = 1) => { const p = document.createElementNS(svgNS, 'path'); p.setAttribute('d', roundPts(pts, 6, true)); p.setAttribute('fill', fill); p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', sw); p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('opacity', op); g.appendChild(p); return p; };
 const ln = (g, x1, y1, x2, y2, c, w = 2.5) => { const l = document.createElementNS(svgNS, 'line'); for (const [k, v] of Object.entries({ x1, y1, x2, y2, stroke: c, 'stroke-width': w, 'stroke-linecap': 'round' })) l.setAttribute(k, v); g.appendChild(l); };
 const circ = (g, x, y, r, f, s) => { const c = document.createElementNS(svgNS, 'circle'); for (const [k, v] of Object.entries({ cx: x, cy: y, r, fill: f, stroke: s, 'stroke-width': 3 })) c.setAttribute(k, v); g.appendChild(c); };
 

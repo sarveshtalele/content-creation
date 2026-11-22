@@ -1,6 +1,6 @@
 // 3D helpers shared by the motion templates (exploded, isoflow, orbit, stairs). Everything 3D is decoration:
 // text always lives in flat, axis-aligned boxes so the layout checks stay exact and the words stay crisp.
-import { E, svgNS, lerp, fitSize } from './kit.js';
+import { E, svgNS, lerp, fitSize, roundPts } from './kit.js';
 
 export const mix = (hex, k) => { const n = parseInt(hex.slice(1), 16), c = i => Math.round(((n >> i) & 255) * (1 - k) + 255 * k); return `rgb(${c(16)},${c(8)},${c(0)})`; };   // k=0 the colour, k=1 white
 export const RX = 62, RZ = -40, SQ = Math.abs(Math.cos(RZ * Math.PI / 180)) + Math.abs(Math.sin(RZ * Math.PI / 180));   // iso tilt; SQ = width of the rotated square / its side
@@ -16,7 +16,7 @@ export function plate(parent, { cx, cy, s, fill, bd, th = 16 }) {
 
 // isometric box drawn as three polygons (exact geometry, no gaps): top rhombus + left + right faces. cx,cy = centre of the TOP face.
 export function iso(svg, { cx, cy, hw, hh, h, color }) {
-  const g = document.createElementNS(svgNS, 'g'), poly = (pts, fill) => { const p = document.createElementNS(svgNS, 'polygon'); p.setAttribute('points', pts.map(q => q.join(',')).join(' ')); p.setAttribute('fill', fill); p.setAttribute('stroke', color); p.setAttribute('stroke-width', 3); p.setAttribute('stroke-linejoin', 'round'); g.appendChild(p); };
+  const g = document.createElementNS(svgNS, 'g'), poly = (pts, fill) => { const p = document.createElementNS(svgNS, 'path'); p.setAttribute('d', roundPts(pts, 7, true)); p.setAttribute('fill', fill); p.setAttribute('stroke', color); p.setAttribute('stroke-width', 3); p.setAttribute('stroke-linejoin', 'round'); g.appendChild(p); };
   poly([[cx - hw, cy], [cx, cy + hh], [cx, cy + hh + h], [cx - hw, cy + h]], mix(color, .5));
   poly([[cx, cy + hh], [cx + hw, cy], [cx + hw, cy + h], [cx, cy + hh + h]], mix(color, .12));
   poly([[cx, cy - hh], [cx + hw, cy], [cx, cy + hh], [cx - hw, cy]], mix(color, .8));

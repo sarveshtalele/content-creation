@@ -25,7 +25,8 @@ function hook(root, sc) {
   let y = 340 + qh + 36, sub = null;
   if (p.sub) { const sh = est(p.sub, 40, 920, 1.25) + 12; sub = tx(root, sc.id + '-sub', p.sub, { x: 80, y, w: 920, h: sh, size: 40, weight: 500, color: C.mid, wrap: true, lh: 1.25 }); y += sh + 36; }
   const row = flex(root, 80, y, 920), chips = (p.chips || []).map((c, i) => chip(row, `${sc.id}-c${i}`, c, { size: 32, pal: PALS[i % 4] }));
-  return t => { h.anim(t); enter(q, t, when(sc, 0), { dy: 30, d: .7 }); if (sub) enter(sub, t, when(sc, 1), { dy: 16 }); chips.forEach((c, i) => pop(c, t, when(sc, (sub ? 2 : 1) + i), { dy: 14 })); };
+  const words = kinetic(q.firstElementChild, p.q);
+  return t => { h.anim(t); q.style.opacity = t >= when(sc, 0) - .001 ? '1' : '0'; animWords(words, t, when(sc, 0)); if (sub) enter(sub, t, when(sc, 1), { dy: 16 }); chips.forEach((c, i) => pop(c, t, when(sc, (sub ? 2 : 1) + i), { dy: 14 })); };
 }
 
 // ── flow: 2-4 steps, optional loop-back ──
@@ -41,12 +42,13 @@ function flow(root, sc) {
     return b;
   });
   const arr = []; for (let i = 0; i < n - 1; i++) { const x = 510, ya = y0 + i * (cardH + gap) + cardH + 4, yb = y0 + (i + 1) * (cardH + gap) - 6; const pth = path(svg, `M${x} ${ya} V${yb}`, { stroke: C.mid, w: 4.5 }), tr = tri(svg, C.mid); arr.push([pth, tr]); }
+  const dots = arr.map(([pth]) => particles(svg, pth, C.clay, 2));
   let loop = null;
   if (p.loop) { const ya = y0 + (n - 1) * (cardH + gap) + cardH / 2, yb = y0 + cardH / 2; const pth = path(svg, `M900 ${ya} C990 ${ya} 990 ${yb} 904 ${yb}`, { stroke: C.clay, w: 5 }), tr = tri(svg, C.clay); loop = [pth, tr]; }
   return t => {
     h.anim(t);
     cards.forEach((c, i) => pop(c, t, when(sc, i), { dy: 24 }));
-    arr.forEach(([pth, tr], i) => { const k = eo(seg(t, when(sc, i + 1) - .45, when(sc, i + 1) - .05)); draw(pth, k); headAt(pth, k, tr, 15); });
+    arr.forEach(([pth, tr], i) => { const k = eo(seg(t, when(sc, i + 1) - .45, when(sc, i + 1) - .05)); draw(pth, k); headAt(pth, k, tr, 15); dots[i](t, when(sc, i + 1)); });
     if (loop) { const k = eo(seg(t, when(sc, n) - .1, when(sc, n) + .6)); draw(loop[0], k); headAt(loop[0], k, loop[1], 16); }
   };
 }
@@ -64,11 +66,11 @@ function map(root, sc) {
     tx(b, `${sc.id}-m${i}`, it.label, { x: 74, y: 0, w: 188, h: 100, size: it.label.length > 14 ? 25 : 29, weight: 700, wrap: true, lh: 1.1 });
     const dx = Math.cos(a), dy = Math.sin(a), k = Math.min(135 / Math.max(Math.abs(dx), 1e-6), 52 / Math.max(Math.abs(dy), 1e-6)) + 12;
     const pth = path(svg, `M${CX + 148 * dx} ${CY + 148 * dy} L${x - k * dx} ${y - k * dy}`, { stroke: P.bd, w: 4.5 }), tr = tri(svg, P.bd);
-    return { b, pth, tr };
+    return { b, pth, tr, dots: particles(svg, pth, P.bd, 2) };
   });
   return t => {
     h.anim(t); pop(ctr, t, when(sc, 0), { sc: .8, dy: 0, d: .7 });
-    sats.forEach((s, i) => { const t0 = when(sc, i + 1); const k = eo(seg(t, t0 - .4, t0)); draw(s.pth, k); headAt(s.pth, k, s.tr, 14); pop(s.b, t, t0, { dy: 16 }); });
+    sats.forEach((s, i) => { const t0 = when(sc, i + 1); const k = eo(seg(t, t0 - .4, t0)); draw(s.pth, k); headAt(s.pth, k, s.tr, 14); pop(s.b, t, t0, { dy: 16 }); s.dots(t, t0); });
   };
 }
 
@@ -130,7 +132,36 @@ function big(root, sc) {
   const p = sc.props, h = head(root, sc, false), sz = fit(p.big, [[8, 190], [14, 150], [22, 110], [40, 84]]);
   const bh = est(p.big, sz, 920, 1.05) + 20 + Math.round(sz * .16), b = tx(root, sc.id + '-big', p.big, { x: 80, y: 480, w: 920, h: bh, size: sz, weight: 700, font: 'serif', color: C.clayD, wrap: true, lh: 1.05, align: 'center' });
   const s = p.sub ? tx(root, sc.id + '-sub', p.sub, { x: 100, y: 480 + bh + 40, w: 880, h: est(p.sub, 44, 880, 1.25) + 12, size: 44, weight: 500, color: C.ink, wrap: true, lh: 1.25, align: 'center' }) : null;
-  return t => { h.anim(t); pop(b, t, when(sc, 0), { sc: .85, dy: 20, d: .7 }); if (s) enter(s, t, when(sc, 1), { dy: 14 }); };
+  const count = counter(b.firstElementChild, p.big);
+  return t => { h.anim(t); pop(b, t, when(sc, 0), { sc: .85, dy: 20, d: .7 }); count(t, when(sc, 0)); if (s) enter(s, t, when(sc, 1), { dy: 14 }); };
+}
+
+
+// ── motion helpers (v3) ──
+// kinetic typography: the hook builds word by word (masked rise + unblur); the last two words get a clay highlight that sweeps in
+function kinetic(span, text) {
+  const ws = text.split(/\s+/); span.textContent = '';
+  return ws.map((w, i) => { const e = E(span, '', 'opacity:0;border-radius:10px;background-repeat:no-repeat;background-position:0 72%;-webkit-box-decoration-break:clone', '', 'span');
+    e.textContent = w; if (i < ws.length - 1) span.appendChild(document.createTextNode(' ')); e._hi = i >= ws.length - 2; return e; });
+}
+function animWords(ws, t, t0) {
+  ws.forEach((e, i) => { const a = seg(t, t0 + i * .07, t0 + i * .07 + .38), k = eo(a);
+    e.style.opacity = String(clamp(a * 1.8)); e.style.filter = k < 1 ? `blur(${((1 - k) * 6).toFixed(1)}px)` : ''; e.style.clipPath = k < 1 ? `inset(${((1 - k) * 60).toFixed(1)}% 0 0 0)` : '';   // rises out of a mask; no layout change
+    if (e._hi) { const h = eo(seg(t, t0 + ws.length * .07 + .2, t0 + ws.length * .07 + .7)); e.style.backgroundImage = `linear-gradient(${C.claySoft},${C.claySoft})`; e.style.backgroundSize = `${(h * 100).toFixed(1)}% 46%`; } });
+}
+// particles: dots that travel a drawn connector once it is complete (the system is running)
+function particles(svg, pth, color, n = 2) {
+  const ds = Array.from({ length: n }, () => { const c = circ(svg, -50, -50, 7, { fill: color, stroke: C.bg, w: 2.5 }); c.style.opacity = '0'; return c; });
+  return (t, t0) => { const run = t - t0; const L = pth._L ?? (pth._L = pth.getTotalLength());
+    ds.forEach((c, j) => { if (run < 0) { c.style.opacity = '0'; return; } const q = ((run * 0.55) + j / n) % 1, p = pth.getPointAtLength(Math.min(L - 10, q * L)); c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.style.opacity = String(Math.min(1, run * 3) * Math.sin(q * Math.PI)); }); };
+}
+// animated counter: a leading number in a "big" line counts up from zero (keeps its commas, decimals and the words around it)
+function counter(span, text) {
+  const m = /^(\D{0,3})(\d[\d,]*(?:\.\d+)?)(.*)$/s.exec(text); if (!m) return () => {};
+  const v = parseFloat(m[2].replace(/,/g, '')), dec = (m[2].split('.')[1] || '').length, comma = m[2].includes(',');
+  if (!(v >= 10)) return () => {};   // counting up to 1, 2 or 3 reads as a glitch, not motion
+  const fmt = x => { let s = x.toFixed(dec); if (comma) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); return m[1] + s + m[3]; };
+  return (t, t0) => { const k = eo(seg(t, t0, t0 + 1.1)); const out = k >= 1 ? text : fmt(v * k); if (span.textContent !== out) span.textContent = out; };
 }
 
 const B = { hook, flow, map, cards, list, chips, dialog, big };
@@ -200,14 +231,16 @@ export function buildReel(stage, D) {
         if (!vis) continue;
         const a = s.idx === 0 ? 1 : eo(seg(t, s.t0, s.t0 + .45)), b = 1 - eo(seg(t, s.t1 - .4, s.t1)), k = clamp((t - s.t0) / Math.max(.1, s.t1 - s.t0), 0, 1);
         s.root.style.opacity = String(Math.min(a, b));
+        s.root.style.clipPath = s.idx === 0 || a >= 1 ? '' : `circle(${(8 + 140 * a).toFixed(1)}% at 50% 40%)`;   // masking reveal: each scene opens from the centre
         s.root.style.transform = cin ? `scale(${1 + (1 - a) * .06 - (1 - b) * .03})` : `translateY(${(1 - a) * 26 - (1 - b) * 22}px)`;
         let dx = 0, dy = 0; if (cin) { for (const h of hits) { const q = t - h; if (q >= 0 && q < .32) { const d = 1 - q / .32; dx += Math.sin(q * 95) * 9 * d; dy += Math.cos(q * 80) * 6 * d; fl = Math.max(fl, .34 * (1 - seg(t, h, h + .2))); } } }
-        const f = s.f, push = cin ? 1 + .02 * k : 1; f.wrap.style.transform = `translate(${f.tx + dx}px,${f.ty + dy}px) scale(${f.s * push})`;
+        const f = s.f, push = 1 + (cin ? .02 : .025) * eo(k); dy -= 12 * eo(k); f.wrap.style.transform = `translate(${f.tx + dx}px,${f.ty + dy}px) scale(${f.s * push})`;   // camera: slow push in and drift up
         s.update(t);
         if (cin && s.idx > 0) sw = Math.max(sw, seg(t, s.t0 + .02, s.t0 + .95) * (1 - seg(t, s.t0 + .95, s.t0 + 1.05)) > 0 ? eo(seg(t, s.t0 + .02, s.t0 + .95)) : 0);
       }
       const ev = t >= D.end.t0 - .001; endRoot.style.display = ev ? 'block' : 'none';
       if (ev) { endRoot.style.opacity = String(eo(seg(t, D.end.t0, D.end.t0 + .4))); endRoot.style.transform = cin ? `scale(${1 + (1 - eo(seg(t, D.end.t0, D.end.t0 + .5))) * .05})` : ''; endF.wrap.style.transform = `translate(${endF.tx}px,${endF.ty}px) scale(${endF.s})`; endUpd(t); }
+      const px = (t * 7) % 54, py = (t * 4) % 54; stage.style.backgroundPosition = cin ? `0 0,${px}px ${py}px` : `${27 + px}px ${27 + py}px`;   // parallax: the dot grid drifts behind the cards
       if (cin) { sweep.style.opacity = sw > 0 && sw < 1 ? '1' : '0'; sweep.style.left = (-620 + sw * 1900) + 'px'; flash.style.opacity = String(fl); }
       return ev;
     },

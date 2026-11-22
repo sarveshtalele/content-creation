@@ -4,10 +4,10 @@
 import { C, E, box, tx, enter, seg, eo, icon, measure } from './kit.js';
 import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP } from './gif_common.js';
 import { mix, uniformSub } from './gif_3d.js';
-import { svgNS } from './kit.js';
+import { svgNS, roundPts } from './kit.js';
 
 const el = (g, tag, a) => { const e = document.createElementNS(svgNS, tag); for (const k in a) e.setAttribute(k, a[k]); g.appendChild(e); return e; };
-const poly = (g, pts, fill, stroke, sw = 3) => el(g, 'polygon', { points: pts.map(q => q.map(v => v.toFixed(1)).join(',')).join(' '), fill, stroke: stroke || 'none', 'stroke-width': sw, 'stroke-linejoin': 'round' });
+const poly = (g, pts, fill, stroke, sw = 3) => el(g, 'path', { d: roundPts(pts, 6, true), fill, stroke: stroke || 'none', 'stroke-width': sw, 'stroke-linejoin': 'round' });
 const NCUBE = 10, RANK = [3, 7, 1, 9, 5, 0, 8, 2, 6, 4];                                      // rank decides which boxes fail first: fixed, so every render is identical
 const parseStat = v => { const m = /^(\D*?)(\d[\d,]*(?:\.\d+)?)(.*)$/.exec(v); return m ? { pre: m[1], num: parseFloat(m[2].replace(/,/g, '')), dec: (m[2].split('.')[1] || '').length, suf: m[3] } : null; };
 const fmt = (st, k) => st.pre + (st.num * k).toLocaleString('en-US', { minimumFractionDigits: st.dec, maximumFractionDigits: st.dec }) + st.suf;

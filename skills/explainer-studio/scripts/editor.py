@@ -18,7 +18,7 @@ def serve(work, port=0, open_browser=True, state_path=None):
         c = story.get('carousel'); deck = []
         if c:
             try:
-                for i, d in enumerate(CAR.compile_deck(story), 1): deck.append({'n': i, 'type': d['type'], 'cta': d['cta'], 'path': CAR.slide_path(c, i)})
+                for i, d in enumerate(CAR.compile_deck(story), 1): deck.append({'n': i, 'type': d['type']})
             except Exception: deck = []
         outs = []
         for root in ('out', 'final'):

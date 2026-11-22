@@ -68,18 +68,14 @@ DESIGNS = [
                 L('cards', 'Cards (use 4, 6 or 9)', 4, 9, [SEL('motif', 'Diagram', MOTIFS_), T('caption', 'Small line under the diagram', 30, 3), T('title', 'Card title', 24, 3), T('sub', 'One line', 70, 10), SEL('group', 'Colour', GROUPS_)], 'A full grid looks best: 4, 6 or 9 cards')],
      'sample': {'title': '9 AI Algorithms Visualised', 'kicker': 'Part 1: the ideas, drawn simply', 'legend': [{'label': 'Supervised', 'group': 'green'}, {'label': 'Ensembles', 'group': 'blue'}, {'label': 'Deep learning', 'group': 'clay'}], 'cards': [{'motif': 'bars', 'caption': 'shrink weights', 'title': 'Ridge Regression', 'sub': 'Shrinks weights with an L2 penalty to reduce overfitting.', 'group': 'green'}, {'motif': 'bars', 'caption': 'some weights = 0', 'title': 'Lasso Regression', 'sub': 'Uses an L1 penalty to push some weights to zero.', 'group': 'green'}, {'motif': 'curve', 'caption': 'fit a curved line', 'title': 'Polynomial Regression', 'sub': 'Adds powers of features to fit a curved relationship.', 'group': 'green'}, {'motif': 'tree', 'caption': 'random splits', 'title': 'Extra Trees', 'sub': 'Combines trees built with random split thresholds.', 'group': 'blue'}, {'motif': 'cluster', 'caption': 'soft membership', 'title': 'Gaussian Mixture', 'sub': 'Fits overlapping Gaussians with soft cluster membership.', 'group': 'clay'}, {'motif': 'network', 'caption': 'learn from errors', 'title': 'Neural Network', 'sub': 'Layers of neurons learn patterns from examples.', 'group': 'clay'}, {'motif': 'split', 'caption': 'draw a boundary', 'title': 'Classifier', 'sub': 'Separates two groups with a learned boundary.', 'group': 'green'}, {'motif': 'loop', 'caption': 'act, reward, repeat', 'title': 'Q-Learning', 'sub': 'Learns action values from the rewards it receives.', 'group': 'blue'}, {'motif': 'pixels', 'caption': 'remove noise', 'title': 'Diffusion Model', 'sub': 'Generates samples by removing noise step by step.', 'group': 'clay'}]},
      'build': lambda v: ('slide', {'type': 'grid', 'title': v['title'], 'kicker': v.get('kicker', ''), 'legend': [{'label': x['label'], 'group': x['group']} for x in v.get('legend', [])], 'cards': [{k: c[k] for k in ('motif', 'caption', 'title', 'sub', 'group')} for c in v['cards']]})},
-    {'id': 'info-ring', 'group': 'infographic', 'name': '3D Ring Funnel', 'tag': 'Icons pour into blue rings, with a numbered list',
-     'blurb': 'A glossy stack of rings that narrows to a glowing spout. Icons feed it from above and each step is explained in a numbered list.',
-     'best_for': 'Step-by-step funnels, sales and marketing processes', 'theme': 'paper',
-     'fields': [T('title', 'Slide title', 60, 6), L('steps', 'Steps (top to bottom)', 3, 5, [I(), T('title', 'Step', 18, 2), T('sub', 'One line explaining it', 44)])],
-     'sample': {'title': '5-step marketing funnel', 'steps': [{'icon': 'target', 'title': 'Goals', 'sub': 'Define clear business objectives'}, {'icon': 'bolt', 'title': 'Ads', 'sub': 'Drive targeted traffic'}, {'icon': 'layers', 'title': 'Landing page', 'sub': 'Capture leads and build trust'}, {'icon': 'chat', 'title': 'Welcome email', 'sub': 'Nurture new leads instantly'}, {'icon': 'star', 'title': 'Sales email', 'sub': 'Convert leads into customers'}]},
-     'build': lambda v: ('slide', {'type': 'ring', 'title': v['title'], 'steps': [{'icon': x['icon'], 'title': x['title'], 'sub': x.get('sub', '')} for x in v['steps']]})},
-    {'id': 'info-tower', 'group': 'infographic', 'name': 'Cut-away Tower Funnel', 'tag': 'A building whose floors are your stages',
-     'blurb': 'An architectural cut-away: each floor is a stage with its banner, a note and a figure on the right, and an altitude note on the left.',
-     'best_for': 'Explainers with real numbers per stage', 'theme': 'paper',
-     'fields': [T('title', 'Slide title', 60, 6), L('steps', 'Floors (top to bottom)', 3, 4, [I(), T('title', 'Stage', 16, 3), T('tag', 'Short purpose line', 18), T('note', 'Note on the right', 52), T('stat', 'Figure', 26), T('side', 'Note on the left', 34)])],
-     'sample': {'title': 'What is a marketing funnel?', 'steps': [{'icon': 'eye', 'title': 'Awareness', 'tag': 'Attract people', 'note': 'People discover the product through ads and posts.', 'stat': '10,000 ad impressions', 'side': 'Wide at the top.'}, {'icon': 'search', 'title': 'Consideration', 'tag': 'Compare options', 'note': 'Interested visitors compare features and reviews.', 'stat': '140 email sign-ups', 'side': 'Fewer people, more interest.'}, {'icon': 'check', 'title': 'Conversion', 'tag': 'Win the sale', 'note': 'A smaller group decides to buy.', 'stat': '48 purchases', 'side': 'A smaller group takes action.'}, {'icon': 'users', 'title': 'Retention', 'tag': 'Keep them engaged', 'note': 'Satisfied buyers return and recommend.', 'stat': '46% retention', 'side': 'A loyal core stays and grows.'}]},
-     'build': lambda v: ('slide', {'type': 'tower', 'title': v['title'], 'steps': [{k: x.get(k, '') for k in ('icon', 'title', 'tag', 'note', 'stat', 'side')} for x in v['steps']]})},
+    {'id': 'info-cone', 'group': 'infographic', 'name': '3D Cone Funnel', 'tag': 'A glossy cone of stages with a card for each',
+     'blurb': 'A lit 3D cone in rounded slices that narrows to a spout. Each slice is numbered and joined by a curved leader to a card with icon, line and figure.',
+     'best_for': 'Funnels, conversion, filtering, any stages that narrow', 'theme': 'paper',
+     'fields': [T('title', 'Slide title', 60, 6), L('steps', 'Stages (top to bottom)', 3, 5, [I(), T('title', 'Stage', 22, 2), T('sub', 'One line explaining it', 64), T('value', 'Figure (optional)', 26)])],
+     'sample': {'title': 'What is a marketing funnel?', 'steps': [{'icon': 'eye', 'title': 'Awareness', 'sub': 'People discover the product through ads and posts', 'value': '10,000'},
+                {'icon': 'search', 'title': 'Consideration', 'sub': 'Visitors compare features and reviews', 'value': '1,400'}, {'icon': 'check', 'title': 'Conversion', 'sub': 'A smaller group decides to buy', 'value': '480'},
+                {'icon': 'users', 'title': 'Retention', 'sub': 'Buyers return and recommend', 'value': '46%'}]},
+     'build': lambda v: ('slide', {'type': 'cone', 'title': v['title'], 'steps': [{'icon': x['icon'], 'title': x['title'], 'sub': x.get('sub', ''), 'value': x.get('value', '')} for x in v['steps']]})},
     {'id': 'info-bars', 'group': 'infographic', 'name': 'Bars', 'tag': 'Compare amounts side by side',
      'blurb': 'Horizontal bars with a value each. Best when sizes matter more than order.',
      'best_for': 'Rankings and comparisons of amounts', 'theme': 'paper',
@@ -111,13 +107,65 @@ DESIGNS = [
      'sample': {'title': 'Contrast is the workhorse', 'value': '30%', 'pct': 30, 'label': 'of top performers used contradictions', 'sub': 'Two things that do not fit together create tension'},
      'build': lambda v: ('slide', {'type': 'stat', 'title': v['title'], 'value': v['value'], 'pct': int(v['pct']), 'label': v['label'], 'sub': v.get('sub', '')})},
 ]
+
+# v3 chart slides (engine/charts.js). One entry per chart: family, when it fits (the decision matrix uses the same words), a sample.
+def J(key='data', label='Chart data (JSON)'): return {'key': key, 'type': 'json', 'label': label}
+CHARTS = [
+ ('lollipop', 'Comparison', 'Lollipop', 'A dot on a stick per item', 'Ranking a few items by one number',
+  {'title': 'Context window by model family', 'rows': [{'label': 'Model A', 'value': '1M', 'pct': 100}, {'label': 'Model B', 'value': '400K', 'pct': 40}, {'label': 'Model C', 'value': '200K', 'pct': 20}, {'label': 'Model D', 'value': '128K', 'pct': 13}]}),
+ ('dumbbell', 'Comparison', 'Dumbbell', 'Two dots per row joined by a bar', 'Before and after, two groups, a gap',
+  {'title': 'Task success before and after evals', 'legend': {'a': 'Before', 'b': 'After'}, 'rows': [{'label': 'Code review', 'a': {'value': '41%', 'pct': 41}, 'b': {'value': '78%', 'pct': 78}}, {'label': 'Bug fixing', 'a': {'value': '35%', 'pct': 35}, 'b': {'value': '64%', 'pct': 64}}, {'label': 'Refactoring', 'a': {'value': '52%', 'pct': 52}, 'b': {'value': '81%', 'pct': 81}}]}),
+ ('slope', 'Comparison', 'Slope', 'Lines between two moments', 'How a ranking changed between two dates',
+  {'title': 'What developers use AI for', 'legend': {'a': '2024', 'b': '2026'}, 'rows': [{'label': 'Writing code', 'a': {'value': '62%', 'pct': 62}, 'b': {'value': '84%', 'pct': 84}}, {'label': 'Debugging', 'a': {'value': '48%', 'pct': 48}, 'b': {'value': '71%', 'pct': 71}}, {'label': 'Docs', 'a': {'value': '55%', 'pct': 55}, 'b': {'value': '58%', 'pct': 58}}]}),
+ ('bullet', 'Comparison', 'Bullet', 'A bar against a target', 'Progress against a goal or benchmark',
+  {'title': 'Agent eval scores against target', 'target_label': 'Target', 'rows': [{'label': 'Tool use accuracy', 'value': '86%', 'pct': 86, 'target': 90}, {'label': 'Plan quality', 'value': '72%', 'pct': 72, 'target': 80}, {'label': 'Safety checks', 'value': '97%', 'pct': 97, 'target': 95}]}),
+ ('radar', 'Comparison', 'Radar', 'A shape per option across 4-6 criteria', 'Comparing models or tools on several criteria',
+  {'title': 'Two coding assistants compared', 'axes': ['Speed', 'Accuracy', 'Context', 'Cost', 'Tool use'], 'series': [{'name': 'Assistant A', 'values': [80, 90, 85, 60, 88]}, {'name': 'Assistant B', 'values': [92, 70, 60, 85, 65]}]}),
+ ('sankey', 'Flow', 'Sankey', 'Ribbons whose width is the amount', 'Where volume goes: requests, users, tokens',
+  {'title': 'Where 1,000 agent requests go', 'flows': [{'from': 'Requests', 'to': 'Cache hit', 'num': 400, 'value': '400'}, {'from': 'Requests', 'to': 'Model call', 'num': 600, 'value': '600'}, {'from': 'Model call', 'to': 'Answered', 'num': 450}, {'from': 'Model call', 'to': 'Tool call', 'num': 150}]}),
+ ('alluvial', 'Flow', 'Alluvial', 'Flows across named stages', 'How groups move between stages',
+  {'title': 'From prompt to shipped change', 'stages': ['Prompt', 'Plan', 'Result'], 'flows': [{'from': 'Bug report', 'to': 'Small fix', 'num': 60}, {'from': 'Bug report', 'to': 'Refactor', 'num': 40}, {'from': 'Feature', 'to': 'Refactor', 'num': 30}, {'from': 'Feature', 'to': 'New module', 'num': 70}, {'from': 'Small fix', 'to': 'Merged', 'num': 60}, {'from': 'Refactor', 'to': 'Merged', 'num': 50}, {'from': 'Refactor', 'to': 'Reverted', 'num': 20}, {'from': 'New module', 'to': 'Merged', 'num': 70}]}),
+ ('network', 'Flow', 'Network', 'A core joined to 4-8 parts', 'Architecture: MCP, integrations, a hub with clients',
+  {'title': 'One MCP host, many servers', 'center': 'MCP host', 'nodes': [{'title': 'Files', 'icon': 'folder'}, {'title': 'GitHub', 'icon': 'branch'}, {'title': 'Database', 'icon': 'database'}, {'title': 'Slack', 'icon': 'chat'}, {'title': 'Browser', 'icon': 'globe'}, {'title': 'Calendar', 'icon': 'bell'}], 'links': [[0, 1], [2, 4]]}),
+ ('arc', 'Flow', 'Arc diagram', 'Nodes on a line, arcs between them', 'Which steps or parts call each other',
+  {'title': 'Which agents talk to each other', 'nodes': ['Planner', 'Coder', 'Tester', 'Reviewer', 'Deployer'], 'arcs': [{'from': 0, 'to': 1, 'label': 'tasks'}, {'from': 1, 'to': 2}, {'from': 2, 'to': 1, 'label': 'fixes'}, {'from': 1, 'to': 3}, {'from': 3, 'to': 4, 'label': 'approve'}]}),
+ ('flowchart', 'Flow', 'Flowchart', 'Steps with a yes/no decision that loops', 'Agent loops, retries, approval flows',
+  {'title': 'The agent loop', 'steps': [{'title': 'Read the task'}, {'title': 'Plan and edit the code'}, {'title': 'Run the tests'}, {'title': 'Do the tests pass?', 'kind': 'decision', 'yes': 'Yes', 'no': 'No, retry'}, {'title': 'Open a pull request'}]}),
+ ('donut', 'Composition', 'Donut', 'Shares of one whole', 'Parts of a total (2-5)',
+  {'title': 'Where the tokens go', 'center': {'value': '100%', 'label': 'of a session'}, 'parts': [{'label': 'Reading files', 'value': '48%', 'pct': 48}, {'label': 'Tool output', 'value': '27%', 'pct': 27}, {'label': 'Your messages', 'value': '15%', 'pct': 15}, {'label': 'Answers', 'value': '10%', 'pct': 10}]}),
+ ('waffle', 'Composition', 'Waffle / pictogram', '100 squares or icons, one per percent', 'A share people can count',
+  {'title': 'How many teams ship with AI review', 'icon': 'users', 'parts': [{'label': 'Use AI review on every PR', 'value': '38%', 'pct': 38}, {'label': 'Use it sometimes', 'value': '41%', 'pct': 41}]}),
+ ('treemap', 'Composition', 'Treemap', 'Rectangles sized by share', 'Many parts of a whole, largest first',
+  {'title': 'Where engineering time goes', 'parts': [{'label': 'Writing code', 'value': '32%', 'pct': 32}, {'label': 'Reviews', 'value': '21%', 'pct': 21}, {'label': 'Debugging', 'value': '18%', 'pct': 18}, {'label': 'Meetings', 'value': '15%', 'pct': 15}, {'label': 'Docs', 'value': '8%', 'pct': 8}, {'label': 'Setup', 'value': '6%', 'pct': 6}]}),
+ ('sunburst', 'Hierarchy', 'Sunburst', 'Rings: categories and their parts', 'A two-level taxonomy',
+  {'title': 'The AI engineering stack', 'root': 'AI app', 'branches': [{'title': 'Models', 'children': ['Frontier', 'Open', 'Small']}, {'title': 'Data', 'children': ['RAG', 'Evals']}, {'title': 'Agents', 'children': ['Tools', 'Memory', 'Planning']}, {'title': 'Ops', 'children': ['Tracing', 'Cost']}]}),
+ ('mindmap', 'Hierarchy', 'Mind map', 'A central idea with branches', 'Brainstorms, topic overviews',
+  {'title': 'Everything in a Claude Code setup', 'root': 'Claude Code', 'branches': [{'title': 'Memory', 'icon': 'book', 'items': ['CLAUDE.md files', 'Auto memory']}, {'title': 'Skills', 'icon': 'star', 'items': ['Reusable workflows', 'Slash commands']}, {'title': 'Tools', 'icon': 'wrench', 'items': ['Shell', 'MCP servers']}, {'title': 'Hooks', 'icon': 'hook', 'items': ['Before a tool', 'After a tool']}]}),
+ ('decision', 'Hierarchy', 'Decision tree', 'A question that branches to answers', 'When to use what',
+  {'title': 'Which one should you use?', 'q': 'Does the task need the same steps every time?', 'options': [{'label': 'Yes', 'title': 'Write a skill', 'sub': 'Package the steps once and reuse them', 'icon': 'star'}, {'label': 'No, data', 'title': 'Add an MCP server', 'sub': 'Give the agent access to the system it needs', 'icon': 'plug'}, {'label': 'No, rules', 'title': 'Use CLAUDE.md', 'sub': 'Store standards and decisions for every session', 'icon': 'book'}]}),
+ ('timeline', 'Time', 'Timeline', 'Dated events on a spine', 'History, releases, a story in order',
+  {'title': 'How coding assistants grew up', 'events': [{'when': 'Autocomplete', 'title': 'Next-line suggestions', 'sub': 'Finish the line you are typing', 'icon': 'code'}, {'when': 'Chat', 'title': 'Ask in a side panel', 'sub': 'Explain and draft snippets', 'icon': 'chat'}, {'when': 'Agents', 'title': 'Edit many files', 'sub': 'Plan, run commands and verify', 'icon': 'agents'}, {'when': 'Teams', 'title': 'Agents in parallel', 'sub': 'Split work and merge results', 'icon': 'users'}]}),
+ ('gantt', 'Time', 'Gantt / roadmap', 'Bars across a time scale', 'Roadmaps and plans',
+  {'title': 'A four-week agent rollout', 'scale': ['Week 1', 'Week 2', 'Week 3', 'Week 4'], 'tasks': [{'title': 'Pick one workflow', 'start': 0, 'end': 22}, {'title': 'Write evals', 'start': 15, 'end': 50}, {'title': 'Pilot with a team', 'start': 40, 'end': 80}, {'title': 'Review and expand', 'start': 75, 'end': 100}]}),
+ ('waterfall', 'Time', 'Waterfall', 'Steps up and down to a total', 'What added and what removed',
+  {'title': 'Where an hour of agent time went', 'start': {'label': 'Session', 'value': '60 min', 'num': 60}, 'steps': [{'label': 'Waiting on tests', 'value': '-18', 'num': -18}, {'label': 'Retries', 'value': '-9', 'num': -9}, {'label': 'Cache reuse', 'value': '+6', 'num': 6}], 'end': {'label': 'Useful work', 'value': '39 min'}}),
+ ('line', 'Time', 'Line / area', 'A trend over time', 'Growth, adoption, cost over months',
+  {'title': 'Pull requests merged per week', 'kind': 'area', 'x': ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'], 'series': [{'name': 'With agent', 'values': [12, 15, 19, 24, 27, 31]}, {'name': 'Without', 'values': [11, 12, 12, 13, 12, 14]}]}),
+ ('heatmap', 'Time', 'Heatmap table', 'A grid of colour-coded numbers', 'Scores of many items on many criteria',
+  {'title': 'Benchmark scores by task', 'unit': '%', 'rows': ['Model A', 'Model B', 'Model C'], 'cols': ['Code', 'Math', 'Search', 'Tools'], 'cells': [[88, 74, 81, 90], [79, 85, 70, 76], [65, 60, 72, 58]], 'legend': {'lo': 'Lower', 'hi': 'Higher'}}),
+]
+for _ty, _fam, _nm, _tag, _best, _smp in CHARTS:
+    DESIGNS.append({'id': 'chart-' + _ty, 'group': 'chart', 'family': _fam, 'name': _nm, 'tag': _tag, 'blurb': _tag + '. Best for: ' + _best.lower() + '.', 'best_for': _best, 'theme': 'paper',
+                    'fields': [T('title', 'Slide title', 60, 6), J()], 'sample': {'title': _smp['title'], 'data': {k: x for k, x in _smp.items() if k != 'title'}},
+                    'build': (lambda ty: lambda v: ('slide', {'type': ty, 'title': v['title'], **v['data']}))(_ty)})
 BY_ID = {d['id']: d for d in DESIGNS}
 
 def public():
-    return [{k: d[k] for k in ('id', 'group', 'name', 'tag', 'blurb', 'best_for', 'theme', 'fields', 'sample')} for d in DESIGNS]
+    return [{k: d.get(k) for k in ('id', 'group', 'family', 'name', 'tag', 'blurb', 'best_for', 'theme', 'fields', 'sample')} for d in DESIGNS]
 
 def _texts(o):
     if isinstance(o, str): yield o
+    elif isinstance(o, (int, float)) and not isinstance(o, bool): yield str(o)
     elif isinstance(o, dict):
         for k, x in o.items():
             if k not in ('icon', 'type', 'layout', 'photo'): yield from _texts(x)

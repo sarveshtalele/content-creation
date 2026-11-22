@@ -39,6 +39,45 @@ def render(jobs_root, items, closing=None, theme='sky', mode='single', fmt='imag
             files += [os.path.join(out, f) for f in os.listdir(out) if f.endswith('comment.txt')]
     return {'ok': ok, 'log': log, 'files': files, 'job': job}
 
+
+def _project(job, story, src):
+    """write the files a normal build expects (story + a one-chunk source made of the person's own words)"""
+    os.makedirs(job, exist_ok=True); json.dump(story, open(os.path.join(job, 'story.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+    for n in ('source_full.txt', 'source.md'): open(os.path.join(job, n), 'w', encoding='utf-8', newline='\n').write(src)
+    json.dump([{'id': 'c01', 'h': '', 'text': src, 's': 1.0}], open(os.path.join(job, 'source.chunks.json'), 'w', encoding='utf-8'))
+    json.dump({'title': story['meta']['title'], 'url': '', 'chunks': 1, 'chars': len(src), 'approx_tokens': len(src) // 4, 'salient': ['c01'], 'dropped_chunks': 0, 'dropped_headings': []}, open(os.path.join(job, 'source.meta.json'), 'w', encoding='utf-8'))
+
+def _jobdir(root, slug):
+    base = os.path.join(root, time.strftime('%Y%m%d-%H%M%S') + '-' + slug); job = base; n_ = 1
+    while os.path.exists(job): n_ += 1; job = f'{base}-{n_}'
+    return job
+
+def cover_job(root, v):
+    """Designed Reel covers from the studio form: hook, sub, chips, steps (3-4), optional layout. Returns {'ok','log','files','job'}"""
+    hook = (v.get('hook') or '').strip()[:64]
+    if len(hook) < 10: raise ValueError('Write a hook of at least 10 characters.')
+    steps = [{'label': str(x)[:28]} for x in (v.get('steps') or []) if str(x).strip()][:4]
+    chips = [str(x)[:16] for x in (v.get('chips') or []) if str(x).strip()][:4]
+    slug = re.sub(r'[^a-z0-9]+', '-', hook.lower()).strip('-')[:40] or 'cover'
+    story = {'meta': {'title': hook, 'slug': slug}, 'scenes': [{'p': {'q': hook, 'sub': (v.get('sub') or '')[:90], 'chips': chips}}] + ([{'p': {'title': (v.get('flow_title') or 'How it works')[:40], 'steps': steps}}] if len(steps) >= 2 else []),
+             'reel': {'cover': {'layout': v['layout']}} if v.get('layout') else {}}
+    job = _jobdir(root, slug); _project(job, story, ' '.join([hook, v.get('sub') or ''] + chips + [s['label'] for s in steps]) + ' ' + _brand_name())
+    r = subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'cover', job] + (['--layout', v['layout']] if v.get('layout') else []), capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=600)
+    cd = os.path.join(job, 'out', 'covers'); files = sorted(os.path.join(cd, f) for f in os.listdir(cd)) if os.path.isdir(cd) else []
+    return {'ok': r.returncode == 0 and bool(files), 'log': (r.stdout + r.stderr)[-3000:], 'files': files, 'job': job}
+
+def walk_job(root, spec, device='mobile'):
+    """Prepare a walkthrough job folder; the caller runs studio.py walkthrough on it in the background."""
+    if not isinstance(spec, dict) or not (spec.get('title') or '').strip(): raise ValueError('Give the guide a title.')
+    st = spec.get('steps') or []
+    if not (2 <= len(st) <= 12): raise ValueError('Add 2 to 12 steps.')
+    for s_ in st:
+        if s_.get('action') not in ('goto', 'click', 'fill', 'press', 'hover', 'scroll', 'wait'): raise ValueError('Unknown action: ' + str(s_.get('action')))
+        if s_.get('action') == 'goto' and not re.match(r'^https?://', s_.get('url') or ''): raise ValueError('Each "open" step needs an http(s) address.')
+    slug = re.sub(r'[^a-z0-9]+', '-', spec['title'].lower()).strip('-')[:40] or 'walkthrough'
+    job = _jobdir(root, slug + '-walk'); os.makedirs(job); json.dump(spec, open(os.path.join(job, 'steps.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+    return job, [sys.executable, os.path.join(HERE, 'studio.py'), 'walkthrough', job, '--steps', os.path.join(job, 'steps.json'), '--device', 'desktop' if device == 'desktop' else 'mobile']
+
 def make_samples(dest):
     """Render every design's sample through the real engine into small JPG thumbnails (the studio's preloaded samples)."""
     from PIL import Image

@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Taskly - a tiny to-do app</title>
+<style>body{font-family:-apple-system,Inter,sans-serif;margin:0;background:#FAF9F5;color:#141413}header{padding:20px;background:#fff;border-bottom:1px solid #E3E0D3;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:22px;margin:0}main{padding:20px}button{background:#D97757;color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:16px;font-weight:600}
+input{width:100%;box-sizing:border-box;padding:12px;border:2px solid #E3E0D3;border-radius:12px;font-size:16px;margin:8px 0}li{background:#fff;border:1px solid #E3E0D3;border-radius:12px;padding:12px;margin:8px 0;list-style:none}
+ul{padding:0}.hide{display:none}.done{text-decoration:line-through;color:#5E5D59}</style></head>
+<body><header><h1>Taskly</h1><button id="new">New task</button></header>
+<main><p id="empty">No tasks yet. Add your first one.</p>
+<form id="f" class="hide"><label for="t">Task name</label><input id="t" placeholder="What needs doing?"><button id="add" type="submit">Add task</button></form>
+<ul id="list"></ul><p id="count"></p></main>
+<script>
+const f=document.getElementById('f'),l=document.getElementById('list'),c=document.getElementById('count');
+document.getElementById('new').onclick=()=>{f.classList.remove('hide');document.getElementById('t').focus()};
+f.onsubmit=e=>{e.preventDefault();const v=document.getElementById('t').value.trim();if(!v)return;const li=document.createElement('li');li.textContent=v;li.onclick=()=>{li.classList.toggle('done');upd()};l.appendChild(li);document.getElementById('t').value='';document.getElementById('empty').classList.add('hide');upd()};
+function upd(){const n=l.children.length,d=l.querySelectorAll('.done').length;c.textContent=`${d} of ${n} done`}
+</script></body></html>

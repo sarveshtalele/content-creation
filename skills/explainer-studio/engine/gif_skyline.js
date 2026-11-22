@@ -2,10 +2,10 @@
 import { C, E, box, tx, enter, seg, eo, icon, measure } from './kit.js';
 import { PAL, scene, header, footer, finish, reveal, node, TOP, BOTTOM } from './gif_common.js';
 import { mix, uniformSub } from './gif_3d.js';
-import { svgNS } from './kit.js';
+import { svgNS, roundPts } from './kit.js';
 
 const hash = (a, b, c) => { let h = (a * 73856093) ^ (b * 19349663) ^ (c * 83492791); h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) % 100; };
-const poly = (g, pts, fill, stroke, sw = 3) => { const p = document.createElementNS(svgNS, 'polygon'); p.setAttribute('points', pts.map(q => q.map(v => v.toFixed(1)).join(',')).join(' ')); p.setAttribute('fill', fill); if (stroke) { p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', sw); p.setAttribute('stroke-linejoin', 'round'); } g.appendChild(p); return p; };
+const poly = (g, pts, fill, stroke, sw = 3) => { const p = document.createElementNS(svgNS, 'path'); p.setAttribute('d', roundPts(pts, 6, true)); p.setAttribute('fill', fill); if (stroke) { p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', sw); p.setAttribute('stroke-linejoin', 'round'); } g.appendChild(p); return p; };
 
 export function buildSkyline(stage, D) {
   const S = scene(stage, D), K = S.g.skyline, B = K.buildings, n = B.length;

@@ -22,10 +22,13 @@ jobs:
           python skills/explainer-studio/tests/test_security.py
           python skills/explainer-studio/tests/test_studio.py
           python skills/explainer-studio/tests/test_content.py
+          python skills/explainer-studio/tests/test_matrix.py
       - name: Offline self-test (ingest, check, pick, post for every fixture)
         run: python skills/explainer-studio/scripts/selftest.py
       - name: Installer
-        run: python install.py --zip
+        run: |
+          python install.py zip
+          python install.py status
       - name: Render a GIF end to end (headless browser, no voice model)
         if: matrix.py == '3.13'
         shell: bash

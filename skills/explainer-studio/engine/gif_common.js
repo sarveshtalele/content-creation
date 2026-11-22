@@ -28,7 +28,10 @@ export function header(S) {
   const sp = E(S.root, 'abs', `left:${Math.max(24, 540 - tw / 2 - 66)}px;top:20px;width:48px;height:48px`, spark(48, C.clay));
   const title = tx(S.root, 'g-title', tt, { x: 0, y: 12, w: W, h: 78, size: tsz, weight: 600, font: 'serif', align: 'center' });
   const sub = tx(S.root, 'g-sub', g.subtitle, { x: 20, y: 92, w: W - 40, h: 40, size: g.subtitle.length > 52 ? 25 : 29, weight: 500, color: C.clayD, align: 'center' });
-  S.A.push(u => { enter(sp, u, .05, { sc: .5, dy: 0, pop: true, d: .6 }); enter(title, u, .1, { dy: 16, d: .5 }); enter(sub, u, .35, { dy: 12 }); });
+  const ul = E(S.root, 'abs', `left:${540 - 90}px;top:138px;width:180px;height:6px;border-radius:3px;background:${C.clay};transform-origin:50% 50%`);
+  S.A.push(u => { enter(sp, u, .05, { sc: .5, dy: 0, pop: true, d: .6 }); enter(title, u, .1, { dy: 16, d: .5 });
+    const m = eo(seg(u, .1, .75)); title.style.clipPath = m < 1 ? `inset(0 ${((1 - m) * 100).toFixed(1)}% 0 0)` : '';   // masking reveal: the title wipes in left to right
+    enter(sub, u, .35, { dy: 12 }); ul.style.transform = `scaleX(${eo(seg(u, .55, 1.1)).toFixed(3)})`; });   // path tracing: an accent rule draws under the header
 }
 // brand pill at the bottom, always visible
 export function footer(S) {

@@ -4,6 +4,8 @@ import { buildReel } from './reel.js';
 import { buildGif } from './gif.js';
 import { cta } from './cta.js';
 import { buildCarousel } from './carousel.js';
+import { buildCover } from './cover.js';
+import { buildWalk } from './walk.js';
 
 const Q = new URLSearchParams(location.search);
 const MODE = Q.get('mode') || 'reel';
@@ -83,10 +85,18 @@ async function setupCarousel(D) {
   const g = buildCarousel(stage, D);
   window.DUR = g.DUR; window.N = g.N; window.EV = []; window.render = g.render;
 }
+async function setupWalk(D) {
+  const g = buildWalk(stage, D);
+  window.DUR = g.DUR; window.EV = []; window.render = g.render;
+}
+async function setupCover(D) {
+  const g = buildCover(stage, D);
+  window.DUR = g.DUR; window.N = g.N; window.EV = []; window.render = g.render;
+}
 (async () => {
   const D = await (await fetch('data.json')).json();
   FLAGS.logo = D.logo === true;
   await loadFonts();                                   // before building: templates measure text to fit it
-  await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : setupReel(D));
+  await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : MODE === 'cover' ? setupCover(D) : MODE === 'walk' ? setupWalk(D) : setupReel(D));
   window.READY = true;
 })().catch(e => { console.error(e); throw e; });

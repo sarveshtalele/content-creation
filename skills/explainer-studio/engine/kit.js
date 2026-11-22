@@ -32,7 +32,7 @@ export function tx(parent, id, text, { x, y, w, h, size = 36, weight = 600, colo
     `line-height:${lh};letter-spacing:${ls}em;display:flex;align-items:center;justify-content:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'};` +
     `${wrap ? 'white-space:normal;' : 'white-space:nowrap;'}${italic ? 'font-style:italic;' : ''}${css}`);
   const s = E(e, '', `display:block;${wrap ? `width:100%;text-align:${align};` : ''}`, '', 'span');
-  s.textContent = text;
+  s.textContent = wrap ? brk(text) : text;
   e.dataset.id = id; e.dataset.text = text;
   return e;
 }
@@ -43,9 +43,39 @@ export function svgLayer(parent, W, H) {
   s.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
   parent.appendChild(s); return s;
 }
-export function path(svg, d, { stroke = C.ink, w = 4, fill = 'none', dash = null, cap = 'round' } = {}) {
+// v3 design system: every elbow is a smooth curve. roundPts turns a point list into a path with rounded corners
+// (radius clamped to half of each segment, so short arrowheads stay sharp-ish); roundD does the same for any absolute or
+// relative M/L/H/V/Z path, so every connector drawn through path() is rounded without touching the templates.
+export const RADIUS = { s: 16, m: 22, l: 28 };
+export function roundPts(pts, r = RADIUS.s, closed = false) {
+  const n = pts.length; if (n < 3) return pts.map((q, i) => `${i ? 'L' : 'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join('') + (closed ? 'Z' : '');
+  const f = v => v.toFixed(1), cut = (a, b, k) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; return [a[0] + dx / L * k, a[1] + dy / L * k]; };
+  const corner = i => { const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n], rr = Math.min(r, Math.hypot(b[0] - a[0], b[1] - a[1]) / 2, Math.hypot(c[0] - b[0], c[1] - b[1]) / 2); return [cut(b, a, rr), b, cut(b, c, rr)]; };
+  if (!closed) { let d = `M${f(pts[0][0])} ${f(pts[0][1])}`; for (let i = 1; i < n - 1; i++) { const [p, q, s] = corner(i); d += `L${f(p[0])} ${f(p[1])}Q${f(q[0])} ${f(q[1])} ${f(s[0])} ${f(s[1])}`; } return d + `L${f(pts[n - 1][0])} ${f(pts[n - 1][1])}`; }
+  const c0 = corner(0); let d = `M${f(c0[2][0])} ${f(c0[2][1])}`;
+  for (let i = 1; i <= n; i++) { const [p, q, s] = corner(i % n); d += `L${f(p[0])} ${f(p[1])}Q${f(q[0])} ${f(q[1])} ${f(s[0])} ${f(s[1])}`; }
+  return d + 'Z';
+}
+export function roundD(d, r = RADIUS.s) {
+  if (!/^[MLHVZmlhvz0-9.,eE\s-]+$/.test(d)) return d;                 // curves and arcs are already smooth
+  const tk = d.match(/[MLHVZmlhvz]|-?\d*\.?\d+(?:e-?\d+)?/g) || []; const subs = []; let cur = null, x = 0, y = 0, cmd = 'M', i = 0;
+  const num = () => parseFloat(tk[i++]);
+  while (i < tk.length) {
+    if (/[A-Za-z]/.test(tk[i])) cmd = tk[i++];
+    if (cmd === 'Z' || cmd === 'z') { if (cur) { cur.closed = true; x = cur.pts[0][0]; y = cur.pts[0][1]; } cur = null; continue; }
+    if (i >= tk.length) break;
+    if (cmd === 'M' || cmd === 'm') { const a = num(), b = num(); x = cmd === 'm' ? x + a : a; y = cmd === 'm' ? y + b : b; cur = { pts: [[x, y]], closed: false }; subs.push(cur); cmd = cmd === 'm' ? 'l' : 'L'; continue; }
+    if (cmd === 'L') { x = num(); y = num(); } else if (cmd === 'l') { x += num(); y += num(); } else if (cmd === 'H') x = num(); else if (cmd === 'h') x += num(); else if (cmd === 'V') y = num(); else if (cmd === 'v') y += num();
+    if (!cur) { cur = { pts: [[x, y]], closed: false }; subs.push(cur); } else cur.pts.push([x, y]);
+  }
+  if (!subs.some(s => s.pts.length >= 3)) return d;
+  return subs.map(s => { const p = s.pts.filter((q, k) => !k || q[0] !== s.pts[k - 1][0] || q[1] !== s.pts[k - 1][1]); if (s.closed && p.length > 1 && p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1]) p.pop(); return roundPts(p, r, s.closed); }).join('');
+}
+// long tokens (URLs, paths, commands) may break after / . : _ - ? = & instead of overflowing their box
+export const brk = t => String(t).replace(/\S{18,}/g, w => w.replace(/([\/.:_?=&-])(?=\S)/g, '$1\u200b'));
+export function path(svg, d, { stroke = C.ink, w = 4, fill = 'none', dash = null, cap = 'round', sharp = false } = {}) {
   const p = document.createElementNS(svgNS, 'path');
-  p.setAttribute('d', d); p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', w);
+  p.setAttribute('d', sharp ? d : roundD(d, Math.max(6, Math.min(RADIUS.s, w * 4)))); p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', w);
   p.setAttribute('fill', fill); p.setAttribute('stroke-linecap', cap); p.setAttribute('stroke-linejoin', 'round');
   if (dash) p.setAttribute('stroke-dasharray', dash);
   svg.appendChild(p); return p;
@@ -174,7 +204,7 @@ let _m = null;
 export function measure(text, { size, weight = 600, font = 'sans', w, lh = 1.2 }) {
   if (!_m) _m = E(document.body, '', 'position:absolute;visibility:hidden;left:-9999px;top:0;overflow-wrap:normal;word-break:normal');
   _m.className = font; _m.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;overflow-wrap:normal;word-break:normal;box-sizing:border-box;width:${w}px;font-size:${size}px;font-weight:${weight};line-height:${lh};white-space:normal`;
-  _m.textContent = text;
+  _m.textContent = brk(text);
   const rg = document.createRange(); rg.selectNodeContents(_m);   // same box the layout validator measures
   return { h: Math.max(rg.getBoundingClientRect().height, 0), wide: _m.scrollWidth > w + .5 };
 }

@@ -6,6 +6,8 @@ import { PAL, scene, header, footer, finish, reveal, TOP, BOTTOM } from './gif_c
 import { mix } from './gif_3d.js';
 
 const el = (p, n, a) => { const e = document.createElementNS(svgNS, n); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+const shade = (hex, f) => { const v = parseInt(hex.slice(1), 16), c = i => Math.max(0, Math.min(255, Math.round(((v >> i) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
+const GAP = 12;
 const hash = (a, b) => { let h = (a * 73856093) ^ (b * 19349663); h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) % 1000 / 1000; };
 
 export function buildFunnel(stage, D) {
@@ -19,17 +21,19 @@ export function buildFunnel(stage, D) {
   el(S.svg, 'ellipse', { cx: CX + 14, cy: YEND + SH * .02 + 40, rx: rb[n - 1] + 70, ry: 26, fill: '#000', opacity: '.07' });   // soft floor shadow under the spout
   const stages = [];
   for (let i = n - 1; i >= 0; i--) {   // bottom to top: an upper drum's front wall hides the lid of the one below
-    const P = PAL[R[i].group], cy = Y0 + i * SH, a = rt[i], b = rb[i], ay = Math.round(a * K_RY), by = Math.round(b * K_RY), id = 'fg' + i;
+    const P = PAL[R[i].group], cy = Y0 + i * SH, a = rt[i], b = rb[i] + (rt[i] - rb[i]) * GAP / SH, ay = Math.round(a * K_RY), by = Math.round(b * K_RY), id = 'fg' + i, SB = SH - GAP;
     const gr = el(defs, 'linearGradient', { id, x1: '0', x2: '1', y1: '0', y2: '0' });
-    [[0, mix(P.bd, .18)], [.28, mix(P.bd, .62)], [.55, mix(P.bd, .34)], [1, mix(P.bd, .02)]].forEach(([o, c]) => el(gr, 'stop', { offset: o, 'stop-color': c }));
+    [[0, shade(P.bd, .74)], [.16, mix(P.bd, .18)], [.3, mix(P.bd, .5)], [.42, mix(P.bd, .12)], [.7, P.bd], [1, shade(P.bd, .6)]].forEach(([o, c]) => el(gr, 'stop', { offset: o, 'stop-color': c }));
     const g = el(gl, 'g', {}); g.style.opacity = '0';
-    el(g, 'path', { d: `M${CX - a} ${cy} L${CX - b} ${cy + SH} A${b} ${by} 0 0 0 ${CX + b} ${cy + SH} L${CX + a} ${cy} A${a} ${ay} 0 0 1 ${CX - a} ${cy} Z`, fill: `url(#${id})`, stroke: mix(P.bd, -0), 'stroke-width': 3, 'stroke-linejoin': 'round' });
+    el(g, 'path', { d: `M${CX - a} ${cy} L${CX - b} ${cy + SB} A${b} ${by} 0 0 0 ${CX + b} ${cy + SB} L${CX + a} ${cy} A${a} ${ay} 0 0 1 ${CX - a} ${cy} Z`, fill: `url(#${id})`, stroke: shade(P.bd, .72), 'stroke-width': 3, 'stroke-linejoin': 'round' });
+    if (i) el(g, 'ellipse', { cx: CX, cy, rx: a, ry: ay, fill: mix(P.bd, .55), stroke: shade(P.bd, .72), 'stroke-width': 3 });
+    const num = E(S.root, 'abs', `left:${CX - 70}px;top:${cy + SB / 2 + ay * .3 - 28}px;width:140px;height:56px;display:flex;align-items:center;justify-content:center;font:700 ${SB > 150 ? 46 : 38}px Lora,serif;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25);opacity:0`, String(i + 1).padStart(2, '0'));
     if (i === 0) {   // the opening: a dark inner ellipse with a bright rim
-      el(g, 'ellipse', { cx: CX, cy, rx: a, ry: ay, fill: mix(P.bd, .8), stroke: P.bd, 'stroke-width': 3 });
-      el(g, 'ellipse', { cx: CX, cy: cy + 5, rx: a - 16, ry: ay - 7, fill: '#3a2f2a', opacity: '.92' });
+      el(g, 'ellipse', { cx: CX, cy, rx: a, ry: ay, fill: '#fff', stroke: shade(P.bd, .72), 'stroke-width': 3 });
+      el(g, 'ellipse', { cx: CX, cy: cy + 5, rx: a - 16, ry: ay - 7, fill: shade(P.bd, .45) });
     }
-    el(g, 'path', { d: `M${CX - b + 3} ${cy + SH + 2} A${b - 3} ${by - 2} 0 0 0 ${CX + b - 3} ${cy + SH + 2}`, fill: 'none', stroke: '#ffffff', 'stroke-width': 3, opacity: '.5', 'stroke-linecap': 'round' });   // rim light on the front lip
-    stages[i] = { g, cy, a, b, P };
+    el(g, 'path', { d: `M${CX - b + 10} ${cy + SB + by * .45} A${b - 10} ${by - 3} 0 0 0 ${CX + b - 10} ${cy + SB + by * .45}`, fill: 'none', stroke: '#ffffff', 'stroke-width': 3, opacity: '.5', 'stroke-linecap': 'round' });   // rim light on the front lip
+    stages[i] = { g, cy, a, b, P, num };
   }
   // right-hand cards
   const CW = 352, CXR = 1080 - 24 - CW, CH = Math.min(SH - 10, 176), pad = 12;
@@ -47,7 +51,7 @@ export function buildFunnel(stage, D) {
     tx(card, 'f' + i + '-s', r.sub, { x: 14, y: 106, w: CW - 28, h: CH - 112, size: ss, weight: 500, color: '#45443F', wrap: true, lh: 1.2, css: 'align-items:flex-start;' });
     S.at(t + 1.1);
     const tt = t; S.A.push(u => {
-      const k = eo(seg(u, tt, tt + .55)); stages[i].g.style.opacity = String(seg(u, tt, tt + .2)); stages[i].g.style.transform = `translateY(${(-34 * (1 - k)).toFixed(1)}px)`;
+      const k = eo(seg(u, tt, tt + .55)); stages[i].g.style.opacity = String(seg(u, tt, tt + .2)); stages[i].num.style.opacity = String(seg(u, tt + .3, tt + .6)); stages[i].g.style.transform = `translateY(${(-34 * (1 - k)).toFixed(1)}px)`;
       ld.style.opacity = String(seg(u, tt + .5, tt + .8)); dot.style.opacity = String(seg(u, tt + .5, tt + .8));
     });
     reveal(S, card, t + .4, { dx: 30, dy: 0, d: .5, sc: 1, pop: false }); t += .85;

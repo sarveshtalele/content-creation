@@ -63,10 +63,9 @@ function render(){
   const sec=S.story[TAB];if(Array.isArray(sec)){field(f,S.story,TAB,[],TAB)}else for(const k of Object.keys(sec))field(f,sec,k,[TAB]);
   if(TAB==='carousel')hookHelp(f);preview()}
 function hookHelp(f){const st=S.story.carousel.hook_style;f.append(el('div',{class:'card'},el('h3',{text:'Hook style: '+st}),el('small',{text:S.hook_help[st]||''})))}
-function ctaTable(f){const d=S.deck;if(!d.length)return;const t=el('table',{},el('tr',{},el('th',{text:'#'}),el('th',{text:'Slide'}),el('th',{text:'CTA strip under the slide'}),el('th')));
-  d.forEach(r=>{const inp=el('input',{type:'text',value:r.cta});inp.oninput=()=>{r.cta=inp.value;if(r.path==='carousel.cta_default')S.story.carousel.cta_default=inp.value;else setPath(r.path,inp.value)};
-    t.append(el('tr',{},el('td',{text:r.n}),el('td',{text:r.type}),el('td',{},inp),el('td',{},btn('rebuild slide',()=>buildArt('carousel',r.n),'s'))))});
-  f.append(el('div',{class:'card'},el('h3',{text:'Slides and their CTAs (edit the text, then rebuild just that slide)'}),t,el('small',{text:'Resource slides share one CTA. Slide numbers are 1-based.'})))}
+function ctaTable(f){const d=S.deck;if(!d.length)return;const t=el('table',{},el('tr',{},el('th',{text:'#'}),el('th',{text:'Slide'}),el('th')));
+  d.forEach(r=>t.append(el('tr',{},el('td',{text:r.n}),el('td',{text:r.type}),el('td',{},btn('rebuild slide',()=>buildArt('carousel',r.n),'s')))));
+  f.append(el('div',{class:'card'},el('h3',{text:'Slides (rebuild one at a time). Every slide carries your brand CTA; change it under Brand.'}),t))}
 function setPath(p,v){const t=[...p.matchAll(/([A-Za-z_][\w-]*)|\[(\d+)\]/g)].map(m=>m[1]!==undefined?m[1]:+m[2]);let c=S.story;for(let i=0;i<t.length-1;i++){if(c[t[i]]===undefined)c[t[i]]={};c=c[t[i]]}c[t[t.length-1]]=v}
 function brandForm(f){const b=S.brand,c=el('div',{class:'card'},el('h3',{text:'Brand (used by every GIF, Reel and carousel)'}));const o={name:b.name,tagline:b.tagline,follow:b.follow||'Follow'};
   for(const k of Object.keys(o))field(c,o,k,[]);c.append(el('div',{class:'row'},btn('Save brand',async()=>{const r=await api('/api/brand',o);show(r.ok,r.log);await load()},'p')),el('small',{text:'Avatar: run  studio.py brand --avatar FILE . Changes apply to the next build.'}));f.append(c)}

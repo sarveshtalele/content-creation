@@ -8,11 +8,11 @@ MAX_BODY = 14 * 1024 * 1024
 
 def serve(port=0, open_browser=True, state_path=None):
     import studio as ST, designs as DS, studio_jobs as SJ
-    token = secrets.token_urlsafe(16); lock = threading.Lock()
+    token = secrets.token_urlsafe(16); lock = threading.Lock(); JOBS = {}
     lib_index = {}
     jobs = os.path.join(ST.EH, 'studio_jobs'); os.makedirs(jobs, exist_ok=True)
     page = open(os.path.join(SKILL, 'studio', 'index.html'), encoding='utf-8').read()
-    roots = {'file': os.path.realpath(jobs), 'samples': os.path.realpath(os.path.join(SKILL, 'studio', 'samples')), 'fonts': os.path.realpath(os.path.join(SKILL, 'assets', 'fonts'))}
+    roots = {'js': os.path.realpath(os.path.join(SKILL, 'studio', 'js')), 'file': os.path.realpath(jobs), 'samples': os.path.realpath(os.path.join(SKILL, 'studio', 'samples')), 'fonts': os.path.realpath(os.path.join(SKILL, 'assets', 'fonts'))}
 
     import library as LB, subprocess, time as _t
     ready = {'at': 0, 'data': {}}
@@ -50,7 +50,8 @@ def serve(port=0, open_browser=True, state_path=None):
                 return self._send(200, page.replace('__TOKEN__', token), 'text/html; charset=utf-8')
             if u.path == '/avatar':      # the profile photo shown in the header; carries no secrets
                 a = ST.USER_AVATAR if os.path.isfile(ST.USER_AVATAR) else os.path.join(SKILL, 'assets', 'avatar.png'); return self._send(200, open(a, 'rb').read(), 'image/png')
-            if u.path.startswith('/fonts/'): return self._static('fonts', u.path[7:])     # fonts carry no secrets; the page needs them before it can send a token header
+            if u.path.startswith('/fonts/'): return self._static('fonts', u.path[7:])
+            if u.path.startswith('/js/'): return self._static('js', u.path[4:])          # the app's own modules; no data in them     # fonts carry no secrets; the page needs them before it can send a token header
             if not self._auth(q): return self._send(403, 'bad token', 'text/plain')
             if u.path == '/api/designs':
                 b = ST.brand(); return self._json(200, {'designs': DS.public(), 'themes': DS.THEMES, 'gifStyles': DS.GIF_STYLES, 'icons': DS.ICONS, 'brand': {'name': b.get('name', ''), 'tagline': b.get('tagline', '')}, 'customPhoto': os.path.isfile(ST.USER_PHOTO)})
@@ -60,6 +61,11 @@ def serve(port=0, open_browser=True, state_path=None):
                 import hooks as HK; qs = (q.get('text') or [''])[0][:6000]
                 return self._json(200, {'carousel': HK.suggest(qs, 'carousel', 5) if qs.strip() else [], 'line': HK.suggest(qs, 'line', 6) if qs.strip() else [], 'library': HK.load(), })
             if u.path == '/api/ready': return self._json(200, readiness())
+            if u.path == '/api/job':
+                j = JOBS.get((q.get('id') or [''])[0])
+                if not j: return self._json(404, {'error': 'unknown job'})
+                rel = lambda p: os.path.relpath(p, jobs).replace(os.sep, '/')
+                return self._json(200, {'state': j['state'], 'log': ''.join(j['log'])[-4000:], 'files': [{'name': os.path.basename(p), 'url': '/file/' + rel(p)} for p in j['files']]})
             if u.path.startswith('/lib/'):
                 p = lib_index.get(u.path[5:]); 
                 if not p or not os.path.isfile(p): return self._send(404, 'not found', 'text/plain')
@@ -80,15 +86,36 @@ def serve(port=0, open_browser=True, state_path=None):
                     except ValueError as e: return self._json(400, {'error': str(e)})
                     rel = lambda p: os.path.relpath(p, jobs).replace(os.sep, '/')
                     return self._json(200, {'ok': r['ok'], 'log': r['log'], 'files': [{'name': os.path.basename(p), 'url': '/file/' + rel(p)} for p in r['files']]})
+                if u.path == '/api/analyze':
+                    import matrix as MX, hooks as HK; t = (body.get('text') or '')[:40000]
+                    if len(t.strip()) < 20: return self._json(400, {'error': 'Paste at least a paragraph (or describe the topic in a sentence or two).'})
+                    R = MX.recommend(t); fam = {'line': R['hooks']['line'], 'carousel': R['hooks']['carousel'], 'visual': [R['reel']['visual_hook']], 'structure': [R['carousel_structure']], 'format': []}
+                    R['hookSets'] = {k: HK.suggest(t, k, 6, fam[k]) for k in fam}; return self._json(200, R)
+                if u.path == '/api/cover':
+                    try: r = SJ.cover_job(jobs, body)
+                    except ValueError as e: return self._json(400, {'error': str(e)})
+                    rel = lambda p: os.path.relpath(p, jobs).replace(os.sep, '/')
+                    return self._json(200, {'ok': r['ok'], 'log': r['log'], 'files': [{'name': os.path.basename(p), 'url': '/file/' + rel(p)} for p in r['files']]})
+                if u.path == '/api/walk':
+                    try: job, cmd = SJ.walk_job(jobs, body.get('spec'), body.get('device') or 'mobile')
+                    except ValueError as e: return self._json(400, {'error': str(e)})
+                    jid = secrets.token_hex(6); J = JOBS[jid] = {'state': 'running', 'log': [], 'files': []}
+                    def go():
+                        p_ = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace')
+                        for line in p_.stdout: J['log'].append(line)
+                        p_.wait(); od = os.path.join(job, 'out')
+                        J['files'] = sorted(os.path.join(od, f) for f in os.listdir(od) if f.endswith(('.mp4', '.md', '.jpg'))) if os.path.isdir(od) else []
+                        J['state'] = 'done' if p_.returncode == 0 else ('failed-steps' if p_.returncode == 3 and J['files'] else 'error')
+                    threading.Thread(target=go, daemon=True).start(); return self._json(200, {'job': jid})
                 if u.path == '/api/request':
                     kind = body.get('kind'); 
                     if kind not in ('gif', 'reel', 'post'): return self._json(400, {'error': 'Unknown kind.'})
-                    topic = (body.get('topic') or '').strip()[:300]; src = (body.get('source') or '').strip()[:4000]; note = (body.get('notes') or '').strip()[:1000]; hook = (body.get('hook') or '').strip()[:200]; design = (body.get('design') or '').strip()[:40]
+                    topic = (body.get('topic') or '').strip()[:300]; src = (body.get('source') or '').strip()[:4000]; note = (body.get('notes') or '').strip()[:1000]; hook = (body.get('hook') or '').strip()[:200]; design = (body.get('design') or '').strip()[:40]; extra = (body.get('extra') or '').strip()[:400]
                     if len(topic) < 4: return self._json(400, {'error': 'Describe the topic in a few words.'})
                     rd = os.path.join(ST.EH, 'requests'); os.makedirs(rd, exist_ok=True)
                     json.dump({'kind': kind, 'topic': topic, 'source': src, 'notes': note, 'hook': hook, 'design': design, 'at': int(_t.time())}, open(os.path.join(rd, f'{int(_t.time())}-{kind}.json'), 'w', encoding='utf-8'), ensure_ascii=False)
-                    word = {'gif': 'a LinkedIn GIF', 'reel': 'a cinematic Reel', 'post': 'a LinkedIn post'}[kind]
-                    prompt = f'Use explainer-studio to make {word} about: {topic}.' + (f' Source: {src}.' if src else '') + (f' Notes: {note}.' if note else '') + (f' Open with this pattern, filled with the real topic and real numbers: "{hook}".' if hook else '') + ' Ask me before building anything that needs a choice, then run the build in the background and tell me when it is done.'
+                    word = {'gif': 'a LinkedIn GIF', 'reel': 'a Reel (Claude light theme unless I say otherwise)', 'post': 'a LinkedIn post'}[kind]
+                    prompt = f'Use explainer-studio to make {word} about: {topic}.' + (f' Source: {src}.' if src else '') + (f' Notes: {note}.' if note else '') + (f' Open with this pattern, filled with the real topic and real numbers: "{hook}".' if hook else '') + (f' {extra}.' if extra else '') + ' Ask me before building anything that needs a choice, then run the build in the background and tell me when it is done.'
                     if design and kind == 'gif' and design in {g['id'] for g in DS.GIF_STYLES}: prompt += f' Use the "{design}" GIF template (gif.template = "{design}").'
                     elif design and kind == 'post' and design in DS.BY_ID: prompt += f' The post image is the "{DS.BY_ID[design]["name"]}" design ({design}): build it with studio.py build --artifacts carousel, single slide, in the Claude light theme.'
                     return self._json(200, {'ok': True, 'prompt': prompt})

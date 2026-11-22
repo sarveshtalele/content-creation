@@ -1,273 +1,300 @@
 <div align="center">
 
-<img src="docs/img/demo.gif" width="360" alt="A LinkedIn diagram GIF made by explainer-studio">
-
 # explainer-studio
 
-**Paste an article, URL or repo. Get one grounded, on-brand LinkedIn diagram GIF.**<br>
-Add a narrated Reel or a LinkedIn post only when you want them.
+**Turn any article, docs page, repository or notes into scroll-stopping visuals, grounded in the source.**
 
-[Quick start](#quick-start) · [Diagrams](#the-six-diagrams) · [Customise the CTA and hook](docs/CUSTOMIZE.md) · [How it works](#how-it-works) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
+Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
-[![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.17.0-D97757)](CHANGELOG.md)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
+![Version](https://img.shields.io/badge/version-3.0.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
-![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Antigravity%20%C2%B7%20Gemini%20CLI-5B8DEF)
-![Format](https://img.shields.io/badge/format-LinkedIn%201080%C3%971350-0A66C2?logo=linkedin&logoColor=white)
-![Security](https://img.shields.io/badge/security-SSRF%20guard%20%C2%B7%20secret%20redaction-brightgreen)
+![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
+![License](https://img.shields.io/badge/license-MIT-788C5D)
+
+<img src="docs/img/demo.gif" alt="An animated funnel GIF made by explainer-studio" width="380">
 
 </div>
 
 ---
 
-<details>
-<summary><b>Table of contents</b></summary>
+## Contents
 
-- [Why explainer-studio](#why-explainer-studio)
-- [Features](#features)
-- [Quick start](#quick-start)
-- [Install](#install)
-- [Use it](#use-it)
-- [The thirteen diagrams](#the-thirteen-diagrams)
-- [Customise the CTA, hook and voice](#customise-the-cta-hook-and-voice)
-- [How it works](#how-it-works)
-- [Review gate](#review-gate)
-- [Security](#security)
-- [FAQ](#faq)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [Licence and credits](#licence-and-credits)
+1. [What it makes](#what-it-makes)
+2. [How it works](#how-it-works)
+3. [Requirements](#requirements)
+4. [Install](#install) · [Claude Code](#claude-code) · [Codex](#codex) · [Antigravity](#antigravity)
+5. [First run](#first-run)
+6. [Use it](#use-it): [slash commands](#slash-commands) · [Design Studio web app](#design-studio-web-app) · [command line](#command-line)
+7. [Update, reinstall, clean, uninstall](#update-reinstall-clean-uninstall)
+8. [Quality: checks, evaluations and end-to-end tests](#quality-checks-evaluations-and-end-to-end-tests)
+9. [Project structure](#project-structure)
+10. [Privacy and security](#privacy-and-security)
+11. [Troubleshooting](#troubleshooting)
+12. [Documentation](#documentation) · [Contributing](#contributing) · [License](#license)
 
-</details>
+---
 
-## Why explainer-studio
+## What it makes
 
-Turning an article into a clean diagram is slow, and AI-made diagrams are often wrong, cluttered or off-brand. This plugin makes the model do one small job, writing a compact `story.json` from your source, and leaves everything else to deterministic code: choosing the template, checking every claim against the source, laying out text so nothing overflows, rendering, and measuring the result. Same input, same output, every time.
-
-| | |
-|---|---|
-| **Grounded** | every claim cites a verbatim quote; names and numbers not in the source are rejected |
-| **Consistent** | one 1080x1350 LinkedIn portrait format, one palette, one footer, flowing-dot arrows |
-| **Token-light** | the model reads the source once and writes only content; checks print only what failed |
-| **Gated** | nothing is delivered until every automated gate passes and the contact sheets have been looked at |
-| **Yours** | change name, tagline, avatar, CTA and voice with one command |
-
-## Features
-
-- **10 diagram templates**, 6 flat and 4 with 3D motion, picked automatically from the shape of your content
-- **Animated GIF + still PNG** by default: the GIF is under 5 MB and loops; the PNG is the complete diagram as one image (1080x1350). Both in your personal brand
-- **Narrated Reel** (1080x1920 MP4, offline male voice, 90 seconds or less) on request
-- **LinkedIn post** with a hook question, arrow bullets, link and your closing CTA on request
-- **Review gate** with Playwright layout checks (overflow, overlap, empty cards) and speech-to-text verification of the voice
-- **Safe by default**: SSRF guard, secret redaction, hook-free and symlink-free repo clones, checksummed model downloads
-- **Portable**: macOS, Windows and Linux; Claude Code, Codex, Antigravity and Gemini CLI from one skill folder (ChatGPT too, by uploading the zipped skill)
-
-## Quick start
-
-```bash
-git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation
-python3 install.py                                   # Windows: py -3 install.py
-python3 skills/explainer-studio/scripts/setup.py     # one time; Windows: py -3 skills\explainer-studio\scripts\setup.py
-python3 skills/explainer-studio/scripts/studio.py doctor   # must print READY
-```
-
-Then open your agent and say:
-
-> *Create a LinkedIn diagram from https://github.com/owner/repo*
-
-Want your own name, avatar and CTA on it? `studio.py brand --name "You" --tagline "..." --avatar me.png`, see [the guide](docs/CUSTOMIZE.md).
-
-### What you get for each request
-
-You paste an article, essay, URL or GitHub repo. The plugin reads it once, **picks the diagram that fits the shape of the content**, and renders one animated GIF in your personal brand. A male-voice narrated Reel (MP4) and a LinkedIn post are built **only if you ask**.
-
-| You say | You get |
-|---|---|
-| *"Make a LinkedIn diagram from this"* (or just paste a source) | 1 GIF (animated) + 1 PNG (the complete diagram), 1080x1350 |
-| *"...and a video"* / *"make a Reel"* | + narrated 1080x1920 MP4, subtitles, poster |
-| *"...and a post"* | + LinkedIn post with arrow bullets, link, closing CTA |
-
-Nothing is delivered until every automated gate passes **and** a reviewer has looked at the contact sheets (see [Review gate](#review-gate)).
-
-## Install
-
-Needs `node >= 20` (with npm), `python` 3.11 to 3.13 (what CI tests), `git`. `ffmpeg >= 7` is downloaded for you when missing. Works the same on macOS, Windows and Linux: every step is a Python script, so there are no shell-only commands.
-
-| | macOS / Linux | Windows (PowerShell) |
+| Media | Output | Highlights |
 |---|---|---|
-| Get it | `git clone https://github.com/sarveshtalele/content-creation.git && cd content-creation` | `git clone https://github.com/sarveshtalele/content-creation.git; cd content-creation` |
-| Copy the skill to your agents | `python3 install.py [project-dir]` | `py -3 install.py [project-dir]` |
-| One-time setup | `python3 skills/explainer-studio/scripts/setup.py` | `py -3 skills\explainer-studio\scripts\setup.py` |
-| Check | `python3 skills/explainer-studio/scripts/studio.py doctor` | `py -3 skills\explainer-studio\scripts\studio.py doctor` |
+| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 15 diagram templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid…), **ranked for your content**; you choose |
+| **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
+| **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
+| **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
+| **Walkthrough video** | 1080x1920 MP4 + E2E report | A real guide run in a browser by **Playwright**: every step is performed, checked (expected vs actual) and shown with a cursor, a highlight and a Verified/Failed badge |
+| **Post** | LinkedIn post text | Hook, short points with their sources, your exact closing CTA |
 
-`doctor` must print `READY`. `sh install.sh` and `sh .../setup.sh` still work on macOS and Linux as thin wrappers.
-
-| Platform | Where the skill lives | How |
-|---|---|---|
-| **Claude Code** | `~/.claude/skills/` or as a plugin | `claude plugin marketplace add ./content-creation` then `/plugin install explainer-studio@explainer-studio-marketplace`, or `python3 install.py` |
-| **Codex** | `~/.agents/skills/` or `<repo>/.agents/skills/` | `python3 install.py /path/to/project`, restart Codex, say `$explainer-studio` or describe the task |
-| **Antigravity** | `~/.gemini/config/skills/`, `<workspace>/.agents/skills/`; CLI: `~/.gemini/antigravity-cli/skills/` | `python3 install.py /path/to/project` |
-| **Gemini CLI** | `~/.gemini/skills/` or `~/.agents/skills/`; workspace `.gemini/skills/` | `python3 install.py` or `gemini skills link ./content-creation/skills`; verify with `/skills list` |
-| **ChatGPT** | Skills > Create > Upload | `python3 install.py --zip`, upload `explainer-studio-skill.zip` |
-
-### Platform notes
-
-| Topic | macOS | Windows | Linux |
-|---|---|---|---|
-| GIF and post | supported | supported | supported |
-| Reel (narrated MP4) | supported | needs [Git for Windows](https://git-scm.com/download/win) (its `sh.exe` runs the audio mux step; `doctor` shows a `sh (Reel only)` row) | supported |
-| Cache folder | `~/.cache/explainer-studio` | `%USERPROFILE%\.cache\explainer-studio` | `~/.cache/explainer-studio` |
-| Links to shared node deps | symlink | symlink, else junction, else a copy (no admin rights needed) | symlink |
-| Override the cache | `EXPLAINER_HOME=/path` | `$env:EXPLAINER_HOME="D:\es"` | `EXPLAINER_HOME=/path` |
-
-Troubleshooting: `python` not found on Windows, use `py -3`. Voice install fails on Python 3.14, install 3.12 (setup picks it automatically when present). Browser download blocked by a proxy, set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary. Long Windows paths break the offline voice engine, keep the repository close to the drive root or set `EXPLAINER_HOME` to a short path.
-
-**ChatGPT.** Supported. Run `python3 install.py --zip`, then in ChatGPT go to Skills > Create > Upload and add `explainer-studio-skill.zip`. In its sandbox run `python3 scripts/setup.py light` (browser and ffmpeg only; no 350 MB voice model), then `python3 scripts/studio.py doctor --for gif`. Carousels (PDF and PNG) and GIFs run there; Reels need the voice model, so build those in a local agent. `doctor --for carousel|gif|reel` checks only what that output needs.
-
-## Use it
-
-Tell your agent what you want and paste the source:
-
-> *Create a LinkedIn diagram from https://github.com/owner/repo*
-> *Make a Reel from this article* (male narrator, 90 seconds or less)
-> *GIF and post from this essay*
-
-If you give a source and no artifact, you get the GIF and its PNG still; the narrated Reel only when you ask. The agent runs the pipeline in [SKILL.md](skills/explainer-studio/SKILL.md). To drive it yourself:
-
-```bash
-S=skills/explainer-studio/scripts/studio.py
-python3 $S ingest <URL|owner/repo|file|dir|-> --out work     # chunks the source (public hosts only)
-python3 $S pick work                                          # best template + limits + skeleton
-# write work/story.json (see the skeleton), then:
-python3 $S check work                                         # repeat until CHECK OK
-python3 $S build work                                         # gif by default; --artifacts reel,gif,post|all
-python3 $S review work                                        # gates + contact sheets in work/out/review/
-python3 $S finalize work                                      # after attest.json; copies to work/final/
-```
-
-Command reference: `doctor | spec [--icons] | ingest | pick | check | eval | post | brand | build | review | finalize`.
-
-## The thirteen diagrams
-
-The plugin chooses one with `studio.py pick` (a deterministic score over the source's wording and structure). The agent may override with a reason.
-
-| Template | Best for | Preview |
-|---|---|---|
-| **pipeline** | ordered steps, workflows, request paths | <img src="docs/img/pipeline.jpg" width="190"> |
-| **columns** | a catalogue grouped by category | <img src="docs/img/columns.jpg" width="190"> |
-| **lanes** | layers of a stack | <img src="docs/img/lanes.jpg" width="190"> |
-| **hub** | one concept with named parts | <img src="docs/img/hub.jpg" width="190"> |
-| **ecosystem** | one core fanning out to 3-5 sections | <img src="docs/img/ecosystem.jpg" width="190"> |
-| **framework** | a 6 or 9 part framework, each part a mini-diagram, plus takeaways | <img src="docs/img/framework.jpg" width="190"> |
-| **exploded** (3D) | a thing made of layers, pulled apart | <img src="docs/img/exploded.jpg" width="190"> |
-| **isoflow** (3D) | an ordered flow across isometric slabs | <img src="docs/img/isoflow.jpg" width="190"> |
-| **orbit** (3D) | a core with 4-6 things around it | <img src="docs/img/orbit.jpg" width="190"> |
-| **stairs** (3D) | levels or stages that climb | <img src="docs/img/stairs.jpg" width="190"> |
-| **tower** (3D) | a building of floors, each room a small scene | <img src="docs/img/tower.jpg" width="190"> |
-| **skyline** (3D) | a ranking or size comparison as city towers | <img src="docs/img/skyline.jpg" width="190"> |
-| **conveyor** (3D) | items passing through gates, with a pass rate per gate (ring gauges, count-up bars, boxes that drop off) | <img src="docs/img/conveyor.jpg" width="190"> |
-
-Every template shares the header, palette, flowing-dot arrows (the dots travel along each arrow so the diagram reads as a running workflow) and the "Follow Sarvesh Talele" footer. The Claude spark appears only when the source mentions Claude. Details and how to add your own: [docs/TEMPLATES.md](docs/TEMPLATES.md).
-
-## Customise the CTA, hook and voice
-
-| I want to... | Do this |
-|---|---|
-| change the **follow pill** (name, "Follow" word, tagline, avatar) | `studio.py brand --name ... --follow ... --tagline ... --avatar me.png` |
-| change the **post's closing CTA lines** | `studio.py brand --cta "line one" --cta "line two"` |
-| change the **narrator** | `studio.py brand --voice am_onyx --speed 1.0` |
-| change the **hook** (GIF title and subtitle, post opening, Reel opening) | edit `work/story.json`, then `studio.py check` |
-| **recreate** the GIF, Reel or post | `studio.py build work --artifacts gif` (or `reel`, `post`, `all`), then `review` and `finalize` |
-
-Your brand is stored outside the repo (`~/.cache/explainer-studio/brand.json`), so updates never overwrite it. Full walkthrough with limits, hook-writing tips and agent prompts: **[docs/CUSTOMIZE.md](docs/CUSTOMIZE.md)**.
-
-More customisation:
-
-| I want to... | Edit |
-|---|---|
-| add a diagram template | [docs/TEMPLATES.md](docs/TEMPLATES.md) (engine file, spec, skeleton, fixture) |
-| change colours or fonts | `engine/kit.js` (`C`), `assets/fonts/` |
-| change thresholds or limits | `scripts/validate_story.py` (`SPEC`), `scripts/evaluate.py` |
-
-The Reel uses Kokoro (offline, Apache-2.0) with the male voice `am_michael`; `am_onyx`, `bm_george` and others are available. Narration follows a fixed arc: question hook, stakes, answer, how, proof, takeaway, then a question or challenge to the viewer.
+Every frame and slide carries **your brand CTA** (photo, name, tagline) at the bottom. Every word and every number comes from the source: the validator refuses text it cannot find there and data charts refuse invented figures.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-  S[Source<br/>URL, repo, text, file] --> I[ingest<br/>chunks + ids, secrets redacted]
-  I --> P[pick<br/>best template + skeleton]
-  P --> A[Agent writes story.json<br/>the only LLM step]
-  A --> C{check<br/>schema, grounding,<br/>metrics}
-  C -- fix list --> A
-  C -- OK --> B[build<br/>GIF / Reel / post]
-  B --> R{review<br/>deterministic gates<br/>+ contact sheets}
-  R -- failed gate --> A
-  R -- 100% --> V[Agent looks at the sheets<br/>writes attest.json]
-  V --> F[finalize<br/>final/ folder]
+  A[Source: URL, file, repo, text] --> B[ingest<br/>clean text + chunks]
+  B --> C[decision matrix<br/>content shapes]
+  C --> D{You choose<br/>template, charts,<br/>hooks, motion}
+  D --> E[story.json<br/>written by your agent]
+  E --> F[check<br/>grounding, limits, numbers]
+  F --> G[render<br/>headless Chromium]
+  G --> H[review gates<br/>layout, legibility, speech]
+  H --> I[final/ files]
 ```
 
-The model is used for exactly one thing: writing a compact `story.json` from the source. Everything else (ingest, template choice, validation, voice, rendering, measurement, review) is code, so the same input produces the same output.
+1. **Ingest** reads the source once and splits it into cited chunks.
+2. **The decision matrix** (`data/matrix.json`) scores 19 content shapes, such as narrowing numbers, agent loops, A versus B, hierarchy or trends. It then ranks the GIF templates, carousel charts, Reel motion, hook families, the opening visual and the carousel structure that fit those shapes ([docs/DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md)).
+3. **You choose.** The agent shows the ranked options and asks before it builds anything.
+4. **The agent writes one compact `story.json`** from the source. That is the only step that uses the model. Everything else is deterministic code.
+5. **Check, render, review.** Text grounding, length limits and number grounding run first. The engine then renders in headless Chromium. Finally, the review gates check layout (overflow, overlap, empty cards), reading time, file size and speech-to-text.
 
-**Token budget.** The agent reads the source once, runs `pick` (about 250 tokens: template, limits, fill-in skeleton), writes only the content, and sees only failures from `check`/`review`. GIF-only runs skip the narration schema entirely. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Requirements
 
-## Review gate
+| | Version | Notes |
+|---|---|---|
+| Python | 3.11 – 3.13 | standard library only for the installer |
+| Node.js | 20 or newer (with npm) | rendering engine and Playwright |
+| git | any | for `install.py update` |
+| ffmpeg | 7 or newer | downloaded by setup when missing |
+| Disk | about 600 MB | browser, voice model (350 MB) and runtime, in `~/.cache/explainer-studio` |
 
-`review` runs deterministic gates and prints only the ones that fail:
+Works the same on macOS, Linux and Windows.
 
-| Area | Gates |
+## Install
+
+```bash
+git clone https://github.com/<you>/explainer-studio.git
+cd explainer-studio
+python3 install.py install          # all agents; or --for claude | codex | antigravity
+```
+
+The installer copies the skill and the slash commands to each agent and records what it installed, so `update`, `reinstall` and `uninstall` know where to look. Run `python3 install.py status` at any time.
+
+### Claude Code
+
+**Option A: plugin (recommended).** You get automatic updates through the marketplace.
+
+```bash
+claude plugin marketplace add /path/to/explainer-studio
+claude plugin install explainer-studio@explainer-studio-marketplace
+```
+
+**Option B: copy.** `python3 install.py install --for claude` writes:
+- the skill to `~/.claude/skills/explainer-studio`
+- the commands to `~/.claude/commands/explainer*.md`
+
+Use one option, not both.
+
+### Codex
+
+```bash
+python3 install.py install --for codex                    # ~/.agents/skills + ~/.codex/prompts
+python3 install.py install --for codex --project ~/work/app   # also a workspace copy in .agents/skills
+```
+
+### Antigravity
+
+```bash
+python3 install.py install --for antigravity    # ~/.gemini/config/skills + ~/.gemini/antigravity/global_workflows
+```
+
+**ChatGPT (skill only).** Run `python3 install.py zip`, then upload `dist/explainer-studio-skill.zip` under Skills > Create > Upload. In its sandbox, run `python3 scripts/setup.py light`. That mode covers GIFs and carousels; Reels need a local agent.
+
+## First run
+
+```bash
+python3 skills/explainer-studio/scripts/setup.py      # once: runtime, headless browser, voice model, ffmpeg
+python3 skills/explainer-studio/scripts/studio.py doctor
+```
+
+`doctor` prints READY or exactly what is missing. In an agent, `/explainer-setup` does both.
+
+Set your brand once. It is stored outside the repository:
+
+```bash
+python3 skills/explainer-studio/scripts/studio.py brand --name "Your Name" --tagline "What you post about" --avatar photo.png
+```
+
+## Use it
+
+### Slash commands
+
+| Command | What it does |
 |---|---|
-| Story | schema and limits, every claim cited with a verbatim quote, ungrounded names or numbers rejected, accuracy metrics above thresholds |
-| GIF | exactly 4:5, size under 5 MB, text legible long enough, nothing overlapping or leaking, arrows animating |
-| Reel | 1080x1920, audio present, 90 s or less, loudness -16..-12 LUFS, true peak, speech-to-text matches every script line |
-| Post | exact closing CTA lines |
+| `/explainer <url or text> [gif\|carousel\|reel\|cover\|post]` | Ingests the source, shows ranked options, asks you to choose, then builds and reviews |
+| `/explainer-walkthrough <site and steps>` | Writes `steps.json`, asks for your OK, runs and verifies the guide, then renders the walkthrough Reel |
+| `/explainer-studio` | Opens the Design Studio web app in the background |
+| `/explainer-setup` | Runs setup and the health check |
+| `/explainer-update` | Pulls the latest version and reinstalls for the same agents |
+| `/explainer-clean` | Removes render folders and caches |
+| `/explainer-uninstall` | Shows what will be removed, asks, then removes it |
 
-At 100% it writes contact sheets. The reviewer opens them and confirms legibility, no clipping, fidelity to the source and arrow logic in `attest.json`. `finalize` refuses unless gates are 100% and the attestation token matches the current files. Metrics are lexical proxies for faithfulness, not proof of truth; the visual check is a look at stills. See [docs/EVALUATION.md](docs/EVALUATION.md).
+These are the same commands in Claude Code (`/`), Codex prompts and Antigravity workflows.
 
-## Security
+### Design Studio web app
 
-Source text is treated as untrusted data. URLs are fetched from public hosts only, secrets are redacted before anything is written, repo clones run without hooks and symlinks, and downloads are checksum-verified. Details and reporting: [SECURITY.md](SECURITY.md). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
+```bash
+python3 skills/explainer-studio/scripts/studio.py studio    # prints a private 127.0.0.1 link
+```
 
-## FAQ
+| Workspace | What you do there |
+|---|---|
+| **Home** | Paste a source. The decision matrix shows its shapes and the top picks for each media |
+| **GIF** | Pick from all 15 templates, ranked with a fit bar and a reason. Choose a hook, then hand the request to your agent |
+| **Carousel** | Pick a cover and up to five chart slides (ranked) and edit the content. Builds the PDF and PNGs directly |
+| **Reel** | Pick a spoken hook, an opening visual, a format and a look. The matrix shows the motion it chose |
+| **Reel cover** | Write a hook and render every layout directly |
+| **Walkthrough video** | Build the steps in a form, then run, verify and render. Live progress, the video and the E2E report appear on the page |
+| **Post** | Pick a hook and an optional image design |
+| **Library** | Everything made on this computer, with previews and downloads |
 
-**Does it work offline?** Rendering, voice and checks run on your machine. Only fetching a URL or repo, and the one-time setup downloads, need the network.
+The app is local only: it listens on 127.0.0.1, uses a random token for each session and refuses requests from other hosts.
 
-**Which agents does it work with?** Claude Code, Codex, Antigravity, Gemini CLI and ChatGPT (zipped skill upload). Run `studio.py doctor` once in a new environment to confirm it can render.
+### Command line
 
-**Can I use it on Windows?** Yes. GIF and post work out of the box. The Reel also needs [Git for Windows](https://git-scm.com/download/win) for its audio mux step; `doctor` tells you.
+```bash
+S=skills/explainer-studio/scripts
+python3 $S/studio.py ingest https://example.com/article --out work
+python3 $S/studio.py pick work                       # ranked GIF templates, carousel charts, Reel motion, hooks
+python3 $S/studio.py pick work --template funnel     # limits + skeleton for your choice
+python3 $S/studio.py hooks work --kind line|carousel|visual|format|structure
+# write work/story.json, then:
+python3 $S/studio.py check work
+python3 $S/studio.py build work --artifacts gif,carousel,reel,post --background
+python3 $S/studio.py review work && python3 $S/studio.py finalize work
+python3 $S/studio.py cover work --layout hero        # Reel covers without rebuilding the Reel
+python3 $S/studio.py walkthrough demo --steps steps.json --device mobile
+```
 
-**Is the output guaranteed true?** No. The accuracy metrics are lexical proxies that catch ungrounded names, numbers and claims, not proof of truth, and the visual check is a look at stills. Read the result before you post it.
+A minimal `steps.json` for a walkthrough:
 
-**How do I change the CTA or recreate a GIF?** See [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md).
+```json
+{"title": "Add your first task", "sub": "Checked in a real browser",
+ "steps": [
+  {"say": "Open the app", "action": "goto", "url": "https://app.example.com", "expect": {"text": "No tasks yet"}},
+  {"say": "Tap New task", "action": "click", "target": "#new", "expect": {"visible": "#title"}},
+  {"say": "Type the task", "action": "fill", "target": "#title", "value": "Write release notes"},
+  {"say": "Save it", "action": "click", "target": "Add task", "expect": {"text": "Write release notes"}}
+ ]}
+```
 
-**Why a different diagram than I expected?** `studio.py pick work` shows the scores; you can ask the agent to use another template.
+## Update, reinstall, clean, uninstall
+
+| Command | Effect |
+|---|---|
+| `python3 install.py update` | `git pull --ff-only`, then reinstalls for the same agents. Stops if you have local changes |
+| `python3 install.py reinstall` | Removes and installs again for the recorded agents and projects |
+| `python3 install.py clean [--jobs] [--dry-run]` | Removes render folders (`.film-*`), caches and `__pycache__`. `--jobs` also removes Design Studio jobs older than 30 days |
+| `python3 install.py uninstall [--for codex] [--dry-run]` | Removes the skill copies and commands |
+| `python3 install.py uninstall --purge --yes` | Also removes your brand, the library index and the Design Studio jobs |
+| `python3 install.py status` | Shows what is installed where, the version and the data folder |
+| `python3 install.py zip` | Builds `dist/explainer-studio-plugin.zip` and `dist/explainer-studio-skill.zip` |
+
+## Quality: checks, evaluations and end-to-end tests
+
+| Layer | What runs | Where |
+|---|---|---|
+| Story check | text grounded in the source, length limits, chart schemas, **every chart figure found in the source** | `studio.py check` |
+| Accuracy evaluation | claim support, overlap, recall@3, precision@3, MRR, coverage (lexical proxies) | `out/eval.md` |
+| Review gates | 4:5 / 9:16 sizes, GIF under 5 MB, overflow, overlap, empty cards, reading time, animation present, speech-to-text match | `studio.py review` |
+| Carousel quality | underfilled, oversized, low-contrast, small-text and soft-image checks | `studio.py e2e` |
+| Walkthrough | each step performed and verified by Playwright, with a report (expected, actual, result, time) | `out/*-walkthrough-report.md` |
+| Unit tests | content, matrix, platform, security, studio server | `skills/explainer-studio/tests/test_*.py` |
+| End-to-end | builds every media, runs every gate and evaluation, drives the web app with Playwright and records a video | `tests/e2e/run_all.py` |
+
+```bash
+python3 skills/explainer-studio/tests/e2e/run_all.py              # writes ~/Downloads/explainer-studio-showcase/REPORT.md
+```
+
+The showcase folder holds every output (GIFs, carousels and the 21 chart slides, Reel, covers, walkthrough video, post), the review contact sheets, the evaluation reports and `app/app-tour.mp4`, a screen recording of the Playwright tour of the web app.
+
+## Project structure
+
+```
+explainer-studio/
+├── .claude-plugin/          plugin.json, marketplace.json (Claude Code)
+├── .codex-plugin/           plugin.json (Codex)
+├── commands/                slash commands, shared by Claude Code, Codex prompts and Antigravity workflows
+├── skills/explainer-studio/
+│   ├── SKILL.md             what the agent follows
+│   ├── scripts/             CLI (studio.py), ingest, matrix, validator, hooks, cover, library, web app server, setup
+│   ├── engine/              renderers: GIF templates, carousel + charts.js, reel.js, cover.js, walk.js, walk_run.mjs (Playwright)
+│   ├── studio/              Design Studio web app (index.html + js/ modules) and sample thumbnails
+│   ├── editor/              per-project story editor
+│   ├── data/                matrix.json (decision matrix), hooks.json (hook library)
+│   ├── config/  assets/     brand defaults, pronunciation, fonts, default avatar
+│   ├── fixtures/            sources used by the tests (including a demo app for walkthroughs)
+│   ├── runtime/             Node runtime (Playwright, ffmpeg-static), installed by setup
+│   └── tests/               unit tests and tests/e2e (run_all.py, app_tour.mjs)
+├── docs/                    architecture, templates, carousel schemas, design matrix, studio, customise, evaluation
+├── install.py · install.sh  installer and lifecycle manager
+└── README.md · CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · CREDITS.md · LICENSE
+```
+
+## Privacy and security
+
+- **Local by default.** Rendering, voice, checks and the web app run on your computer. The network is used only to fetch the sources you give and for the one-time setup downloads.
+- **Sources are data.** Instructions found inside an article, repo or web page are never followed.
+- **Walkthroughs** run only the steps you write, on `http(s)` pages (and local `file://` pages from the command line). Use test accounts: `"secret": true` blurs typed values in the video and keeps them out of the report.
+- **The web app** binds to 127.0.0.1, checks a per-session token on every request, refuses other Host headers and serves only its own files, samples and jobs.
+
+See [SECURITY.md](SECURITY.md) to report a problem.
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `doctor` says a part is missing | run `setup.py`, then `doctor` again |
+| `python` not found on Windows | use `py -3` |
+| Voice install fails on Python 3.14 | install Python 3.12; setup picks it up |
+| Browser download blocked by a proxy | set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary |
+| A check fails with `not in the source` | use the source's own words and numbers, or a non-data chart |
+| A walkthrough step fails | read `out/*-walkthrough-report.md`: it shows the expected and actual result for each step |
+| Long Windows paths break the voice engine | keep the folder near the drive root or set `EXPLAINER_HOME` to a short path |
 
 ## Documentation
 
-| Guide | What is in it |
+| Document | Topic |
 |---|---|
-| [CUSTOMIZE.md](docs/CUSTOMIZE.md) | change the CTA, hook, avatar and voice, then rebuild |
-| [TEMPLATES.md](docs/TEMPLATES.md) | every diagram, its fields and limits, how to add one |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | pipeline, folders, token budget |
-| [EVALUATION.md](docs/EVALUATION.md) | metrics, thresholds, layout checks, what they do not prove |
-| [SECURITY.md](SECURITY.md) | threat model, guardrails, reporting |
-| [CHANGELOG.md](CHANGELOG.md) | what changed in each version |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | pipeline and components |
+| [DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md) | content shapes and how each media is chosen |
+| [TEMPLATES.md](docs/TEMPLATES.md) | the GIF templates and their fields |
+| [CAROUSEL.md](docs/CAROUSEL.md) | carousel slides, the 21 chart schemas and hook styles |
+| [STUDIO.md](docs/STUDIO.md) | the Design Studio web app |
+| [CUSTOMIZE.md](docs/CUSTOMIZE.md) | brand CTA, avatar, voice and hooks |
+| [EVALUATION.md](docs/EVALUATION.md) | metrics and review gates |
+| [AUDIT.md](docs/AUDIT.md) | v3 audit: what was fixed and why |
 
 ## Contributing
 
-Issues and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); run the three test scripts below before you open a PR.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Before opening a pull request:
 
 ```bash
-python3 skills/explainer-studio/scripts/selftest.py          # all fixtures: ingest, check, pick, post
-python3 skills/explainer-studio/tests/test_security.py       # SSRF, secret redaction, symlinks
-python3 skills/explainer-studio/tests/test_platform.py       # Windows/macOS/Linux portability rules (runs in CI on all three)
+for t in skills/explainer-studio/tests/test_*.py; do python3 "$t"; done
+python3 skills/explainer-studio/scripts/selftest.py
+python3 skills/explainer-studio/tests/e2e/run_all.py --only gif,carousel,app
 ```
 
-## Licence and credits
+## License
 
-MIT, see [LICENSE](LICENSE). Third-party notices: [CREDITS.md](CREDITS.md).
-
-If this saves you time, a star helps others find it.
+MIT, see [LICENSE](LICENSE). Third-party components and their licences are listed in [CREDITS.md](CREDITS.md).

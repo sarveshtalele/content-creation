@@ -10,7 +10,6 @@ HOOKS = {   # patterns, not quotes: how each hook style is built from the source
   'plain': 'a direct, concrete statement of the payoff, no trick',
 }
 PER_PAGE = 3
-DEFAULT_CTA = {'title': 'Swipe for the next one', 'mid': 'Keep swiping', 'last_follow': 'Follow for more like this', 'last_comments': 'Links are in the comments'}
 
 def pages(items, per=PER_PAGE):
     n = len(items); k = max(1, math.ceil(n / per)) if n else 0
@@ -29,24 +28,17 @@ def short_url(u):
     return s if len(s) <= 34 else s[:33] + '…'
 
 def compile_deck(story):
-    """-> list of slide dicts the page renders. Per-slide 'cta' falls back to carousel.cta_default, then to a built-in line."""
-    c = story['carousel']; cd = c.get('cta_default'); deck = []
-    t = dict(c['title']); deck.append({'type': 'title', 'hook': t['hook'], 'sub': t.get('sub', ''), 'kicker': t.get('kicker', ''), 'icon': t.get('icon', 'bolt'), 'layout': t.get('layout', 'classic'), 'prompt': t.get('prompt', ''), 'accent': t.get('accent', ''), 'photo': bool(t.get('photo')), 'chips': t.get('chips', []), 'window': t.get('window', ''), 'cta': t.get('cta') or cd or DEFAULT_CTA['title']})
+    """-> list of slide dicts the page renders. The only call to action is the author's brand pill, drawn by the page on every slide."""
+    c = story['carousel']; deck = []
+    t = dict(c['title']); deck.append({'type': 'title', 'hook': t['hook'], 'sub': t.get('sub', ''), 'kicker': t.get('kicker', ''), 'icon': t.get('icon', 'bolt'), 'layout': t.get('layout', 'classic'), 'prompt': t.get('prompt', ''), 'accent': t.get('accent', ''), 'photo': bool(t.get('photo')), 'chips': t.get('chips', []), 'window': t.get('window', '')})
     for s in c.get('slides') or []:
-        d = dict(s); d['short'] = short_url(s['url']) if s.get('url') else ''; d['cta'] = s.get('cta') or cd or ''; deck.append(d)
+        d = dict(s); d['short'] = short_url(s['url']) if s.get('url') else ''; d.pop('cta', None); deck.append(d)
     R = c.get('resources') or {}; its = R.get('items') or []; pg = pages(its); off = 0
     for k, grp in enumerate(pg):
         title = R.get('title', 'Resources') + (f' ({k + 1}/{len(pg)})' if len(pg) > 1 else '')
-        deck.append({'type': 'resources', 'title': title, 'offset': off, 'items': [{'name': x['name'], 'why': x['why'], 'short': short_url(x['url'])} for x in grp], 'cta': R.get('cta') or cd or ''}); off += len(grp)
+        deck.append({'type': 'resources', 'title': title, 'offset': off, 'items': [{'name': x['name'], 'why': x['why'], 'short': short_url(x['url'])} for x in grp]}); off += len(grp)
     cl = c['closing']; kind = cl.get('kind', 'follow')
-    deck.append({'type': 'closing', 'title': cl['title'], 'lines': cl.get('lines', []), 'cta': cl.get('cta') or DEFAULT_CTA['last_comments' if kind == 'comments' else 'last_follow']})
-    # every slide carries a call to action: the author's own line if given, otherwise one that points at the next slide ("Next: <its title>"), and the cover invites the swipe
-    def trunc(t, n=40): t = ' '.join(str(t).split()); return t if len(t) <= n else t[:n].rsplit(' ', 1)[0].rstrip(',:;.-') + '...'
-    for i, d in enumerate(deck[:-1]):
-        if d.get('cta'): continue
-        if c.get('single'): d['cta'] = DEFAULT_CTA['last_follow']; continue      # one image on its own: no "swipe"
-        nxt = deck[i + 1]; nt = nxt.get('title') or nxt.get('hook') or ''
-        d['cta'] = 'Swipe to start' if i == 0 and d['type'] == 'title' else (('Next: ' + trunc(nt)) if nt and nxt['type'] != 'closing' else DEFAULT_CTA['mid'])
+    deck.append({'type': 'closing', 'title': cl['title'], 'lines': cl.get('lines', [])})
     return deck
 
 def comment_text(story, brand):
@@ -81,10 +73,3 @@ def pdf_pages(path):
     """Page count of a PDF written by write_pdf (used by the review gate)."""
     return len(re.findall(rb'/Type /Page /', open(path, 'rb').read()))
 
-def slide_path(c, num):
-    """Where the CTA of deck slide `num` (1-based) lives in story.carousel: title, a content slide, the shared resources CTA, or the closing."""
-    n_content = len(c.get('slides') or []); n_res = len(pages((c.get('resources') or {}).get('items') or []))
-    if num == 1: return 'carousel.title.cta'
-    if num <= 1 + n_content: return f'carousel.slides[{num - 2}].cta'
-    if num <= 1 + n_content + n_res: return 'carousel.resources.cta'
-    return 'carousel.closing.cta'

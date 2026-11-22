@@ -166,8 +166,22 @@ def validate(story, chunks, full_text):
         for w, t in gif_texts(story['gif']):   # every GIF text must come from the source (>=75% of its content words appear there)
             cw = content_words(t)
             if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'gif text not grounded in source ({w}): "{t[:60]}". Reword using the source\'s own words')
+    cv = (story.get('reel') or {}).get('cover') if isinstance(story.get('reel'), dict) else None
+    if cv is not None:   # optional Reel cover overrides: hook (grounded like every text), layout, kicker, sub
+        if not isinstance(cv, dict): v.e('reel.cover must be an object')
+        else:
+            if cv.get('layout') is not None and cv['layout'] not in ('hero', 'question', 'number', 'split', 'face'): v.e('reel.cover.layout must be hero|question|number|split|face')
+            for k, mx in (('hook', 64), ('kicker', 26), ('sub', 90)):
+                if cv.get(k) is not None:
+                    _S(v, f'reel.cover.{k}', cv[k], 0 if k != 'hook' else 10, mx); cw = content_words(cv[k])
+                    if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'reel.cover.{k} not grounded in source: reuse the source\'s words')
     if 'carousel' in story:
         v_carousel(v, story['carousel'], icons)
+        srcnums = source_numbers(full_text)
+        for i, s_ in enumerate(story['carousel'].get('slides') or []):
+            if isinstance(s_, dict) and s_.get('type') in NUMERIC_CHARTS:
+                for w, t in chart_numbers(s_):
+                    if _norm(t) not in srcnums: v.e(f'carousel.slides[{i}]{w}: the figure {t} is not in the source. Data charts show only numbers the source gives; pick a non-data chart if it has none')
         for w, t in carousel_texts(story['carousel']):   # slide text must come from the source (resources: from the fetched pages)
             cw = content_words(t)
             if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'carousel text not grounded in source ({w}): "{t[:60]}". Reword using the source\'s own words')
@@ -183,11 +197,117 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'ring', 'tower', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot', 'grid')
+CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'cone', 'ring', 'tower', 'lollipop', 'dumbbell', 'slope', 'bullet', 'radar', 'sankey', 'alluvial', 'network', 'arc', 'flowchart', 'donut', 'waffle', 'treemap', 'sunburst', 'mindmap', 'decision', 'timeline', 'gantt', 'waterfall', 'line', 'heatmap', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot', 'grid')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
 CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold', 'stage', 'editorial')
 def _pct(v, w, val):
     if not (isinstance(val, (int, float)) and not isinstance(val, bool) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
+
+# ---- v3 chart slides: declarative limits (engine/charts.js). S=text, N=number, P=0-100, I=icon, E=enum, L=list, D=object; '?' = optional ----
+def cS(lo, hi, opt=False): return ('S', lo, hi, opt)
+def cL(lo, hi, it): return ('L', lo, hi, it)
+def cD(opt=False, **kw): return ('D', kw, opt)
+cN, cP, cI = ('N',), ('P', False), ('I', False)
+cPo, cIo = ('P', True), ('I', True)
+def cE(*o, opt=False): return ('E', o, opt)
+_VAL = cS(1, 10); _PAIR = cD(value=cS(1, 8), pct=cP)
+CHART_SPEC = {
+ 'lollipop': cD(rows=cL(3, 6, cD(label=cS(2, 24), value=cS(1, 8), pct=cP))),
+ 'dumbbell': cD(legend=cD(a=cS(1, 16), b=cS(1, 16)), rows=cL(3, 5, cD(label=cS(2, 22), a=_PAIR, b=_PAIR))),
+ 'slope': cD(legend=cD(a=cS(1, 16), b=cS(1, 16)), rows=cL(3, 5, cD(label=cS(2, 22), a=_PAIR, b=_PAIR))),
+ 'bullet': cD(rows=cL(3, 5, cD(label=cS(2, 40), value=_VAL, pct=cP, target=cPo)), target_label=cS(0, 30, True)),
+ 'radar': cD(axes=cL(4, 6, cS(2, 18)), series=cL(1, 2, cD(name=cS(1, 18), values=cL(4, 6, cP)))),
+ 'sankey': cD(flows=cL(3, 10, cD(**{'from': cS(2, 22), 'to': cS(2, 22), 'num': cN, 'value': cS(0, 10, True)}))),
+ 'alluvial': cD(flows=cL(3, 10, cD(**{'from': cS(2, 22), 'to': cS(2, 22), 'num': cN, 'value': cS(0, 10, True)})), stages=('L?', 2, 4, cS(1, 20))),
+ 'network': cD(center=cS(2, 22), nodes=cL(4, 8, cD(title=cS(2, 22), icon=cIo))),
+ 'arc': cD(nodes=cL(4, 7, cS(2, 20)), arcs=cL(2, 8, cD(**{'from': cN, 'to': cN, 'label': cS(0, 18, True)}))),
+ 'flowchart': cD(steps=cL(3, 6, cD(title=cS(3, 40), kind=cE('step', 'decision', opt=True), yes=cS(0, 10, True), no=cS(0, 10, True)))),
+ 'donut': cD(parts=cL(2, 5, cD(label=cS(2, 24), value=cS(1, 8), pct=cP)), center=cD(True, value=cS(1, 8), label=cS(1, 24))),
+ 'waffle': cD(parts=cL(1, 4, cD(label=cS(2, 40), value=cS(1, 8), pct=cP)), icon=cIo),
+ 'treemap': cD(parts=cL(3, 7, cD(label=cS(2, 28), value=cS(1, 8), pct=cP))),
+ 'sunburst': cD(root=cS(2, 20), branches=cL(2, 4, cD(title=cS(2, 16), pct=cPo, children=cL(1, 3, cS(2, 18))))),
+ 'mindmap': cD(root=cS(2, 24), branches=cL(3, 6, cD(title=cS(2, 24), icon=cIo, items=('L?', 0, 3, cS(2, 34))))),
+ 'decision': cD(q=cS(6, 70), options=cL(2, 3, cD(label=cS(2, 16), title=cS(3, 34), sub=cS(0, 90, True), icon=cIo))),
+ 'timeline': cD(events=cL(3, 6, cD(when=cS(1, 14), title=cS(3, 34), sub=cS(0, 80, True), icon=cIo))),
+ 'gantt': cD(scale=cL(2, 6, cS(1, 12)), tasks=cL(3, 6, cD(title=cS(2, 24), start=cP, end=cP))),
+ 'waterfall': cD(start=cD(label=cS(2, 18), value=cS(1, 8), num=cN), steps=cL(2, 5, cD(label=cS(2, 18), value=cS(1, 8), num=cN)), end=cD(label=cS(2, 18), value=cS(1, 8))),
+ 'line': cD(x=cL(3, 8, cS(1, 10)), series=cL(1, 3, cD(name=cS(1, 18), values=cL(3, 8, cN))), kind=cE('line', 'area', opt=True), unit=cS(0, 4, True)),
+ 'heatmap': cD(rows=cL(3, 6, cS(2, 24)), cols=cL(3, 6, cS(1, 16)), cells=cL(3, 6, cL(3, 6, cN)), unit=cS(0, 3, True), legend=cD(True, lo=cS(1, 20), hi=cS(1, 20))),
+}
+NUMERIC_CHARTS = {'lollipop', 'dumbbell', 'slope', 'bullet', 'radar', 'sankey', 'alluvial', 'donut', 'waffle', 'treemap', 'waterfall', 'line', 'heatmap'}
+def _num(x): return isinstance(x, (int, float)) and not isinstance(x, bool)
+def check_spec(v, w, val, sp, icons):
+    k = sp[0]
+    if k == 'S':
+        if val is None and sp[3]: return
+        _S(v, w, val, sp[1], sp[2])
+    elif k == 'N':
+        if not _num(val): v.e(f'{w}: number required')
+    elif k == 'P':
+        if val is None and sp[1]: return
+        if not (_num(val) and 0 <= val <= 100): v.e(f'{w}: number 0-100 required')
+    elif k == 'I': _ic(v, w, val, icons, req=not sp[1])
+    elif k == 'E':
+        if val is None and sp[2]: return
+        if val not in sp[1]: v.e(f'{w}: must be ' + '|'.join(sp[1]))
+    elif k in ('L', 'L?'):
+        if val is None and k == 'L?': return
+        for i, x in enumerate(_list(v, w, val, sp[1], sp[2])): check_spec(v, f'{w}[{i}]', x, sp[3], icons)
+    elif k == 'D':
+        if val is None and sp[2]: return
+        if not isinstance(val, dict): v.e(f'{w}: object required'); return
+        for kk, ss in sp[1].items(): check_spec(v, f'{w}.{kk}', val.get(kk), ss, icons)
+def chart_extra(v, w, s_):
+    """shape rules the declarative spec cannot express"""
+    ty = s_['type']
+    if ty in ('radar',):
+        for j, se in enumerate(s_.get('series') or []):
+            if isinstance(se, dict) and len(se.get('values') or []) != len(s_.get('axes') or []): v.e(f'{w}.series[{j}].values: one value per axis')
+    if ty == 'line':
+        for j, se in enumerate(s_.get('series') or []):
+            if isinstance(se, dict) and len(se.get('values') or []) != len(s_.get('x') or []): v.e(f'{w}.series[{j}].values: one value per x label')
+    if ty == 'heatmap':
+        if len(s_.get('cells') or []) != len(s_.get('rows') or []) or any(len(r) != len(s_.get('cols') or []) for r in (s_.get('cells') or []) if isinstance(r, list)): v.e(f'{w}.cells: rows x cols grid required')
+    if ty == 'arc':
+        n = len(s_.get('nodes') or [])
+        for j, a in enumerate(s_.get('arcs') or []):
+            if isinstance(a, dict) and not all(isinstance(a.get(q), int) and 0 <= a[q] < n for q in ('from', 'to')) or (isinstance(a, dict) and a.get('from') == a.get('to')): v.e(f'{w}.arcs[{j}]: from/to must be two different node indexes')
+    if ty in ('sankey', 'alluvial'):
+        F = [f for f in (s_.get('flows') or []) if isinstance(f, dict)]
+        if any(f.get('from') == f.get('to') for f in F): v.e(f'{w}.flows: a flow cannot go to itself')
+        seen = {}
+        for f in F: seen.setdefault(f.get('from'), set()).add(f.get('to'))
+        def cyc(x, path):
+            if x in path: return True
+            return any(cyc(y, path | {x}) for y in seen.get(x, ()))
+        if any(cyc(x, set()) for x in seen): v.e(f'{w}.flows: flows must not loop back')
+        if any(_num(f.get('num')) and f['num'] <= 0 for f in F): v.e(f'{w}.flows: num must be > 0')
+    if ty == 'gantt':
+        for j, t in enumerate(s_.get('tasks') or []):
+            if isinstance(t, dict) and _num(t.get('start')) and _num(t.get('end')) and t['start'] >= t['end']: v.e(f'{w}.tasks[{j}]: start must be before end')
+    if ty == 'waffle' and sum(p.get('pct', 0) for p in (s_.get('parts') or []) if isinstance(p, dict) and _num(p.get('pct'))) > 100: v.e(f'{w}.parts: shares add up to more than 100')
+    if ty == 'flowchart':
+        st = s_.get('steps') or []
+        if st and isinstance(st[0], dict) and isinstance(st[-1], dict) and 'decision' in (st[0].get('kind'), st[-1].get('kind')): v.e(f'{w}.steps: first and last steps cannot be decisions')
+NUMRX = re.compile(r'\d[\d,]*(?:\.\d+)?')
+def _norm(t): t = t.replace(',', ''); return t.rstrip('0').rstrip('.') if '.' in t else t
+def source_numbers(full): return {_norm(m) for m in NUMRX.findall(full)}
+def chart_numbers(s_):
+    """(where, number text) for every figure a data chart shows or plots; each must appear in the source"""
+    out = []
+    def walk(o, p):
+        if isinstance(o, dict):
+            for k, x in o.items():
+                if k in ('pct', 'start', 'end', 'target', 'from', 'to', 'type', 'icon'): continue
+                if k == 'value' and isinstance(x, str): out.extend((f'{p}.value', m) for m in NUMRX.findall(x))
+                elif k in ('num', 'values', 'cells') or (k != 'value' and isinstance(x, (dict, list))): walk(x, f'{p}.{k}')
+                elif _num(x) and k == 'num': out.append((f'{p}.{k}', str(abs(x))))
+        elif isinstance(o, list):
+            for i, x in enumerate(o):
+                if _num(x): out.append((f'{p}[{i}]', str(abs(x))))
+                else: walk(x, f'{p}[{i}]')
+        elif _num(o): out.append((p, str(abs(o))))
+    walk(s_, ''); return out
 def v_carousel(v, c, icons):
     if not isinstance(c, dict): v.e('carousel must be an object'); return
     if c.get('hook_style') not in CAR.HOOK_STYLES: v.e('carousel.hook_style must be one of ' + '|'.join(CAR.HOOK_STYLES))
@@ -219,6 +339,10 @@ def v_carousel(v, c, icons):
             for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
                 _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
         elif ty == 'grid': _grid(v, w, s_)
+        elif ty in CHART_SPEC: check_spec(v, w, s_, CHART_SPEC[ty], icons); chart_extra(v, w, s_)
+        elif ty == 'cone':
+            for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 5)):
+                _S(v, f'{w}.steps[{j}].title', st_.get('title'), 2, 22); _S(v, f'{w}.steps[{j}].sub', st_.get('sub', ''), 0, 64); _S(v, f'{w}.steps[{j}].value', st_.get('value', ''), 0, 26); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)
         elif ty == 'ring':
             for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 5)):
                 _S(v, f'{w}.steps[{j}].title', st_.get('title'), 2, 18); _S(v, f'{w}.steps[{j}].sub', st_.get('sub', ''), 0, 44); _ic(v, f'{w}.steps[{j}].icon', st_.get('icon'), icons, req=False)

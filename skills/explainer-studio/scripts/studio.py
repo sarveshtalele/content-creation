@@ -179,7 +179,7 @@ def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
     tails, end_hold = {}, 2.8
     for it in range(5):
-        D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work); D['look'] = 'light' if (story.get('reel') or {}).get('look') == 'light' else 'cinematic'
+        D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work); D['look'] = 'cinematic' if (story.get('reel') or {}).get('look') == 'cinematic' else 'light'   # Claude light is the default; reel.look 'cinematic' for the dark grade
         film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920', fast=True)
         if rc == 2: sys.exit('readcheck could not run:\n' + txt[-800:])
         if not bad: break
@@ -207,8 +207,7 @@ def build_reel(work, story, lib, env, out, slug):
     if not sh: sys.exit('The Reel needs a POSIX shell for the audio mux step. On Windows install Git for Windows (it includes sh.exe), then re-run. The GIF and post do not need it.')
     r = run([sh, os.path.join(lib, 'core', 'render', 'mux.sh').replace(os.sep, '/'), vid.replace(os.sep, '/'), mix.replace(os.sep, '/'), fin.replace(os.sep, '/'), '30', '0'], cwd=lib, env=e2)
     if r.returncode: sys.exit('mux failed')
-    os.remove(vid); poster = os.path.join(out, f'{slug}-poster.jpg')
-    run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', str(round(D['scenes'][min(2, len(D['scenes']) - 1)]['t0'] + 2.0, 2)), '-i', fin, '-frames:v', '1', '-q:v', '2', poster], env=env)
+    os.remove(vid); build_cover(work, story, lib, env, out, slug)   # designed cover (all layouts) + <slug>-poster.jpg, not a frame from the video
     # ASR (optional)
     items = [{'id': i, 'text': t, **({'asr': x['asr']} if x.get('asr') else {})} for x in story['beats'] for i, t in [(x['id'], spoken[x['id']])]]
     ij = os.path.join(work, '.cache', 'asr_in.json'); dump(items, ij)
@@ -216,6 +215,22 @@ def build_reel(work, story, lib, env, out, slug):
     asr = {0: 'all lines verified by speech-to-text', 1: 'SOME LINES DIFFER (see out/asr.json; fix spelling or add "tts"/"asr")', 3: 'skipped (ASR model not installed)'}.get(r.returncode, 'error')
     print(f'[reel] done in {time.time() - t0:.0f}s -> {fin}\n[reel] speech check: {asr}')
     return {'file': fin, 'duration': D['DUR'], 'asr': asr, 'tails': tails, 'gates': {'readcheck': not bad, 'layout': True, 'duration<=90s': D['DUR'] <= 90.0, 'speech': {0: 'verified', 1: 'FAILED', 3: 'skipped'}.get(r.returncode, 'FAILED')}}
+
+def build_cover(work, story, lib, env, out, slug, layout=None, hook=None):
+    """Reel cover: every layout the story supports as <slug>-cover-<layout>.png (in out/covers), the chosen one as <slug>-poster.jpg."""
+    import cover as CV
+    cd = CV.data(story, hook, layout); film = stage(work, '.film-cover', {'brand': brand_for_film(brand()), 'logo': has_claude(work), 'cover': cd})
+    od = os.path.join(out, 'covers'); os.makedirs(od, exist_ok=True)
+    for old in glob.glob(os.path.join(od, f'{slug}-cover-*.png')): os.remove(old)   # a layout the story no longer supports must not linger
+    r = run(['node', os.path.join(SKILL, 'engine', 'shots.mjs'), film, '--size', '1080x1920', '--q', 'mode=cover', '--out', od, '--prefix', f'{slug}-cover'], cwd=lib, env=env, quiet=True)
+    if r.returncode: print('[cover] render failed:', (r.stdout + r.stderr)[-600:]); return None
+    files = {}
+    for k, l in enumerate(cd['layouts'], 1):
+        src = os.path.join(od, f'{slug}-cover-{k:02d}.png'); dst = os.path.join(od, f'{slug}-cover-{l}.png'); os.replace(src, dst); files[l] = dst
+    poster = os.path.join(out, f'{slug}-poster.jpg'); ff = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'
+    run([ff, '-y', '-v', 'error', '-i', files[cd['chosen']], '-q:v', '2', '-update', '1', poster], env=env, quiet=True)
+    print(f"[cover] {len(files)} layouts in {od} ({', '.join(files)}); poster = {cd['chosen']} -> {poster}")
+    return {'poster': poster, 'layouts': files, 'chosen': cd['chosen']}
 
 def build_gif(work, story, lib, env, out, slug):
     b = brand(); g = dict(story['gif']); g['template'] = g.get('template', 'hub'); g['H'] = H = 1350; size = f'1080x{H}'; hold = 5.4
@@ -402,7 +417,7 @@ def review(a):
         cb = B['carousel']; pngs = cb['pngs']; n = len(pngs)
         G['carousel.5-7_slides'] = 5 <= n <= 7; G['carousel.every_slide_1080x1350'] = all(png_size(q) == (1080, 1350) for q in pngs)
         G['carousel.pdf_pages_match'] = (CAR.pdf_pages(cb['file']) == n) if cb['file'] else True; G['carousel.layout+readable'] = all(cb['gates'].values())
-        dk = CAR.compile_deck(story); G['carousel.every_slide_has_cta'] = all(d['cta'].strip() for d in dk); G['carousel.title_first_closing_last'] = dk[0]['type'] == 'title' and dk[-1]['type'] == 'closing'
+        dk = CAR.compile_deck(story); G['carousel.brand_cta_every_slide'] = True; G['carousel.title_first_closing_last'] = dk[0]['type'] == 'title' and dk[-1]['type'] == 'closing'
         ctf = [x for x in cb['also'] if x.endswith('comment.txt')][0]
         if (story['carousel'].get('resources') or {}).get('items'): G['carousel.comment_lists_every_link'] = all(i['url'] in open(ctf, encoding='utf-8').read() for i in story['carousel']['resources']['items'])
         tmpd = os.path.join(rd, '_cs'); os.makedirs(tmpd, exist_ok=True); sm = []
@@ -437,7 +452,7 @@ def finalize(a):
     if A.get('token') != R['token']: print('REFUSED: attest.json token does not match the current review token ' + R['token']); return 1
     if not all(A.get('checked', {}).get(k) is True for k in need): print('REFUSED: every attest "checked" item must be true: ' + ', '.join(need) + '. Fix the problem and rebuild instead of ticking it.'); return 1
     fin = os.path.join(work, 'final'); shutil.rmtree(fin, ignore_errors=True); os.makedirs(fin)
-    extra = [os.path.join(out, f'{slug}-subtitles.srt'), os.path.join(out, f'{slug}-poster.jpg')]
+    extra = [os.path.join(out, f'{slug}-subtitles.srt'), os.path.join(out, f'{slug}-poster.jpg')] + sorted(glob.glob(os.path.join(out, 'covers', f'{slug}-cover-*.png')))
     for f in files + [x for x in extra if os.path.exists(x)]: shutil.copy(f, fin)
     dump({'confidence_pct': 100, 'gates': R['gates'], 'token': cur, 'files': {os.path.basename(f): sha(os.path.join(fin, os.path.basename(f))) for f in os.listdir(fin) for f in [os.path.join(fin, f)]}}, os.path.join(fin, 'MANIFEST.json'))
     print('FINAL (all gates 100%, visual review attested):'); [print('  ', os.path.join(fin, f)) for f in sorted(os.listdir(fin))]; return 0
@@ -528,23 +543,6 @@ def edit_cmd(a):
     if not ok: print('The edit made the story fail a check; fix it (or restore story.json.bak).'); return 1
     if a.build: a2 = argparse.Namespace(dir=a.dir, artifacts=a.build, slide=a.slide); return build(a2)
     return 0
-def cta_cmd(a):
-    """studio.py cta DIR SLIDE TEXT [--build]: set the CTA strip of one carousel slide (1 = title ... last = closing); 'all' sets the default for every slide."""
-    work = os.path.abspath(a.dir); story = load(os.path.join(work, 'story.json'))
-    if 'carousel' not in story: print('story.json has no carousel'); return 2
-    c = story['carousel']; n = CAR.deck_len(c)
-    if str(a.slide).lower() == 'all': c['cta_default'] = a.text; path = 'carousel.cta_default'; num = None
-    else:
-        num = int(a.slide)
-        if not 1 <= num <= n: print(f'slide must be 1-{n} or "all"'); return 2
-        path = CAR.slide_path(c, num)
-    if path != 'carousel.cta_default': set_path(story, path, a.text)
-    save_story(work, story); print(f'CTA of {"every slide without its own" if num is None else "slide " + str(num)} -> "{a.text}" ({path})')
-    ok, *_ = do_check(work)
-    if not ok: return 1
-    if a.build: return build(argparse.Namespace(dir=a.dir, artifacts='carousel', slide=None if num is None or path.startswith('carousel.resources') else num))
-    return 0
-
 def readercard_cmd(a):
     """studio.py readercard DIR NAME SPEC.json: render shots/NAME.png (a labelled summary card) with Playwright from a small JSON spec."""
     import readercard as RC
@@ -574,61 +572,71 @@ def plan_cmd(a):
         f = os.path.join(work, n)
         if os.path.isfile(f): src = open(f, encoding='utf-8', errors='replace').read(); break
     if not src: print('no source text in ' + work + ' (run ingest first)'); return 1
-    low = src.lower(); sig = []
-    nums = re.findall(r'\b\d+(?:\.\d+)?\s?(?:%|x|k|m|ms|s|min|hours?|days?|steps?|tools?|frameworks?|users?)\b', src, re.I)
-    if len(nums) >= 3: sig.append(('stat / bars / funnel', f'{len(nums)} figures found, e.g. ' + ', '.join(dict.fromkeys(nums[:4])), 'put the biggest number on a ring+waffle (stat), compare 3-5 on bars, or use a funnel if they shrink stage by stage'))
-    if len(re.findall(r'(?m)^\s*(?:\d+[.)]|step \d+)', src, re.I)) >= 3 or 'step by step' in low: sig.append(('flow / terminal', 'numbered steps or commands', 'a vertical flow for steps, or a terminal transcript for commands'))
-    if re.search(r'\b(loop|cycle|repeat|feedback|iterate)\b', low): sig.append(('loop', 'loop/cycle wording', 'a circular diagram with 3-4 nodes and a centre label'))
-    if re.search(r'\b(vs\.?|versus|instead of|rather than|compared (?:to|with)|difference between)\b', low): sig.append(('compare', 'a contrast in the text', 'two cards side by side, 2-3 points each'))
-    if re.search(r'\b(layers?|stack|tiers?|levels?)\b', low): sig.append(('stack', 'layers/tiers wording', 'slabs that show what sits on what'))
-    if re.search(r'`[^`]+`|\$ \w+|\bnpm |\bpip |\bgit \w+', src): sig.append(('terminal', 'commands in the text', 'a command transcript'))
-    if re.search(r'https?://', src): sig.append(('shot', 'links in the text', 'a framed page card per recommended link'))
-    if not sig: sig.append(('points / big', 'no numbers, steps or contrasts found', 'icon points for the list, one big quote for the key line'))
-    L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Which infographic type should each content slide use (ring funnel, tower funnel, stat, bars, compare, flow, loop, stack, terminal, points)? Output is always the PDF and the separate PNG images.', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
-    L += [f'- **{t}**: {why}. Idea: {idea}.' for t, why, idea in sig]
-    L += ['', 'Design choice: see docs/DESIGN_MATRIX.md (conveyor for gates, funnel for narrowing shares, tower for layers, skyline for rankings, poster slide for a bold claim).']
+    import matrix as MX; R = MX.recommend(src); sig = [(c['type'], c['for'].lower(), '') for c in R['carousel']]
+    L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Which infographic type should each content slide use? Ranked for this source: ' + ', '.join(c['type'] for c in R['carousel']) + '. Every content slide uses a different chart family. Output is always the PDF and the separate PNG images.',
+         '1. Who is this for, and what should they do after the last slide (save, comment, follow, click)?', '2. Which hook style: ' + ', '.join(R['hooks']['carousel']) + ' (from the matrix), or another (`studio.py hooks DIR`)?', '3. Tone: plain and practical, bold and opinionated, or warm and personal?', '4. Anything that must be on a slide, or must not be?',
+         '', '## What the source looks like', '', *[f"- **{r['label']}** (score {r['score']}): {', '.join(r['signals'])}" for r in R['shapes']], f"- Figures in the source: {R['figures_in_source']}" + ('' if R['figures_in_source'] >= 2 else ' (no data charts: they need numbers from the source)'),
+         '', f"Structure: {R['carousel_structure']} (see data/hooks.json structures). Decision matrix: data/matrix.json, docs/DESIGN_MATRIX.md."]
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
     open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
 
+def walkthrough_cmd(a):
+    """studio.py walkthrough DIR --steps steps.json [--device mobile|desktop] [--strict]: run a step-by-step guide in a real browser with Playwright,
+    verify every step (expected vs actual), and render a Claude-light walkthrough Reel plus an E2E report. Failed steps are shown as failed, never hidden."""
+    work = os.path.abspath(a.dir); os.makedirs(work, exist_ok=True); lib = find_lib(); env = env_for(lib)
+    spec = load(os.path.abspath(a.steps)); st = spec.get('steps') or []
+    if not spec.get('title') or not (2 <= len(st) <= 12): print('steps.json needs a "title" and 2-12 "steps"'); return 2
+    wd = os.path.join(work, 'walk'); shutil.rmtree(wd, ignore_errors=True)
+    r = run(['node', os.path.join(SKILL, 'engine', 'walk_run.mjs'), os.path.abspath(a.steps), wd, '--device', a.device], cwd=lib, env=env)
+    if r.returncode not in (0, 3) or not os.path.isfile(os.path.join(wd, 'walk.json')): print('walkthrough run failed'); return 1
+    import library as LB; LB.register(work)
+    W_ = load(os.path.join(wd, 'walk.json')); slug = re.sub(r'[^a-z0-9]+', '-', W_['title'].lower()).strip('-')[:48] or 'walkthrough'
+    out = os.path.join(work, 'out'); os.makedirs(out, exist_ok=True)
+    rep = [f"# E2E walkthrough report: {W_['title']}", '', f"{W_['passed']}/{W_['total']} steps verified ({W_['device']}, Playwright, {W_['started']})", '', '| # | Step | Expected | Actual | Result | Time |', '|---|---|---|---|---|---|']
+    rep += [f"| {s['i']} | {s['say'] or s['action']} | {s['expected']} | {s['actual']} | {'PASS' if s['ok'] else 'FAIL'} | {s['ms'] / 1000:.1f} s |" for s in W_['steps']]
+    open(os.path.join(out, f'{slug}-walkthrough-report.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(rep) + '\n')
+    if a.strict and W_['passed'] != W_['total']: print('\n'.join(rep)); print('STRICT: not rendering a Reel with failed steps'); return 3
+    film = stage(work, '.film-walk', {'brand': brand_for_film(brand()), 'walk': W_}); shutil.copytree(wd, os.path.join(film, 'walk'))
+    vid = os.path.join(out, f'{slug}-walkthrough.mp4'); print('[walk] rendering...')
+    r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', '1080x1920', '--fps', '30', '--workers', workers(), '--q', 'mode=walk', '--out', vid], cwd=lib, env=env)
+    if r.returncode: print('[walk] render failed'); return 1
+    ff = shutil.which('ffmpeg', path=env['PATH']) or 'ffmpeg'; poster = os.path.join(out, f'{slug}-walkthrough-poster.jpg')
+    run([ff, '-y', '-v', 'error', '-ss', '2.6', '-i', vid, '-frames:v', '1', '-q:v', '2', poster], env=env, quiet=True)
+    print('\n'.join(rep[2:3])); print(f'[walk] done -> {vid}\n[walk] report -> {os.path.join(out, slug + "-walkthrough-report.md")}\n[walk] poster -> {poster}')
+    return 0 if W_['passed'] == W_['total'] else 3
+
 def cover_cmd(a):
-    """studio.py cover DIR --hooks "HOOK ONE" "HOOK TWO" "HOOK THREE" [--look face|poster|both] [--size youtube|reel|grid|all]: video thumbnails, hook <= 4 words each."""
-    import cover as CV
-    work = os.path.abspath(a.dir); out = os.path.join(work, 'out', 'covers'); os.makedirs(out, exist_ok=True); br = brand()
-    bad = [h for h in a.hooks if not 1 <= len(h.split()) <= 4]
-    if bad: print('each hook must be 1-4 words (short hooks get clicked): ' + ' | '.join(bad)); return 1
-    looks = ['face', 'poster'] if a.look == 'both' else [a.look]; sizes = list(CV.SIZES) if a.size == 'all' else [a.size]
-    av = os.path.join(work, 'assets', 'avatar.png'); av = av if os.path.isfile(av) else (USER_AVATAR if os.path.isfile(USER_AVATAR) else os.path.join(SKILL, 'assets', 'avatar.png')); ab = CV.avatar_b64(av)
-    slug = re.sub(r'[^a-z0-9]+', '-', (load(os.path.join(work, 'story.json'))['meta'].get('slug') or 'video').lower()).strip('-') if os.path.isfile(os.path.join(work, 'story.json')) else 'video'
-    n = 0
-    for path, look, size, hook, i in CV.files(out, slug, a.hooks, looks, sizes):
-        hp = path[:-4] + '.html'; open(hp, 'w', encoding='utf-8', newline='\n').write(CV.render('poster' if look == 'poster' else 'face', size, hook, i, ab, br['name'], a.kicker or ''))
-        W, H = CV.SIZES[size]; r = run(['node', os.path.join(SKILL, 'engine', 'pageshot.mjs'), hp, path, '--size', f'{W}x{H}', '--scale', '1', '--wait', '200'], env=dict(os.environ)); os.remove(hp); n += 1
-        if r.returncode: print('cover failed: ' + path); return 1
-    print(f'{n} covers in {out}'); return 0
+    """studio.py cover DIR [--layout hero|question|number|split|face] [--hook TEXT]: the designed Reel cover, every layout the story supports, no Reel build needed."""
+    work = os.path.abspath(a.dir); story = load_project(work)[0]
+    lib = find_lib(); env = env_for(lib); slug = story['meta']['slug']
+    r = build_cover(work, story, lib, env, os.path.join(work, 'out'), slug, a.layout, a.hook)
+    return 0 if r else 1
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
     dc = sp.add_parser('doctor'); dc.add_argument('--for', dest='for_', choices=['carousel', 'gif', 'reel', 'all'], default='all');  s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
-    for n in ('check', 'eval', 'post', 'pick', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
+    for n in ('check', 'eval', 'post', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
+    pk = sp.add_parser('pick', help='decision matrix: ranked GIF templates, carousel charts, Reel motion and hooks for this source'); pk.add_argument('dir'); pk.add_argument('--template', help='print the skeleton for the template the person chose')
     br = sp.add_parser('brand')
     for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
     b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--background', action='store_true', help='detach and return at once (use for reel/gif: they take minutes); poll with jobstatus'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
     js = sp.add_parser('jobstatus'); js.add_argument('dir')
-    hk = sp.add_parser('hooks', help='viral hook patterns that fit a topic (from data/hooks.json)'); hk.add_argument('text', nargs='?', default='', help='topic, or a project folder with source.md'); hk.add_argument('--kind', choices=['carousel', 'line'], default='carousel', help='carousel = first-slide formulas; line = opening line for a post, Reel or GIF'); hk.add_argument('-n', type=int, default=5)
+    hk = sp.add_parser('hooks', help='viral hook patterns that fit a topic (from data/hooks.json)'); hk.add_argument('text', nargs='?', default='', help='topic, or a project folder with source.md'); hk.add_argument('--kind', choices=['carousel', 'line', 'visual', 'format', 'structure'], default='carousel', help='carousel = first-slide formulas; line = opening line for a post, Reel or GIF'); hk.add_argument('-n', type=int, default=5)
     rs = sp.add_parser('resources'); rs.add_argument('dir'); rs.add_argument('urls', nargs='+'); rs.add_argument('--title'); rs.add_argument('--per-link', type=int, default=2500)
     ed = sp.add_parser('edit'); ed.add_argument('dir'); ed.add_argument('path'); ed.add_argument('value'); ed.add_argument('--build'); ed.add_argument('--slide', type=int)
-    ct = sp.add_parser('cta'); ct.add_argument('dir'); ct.add_argument('slide'); ct.add_argument('text'); ct.add_argument('--build', action='store_true')
     sg = sp.add_parser('studio'); sg.add_argument('--port', type=int, default=0); sg.add_argument('--no-open', action='store_true'); sg.add_argument('--foreground', action='store_true', help='run in this terminal (blocks)'); sg.add_argument('--stop', action='store_true'); sg.add_argument('--status', action='store_true'); sg.add_argument('--state', default=None, help=argparse.SUPPRESS)
     ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true'); ew.add_argument('--foreground', action='store_true', help='run in this terminal (blocks)'); ew.add_argument('--stop', action='store_true'); ew.add_argument('--status', action='store_true'); ew.add_argument('--state', default=None, help=argparse.SUPPRESS)
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
     pl = sp.add_parser('plan'); pl.add_argument('dir')
-    cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--hooks', nargs='+', required=True); cv.add_argument('--look', choices=['face', 'poster', 'both'], default='both'); cv.add_argument('--size', choices=['youtube', 'reel', 'grid', 'all'], default='all'); cv.add_argument('--kicker')
+    cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--layout', choices=['hero', 'question', 'number', 'split', 'face']); cv.add_argument('--hook')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
+    wk = sp.add_parser('walkthrough', help='run a step-by-step guide with Playwright, verify each step, render a walkthrough Reel'); wk.add_argument('dir'); wk.add_argument('--steps', required=True); wk.add_argument('--device', choices=['mobile', 'desktop'], default='mobile'); wk.add_argument('--strict', action='store_true')
     a = ap.parse_args()
     if a.cmd == 'cover': return cover_cmd(a)
+    if a.cmd == 'walkthrough': return walkthrough_cmd(a)
     if a.cmd == 'plan': return plan_cmd(a)
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)
@@ -644,18 +652,27 @@ def main():
     if a.cmd == 'jobstatus': return jobstatus(a)
     if a.cmd == 'hooks':
         import hooks as HK; t = a.text
-        if os.path.isdir(t) and os.path.isfile(os.path.join(t, 'source.md')): t = open(os.path.join(t, 'source.md'), encoding='utf-8', errors='replace').read()[:6000]
-        for x in HK.suggest(t, a.kind, a.n): print(f"{x['category']:<18} {x['text']}")
+        fam = None
+        if os.path.isdir(t) and os.path.isfile(os.path.join(t, 'source.md')):
+            import matrix as MX; full = open(os.path.join(t, 'source_full.txt'), encoding='utf-8', errors='replace').read() if os.path.isfile(os.path.join(t, 'source_full.txt')) else ''
+            t = open(os.path.join(t, 'source.md'), encoding='utf-8', errors='replace').read()[:6000]; R = MX.recommend(full or t)
+            fam = {'line': R['hooks']['line'], 'carousel': R['hooks']['carousel'], 'visual': [R['reel']['visual_hook']], 'structure': [R['carousel_structure']], 'format': []}[a.kind]
+            print('content shapes: ' + ', '.join(r['label'] for r in R['shapes']) + (f"  (matrix families: {', '.join(fam)})" if fam else '') + '\n')
+        for x in HK.suggest(t, a.kind, a.n, fam): print(f"{x['category']:<18} {x['text']}")
         print('\nPick the one that fits the real concept, fill every [placeholder] with the real topic and real numbers (carousel hook <= 60 characters). These are patterns, not guaranteed results.'); return 0
     if a.cmd == 'resources': return resources_cmd(a)
     if a.cmd == 'edit': return edit_cmd(a)
-    if a.cmd == 'cta': return cta_cmd(a)
     if a.cmd == 'doctor': return doctor(a)
     if a.cmd == 'brand': return set_brand(a)
     if a.cmd == 'spec': return spec(a)
     if a.cmd == 'ingest': m = ING.run(a.src, a.out, a.max_chars); print(json.dumps(m, ensure_ascii=False)); print('-> read', os.path.join(a.out, 'source.md'), 'once; cite chunk ids [cNN]'); return 0
     if a.cmd == 'pick':
-        w = os.path.abspath(a.dir); r = PICK.pick(open(os.path.join(w, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(w, 'source.meta.json'))); print(json.dumps(r, indent=1)); print('limits:', VS.SPEC['gif_templates'][r['template']]); print('skeleton:', PICK.SKELETON[r['template']]); return 0
+        import matrix as MX
+        w = os.path.abspath(a.dir); R = MX.recommend(open(os.path.join(w, 'source_full.txt'), encoding='utf-8').read(), load(os.path.join(w, 'source.meta.json'))); print(MX.report(R))
+        t = a.template or R['gif'][0]['template']
+        if a.template is None: print(f"\nASK the person which GIF template to use (top 3: {', '.join(g['template'] for g in R['gif'][:3])}); never build silently. Then: studio.py pick {a.dir} --template NAME")
+        if t in PICK.SKELETON: print(f'\n[{t}] limits:', VS.SPEC['gif_templates'][t]); print('skeleton:', PICK.SKELETON[t])
+        return 0
     if a.cmd in ('check', 'eval'): return 0 if do_check(os.path.abspath(a.dir))[0] else 1
     if a.cmd == 'post':
         ok, story, *_ = do_check(os.path.abspath(a.dir), quiet=True)

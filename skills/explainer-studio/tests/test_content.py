@@ -29,7 +29,7 @@ assert '`' not in TN.norm('use `my_var` now') and '_' not in TN.norm('use `my_va
 # --- the studio page: carousel has no template step, both formats are always delivered
 html = open(os.path.join(SK, 'studio', 'index.html'), encoding='utf-8').read()
 assert 'Pick a cover template' not in html and 'Deliver' not in html
-assert 'Create carousel (PDF and images)' in html
+js = open(os.path.join(SK, 'studio', 'js', 'media.js'), encoding='utf-8').read(); assert "format: st.mode === 'carousel' ? 'both'" in js and '/api/walk' in js and '/api/cover' in js
 
 # --- request prompt carries the chosen design
 import studio_app as SA
@@ -38,16 +38,16 @@ assert 'GIF template (gif.template' in src and "body.get('design')" in src
 
 # --- narration word cap and pacing constants
 import timeline as TL; assert (TL.LEAD, TL.GAP) == (.35, .25) or TL.LEAD < .5
-# --- every carousel slide has a call to action, and middle slides point at the next one
+# --- no text CTA strip: the deck carries no 'cta'; the page draws only the brand pill
 import carousel as CAR
 st, _ = DS.assemble([{'design': i, 'values': DS.BY_ID[i]['sample']} for i in ('cover-bold', 'info-grid', 'info-compare')], None, 'paper', False, 'Sarvesh Talele')
-dk = CAR.compile_deck(st); assert all(d['cta'].strip() for d in dk), [d['cta'] for d in dk]
-assert dk[1]['cta'].startswith('Next: ') and dk[-1]['cta'], [d['cta'] for d in dk]
-st1, _ = DS.assemble([{'design': 'info-grid', 'values': DS.BY_ID['info-grid']['sample']}], None, 'paper', True, 'x'); assert 'swip' not in CAR.compile_deck(st1)[1]['cta'].lower()
+assert not any('cta' in d for d in CAR.compile_deck(st)), CAR.compile_deck(st)
+assert "'fr-brand'" in open(os.path.join(SK, 'engine', 'carousel.js'), encoding='utf-8').read() and "'fr-cta'" not in open(os.path.join(SK, 'engine', 'carousel.js'), encoding='utf-8').read()
 
 # --- the plugin zip has the manifests and skills/<name>/SKILL.md at its root (what GitHub and plugin uploaders require)
 import zipfile
-subprocess.run([sys.executable, os.path.join(SK, '..', '..', 'install.py'), '--plugin-zip'], capture_output=True)
-zp = os.path.join(SK, '..', '..', 'explainer-studio-plugin.zip'); names = zipfile.ZipFile(zp).namelist()
-assert '.claude-plugin/plugin.json' in names and '.codex-plugin/plugin.json' in names and 'skills/explainer-studio/SKILL.md' in names
+subprocess.run([sys.executable, os.path.join(SK, '..', '..', 'install.py'), 'zip'], capture_output=True)
+zp = os.path.join(SK, '..', '..', 'dist', 'explainer-studio-plugin.zip'); names = zipfile.ZipFile(zp).namelist()
+assert '.claude-plugin/plugin.json' in names and '.codex-plugin/plugin.json' in names and 'skills/explainer-studio/SKILL.md' in names and 'commands/explainer.md' in names
+assert not any('node_modules' in n or '__pycache__' in n or '.film-' in n for n in names)
 print('CONTENT TESTS OK')

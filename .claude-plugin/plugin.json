@@ -1,1 +1,21 @@
-{"name":"explainer-studio","version":"2.17.0","description":"Turn any article, essay or repo into a narrated Reel, LinkedIn GIF and LinkedIn post, grounded in the source.","author":{"name":"Sarvesh Talele"},"license":"MIT"}
+{
+ "name": "explainer-studio",
+ "version": "3.0.0",
+ "description": "Turn any article, docs page, repo or notes into a ranked choice of GIFs, chart carousels, narrated Reels with designed covers, verified Playwright walkthrough videos and LinkedIn posts, grounded in the source, in the Claude light theme with your brand CTA.",
+ "author": {
+  "name": "Sarvesh Talele"
+ },
+ "license": "MIT",
+ "keywords": [
+  "content",
+  "linkedin",
+  "instagram",
+  "reels",
+  "carousel",
+  "gif",
+  "infographic",
+  "dataviz",
+  "playwright",
+  "explainer"
+ ]
+}

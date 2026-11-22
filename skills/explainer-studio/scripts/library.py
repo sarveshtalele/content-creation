@@ -18,10 +18,14 @@ def register(work):
         os.makedirs(_eh(), exist_ok=True); open(_reg(), 'w', encoding='utf-8').write(json.dumps((cur + [work])[-200:]))
 
 def _title(d):
+    w = os.path.join(d, 'walk', 'walk.json')
+    if os.path.isfile(w):
+        try: return json.load(open(w, encoding='utf-8')).get('title') or os.path.basename(d)
+        except Exception: pass
     try: m = json.load(open(os.path.join(d, 'story.json'), encoding='utf-8')).get('meta', {}); return m.get('title') or os.path.basename(d)
     except Exception: return os.path.basename(d)
 
-KINDS = {'carousel': 'Carousel', 'image': 'Image', 'gif': 'GIF', 'reel': 'Reel', 'post': 'Post'}
+KINDS = {'carousel': 'Carousel', 'image': 'Image', 'gif': 'GIF', 'reel': 'Reel', 'walkthrough': 'Walkthrough', 'post': 'Post'}
 
 def _kinds(d):
     """{kind: [files]} for one project folder."""
@@ -33,8 +37,11 @@ def _kinds(d):
     if single and not k.get('carousel'): k['image'] = single
     elif single: k['image'] = single
     if g(out, '*.gif'): k['gif'] = g(out, '*.gif')
-    if g(out, '*.mp4'): k['reel'] = g(out, '*.mp4') + g(out, '*.srt')
-    post = g(out, '*poster*.jpg') + g(out, '*post*.png') + g(out, '*post*.txt')
+    walk = g(out, '*-walkthrough*')
+    if walk: k['walkthrough'] = sorted(walk, key=lambda f: not f.endswith('.mp4'))
+    reel = [f for f in g(out, '*.mp4') if '-walkthrough' not in f]
+    if reel: k['reel'] = reel + g(out, '*.srt') + g(out, 'covers', '*-cover-*.png')
+    post = g(out, '*post.txt') + g(out, '*post*.png')
     if post: k['post'] = post
     return k
 

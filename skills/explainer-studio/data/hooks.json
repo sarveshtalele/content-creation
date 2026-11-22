@@ -1124,5 +1124,684 @@
    "name": "Comparison",
    "slides": "A vs B, both options, criterion 1, criterion 2, pros and cons, who should choose what, verdict and CTA"
   }
+ ],
+ "visual": [
+  {
+   "name": "Start with the result",
+   "how": "Show the finished output immediately.",
+   "fits": [
+    "result",
+    "output",
+    "final",
+    "built",
+    "made"
+   ]
+  },
+  {
+   "name": "Open mid-action",
+   "how": "Begin while the activity is already happening.",
+   "fits": [
+    "running",
+    "build",
+    "coding",
+    "working",
+    "live"
+   ]
+  },
+  {
+   "name": "Screen recording",
+   "how": "Show the software or workflow in action.",
+   "fits": [
+    "tool",
+    "app",
+    "cli",
+    "terminal",
+    "workflow",
+    "install",
+    "software"
+   ]
+  },
+  {
+   "name": "Before and after",
+   "how": "Display two contrasting results immediately.",
+   "fits": [
+    "before",
+    "after",
+    "improve",
+    "change",
+    "transform"
+   ]
+  },
+  {
+   "name": "Zoom reveal",
+   "how": "Start with a close-up and reveal the complete scene.",
+   "fits": [
+    "architecture",
+    "system",
+    "layers",
+    "inside",
+    "whole"
+   ]
+  },
+  {
+   "name": "Unexpected visual",
+   "how": "Open with something unusual but relevant.",
+   "fits": [
+    "surprising",
+    "strange",
+    "unexpected",
+    "weird"
+   ]
+  },
+  {
+   "name": "Text-first",
+   "how": "Show a strong headline while the visual demonstrates the subject.",
+   "fits": [
+    "myth",
+    "opinion",
+    "claim",
+    "truth",
+    "wrong"
+   ]
+  },
+  {
+   "name": "Fast transitions",
+   "how": "Connect multiple short clips to establish context.",
+   "fits": [
+    "tools",
+    "resources",
+    "list",
+    "many",
+    "surfaces"
+   ]
+  },
+  {
+   "name": "Proof-first",
+   "how": "Show a real screenshot, output or physical result.",
+   "fits": [
+    "results",
+    "numbers",
+    "benchmark",
+    "data",
+    "score",
+    "tested"
+   ]
+  },
+  {
+   "name": "Split screen",
+   "how": "Compare two methods simultaneously.",
+   "fits": [
+    "vs",
+    "versus",
+    "compare",
+    "instead",
+    "old",
+    "new"
+   ]
+  },
+  {
+   "name": "Mistake demonstration",
+   "how": "Show the wrong approach before explaining the correction.",
+   "fits": [
+    "mistake",
+    "wrong",
+    "avoid",
+    "error",
+    "fix"
+   ]
+  },
+  {
+   "name": "Transformation",
+   "how": "Show the process evolving into the final result.",
+   "fits": [
+    "grow",
+    "evolve",
+    "history",
+    "journey",
+    "steps"
+   ]
+  }
+ ],
+ "reel_formats": [
+  {
+   "name": "Talking head",
+   "how": "Explain one interesting concept.",
+   "fits": [
+    "concept",
+    "idea",
+    "explain"
+   ]
+  },
+  {
+   "name": "Screen-recording tutorial",
+   "how": "Demonstrate a tool or workflow.",
+   "fits": [
+    "tool",
+    "install",
+    "cli",
+    "workflow",
+    "setup"
+   ]
+  },
+  {
+   "name": "Voiceover + B-roll",
+   "how": "Narrate over supporting footage.",
+   "fits": [
+    "story",
+    "overview"
+   ]
+  },
+  {
+   "name": "POV/skit",
+   "how": "Act out a recognizable scenario.",
+   "fits": [
+    "pov",
+    "relatable",
+    "developer"
+   ]
+  },
+  {
+   "name": "Before-and-after",
+   "how": "Show a transformation.",
+   "fits": [
+    "before",
+    "after",
+    "improve"
+   ]
+  },
+  {
+   "name": "Reaction video",
+   "how": "Respond to an article, news item or video.",
+   "fits": [
+    "news",
+    "article",
+    "announced",
+    "release"
+   ]
+  },
+  {
+   "name": "Stitch/remix",
+   "how": "Add commentary to existing content.",
+   "fits": [
+    "opinion",
+    "respond"
+   ]
+  },
+  {
+   "name": "Myth-busting",
+   "how": "Challenge and explain a misconception.",
+   "fits": [
+    "myth",
+    "wrong",
+    "misconception"
+   ]
+  },
+  {
+   "name": "Ranked list",
+   "how": "Rank tools, books, skills or methods.",
+   "fits": [
+    "top",
+    "best",
+    "rank",
+    "tools",
+    "resources"
+   ]
+  },
+  {
+   "name": "Mini case study",
+   "how": "Tell a short real-world story.",
+   "fits": [
+    "case",
+    "team",
+    "company",
+    "result"
+   ]
+  },
+  {
+   "name": "Experiment",
+   "how": "Test a product, workflow or hypothesis.",
+   "fits": [
+    "test",
+    "tested",
+    "experiment",
+    "tried"
+   ]
+  },
+  {
+   "name": "Green-screen explainer",
+   "how": "Put a screenshot or article behind yourself.",
+   "fits": [
+    "article",
+    "docs",
+    "page",
+    "blog"
+   ]
+  },
+  {
+   "name": "Day-in-the-life",
+   "how": "Show an actual process or routine.",
+   "fits": [
+    "routine",
+    "daily",
+    "day"
+   ]
+  },
+  {
+   "name": "Quick FAQ",
+   "how": "Answer one frequently asked question.",
+   "fits": [
+    "how",
+    "what",
+    "why",
+    "question"
+   ]
+  },
+  {
+   "name": "Visual demonstration",
+   "how": "Explain through actions instead of narration.",
+   "fits": [
+    "diagram",
+    "architecture",
+    "flow",
+    "how it works"
+   ]
+  },
+  {
+   "name": "Series",
+   "how": "Break a large topic into multiple connected Reels.",
+   "fits": [
+    "part",
+    "series",
+    "guide",
+    "complete"
+   ]
+  }
+ ],
+ "structures": [
+  {
+   "group": "Educational",
+   "name": "Myth vs. Reality",
+   "slides": "Myth, reality, explanation, evidence, practical takeaway",
+   "fits": [
+    "myth",
+    "actually",
+    "truth"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Five Mistakes",
+   "slides": "Mistake, why it happens, consequence, correction",
+   "fits": [
+    "mistake",
+    "avoid",
+    "wrong"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Beginner Playbook",
+   "slides": "Getting started, fundamentals, intermediate, advanced",
+   "fits": [
+    "beginner",
+    "start",
+    "basics",
+    "learn"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Step-by-Step Tutorial",
+   "slides": "Objective, prerequisites, steps, example, result",
+   "fits": [
+    "step",
+    "install",
+    "setup",
+    "how to"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Swipe File",
+   "slides": "Hook examples, categories, examples, reusable template",
+   "fits": [
+    "examples",
+    "template",
+    "swipe"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Diagnose to Decision",
+   "slides": "Problem, symptoms, root cause, decision, solution",
+   "fits": [
+    "problem",
+    "debug",
+    "cause",
+    "fix"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "FAQ Carousel",
+   "slides": "Question, short answer, explanation, example",
+   "fits": [
+    "faq",
+    "question",
+    "why",
+    "what"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Checklist",
+   "slides": "Criteria, one check per slide, final checklist",
+   "fits": [
+    "checklist",
+    "check",
+    "before you"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Three Metrics",
+   "slides": "Metric 1, metric 2, metric 3, how they connect",
+   "fits": [
+    "metric",
+    "metrics",
+    "measure",
+    "kpi"
+   ]
+  },
+  {
+   "group": "Educational",
+   "name": "Content Principles",
+   "slides": "Principle, explanation, example, implementation",
+   "fits": [
+    "principle",
+    "principles",
+    "rules",
+    "framework"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Founder Lesson",
+   "slides": "Situation, wrong assumption, turning point, lesson",
+   "fits": [
+    "founder",
+    "lesson",
+    "learned"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Before and After",
+   "slides": "Starting point, problem, intervention, outcome",
+   "fits": [
+    "before",
+    "after",
+    "transform"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Case Study",
+   "slides": "Context, challenge, strategy, execution, results",
+   "fits": [
+    "case",
+    "results",
+    "team",
+    "company"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Monthly Experiments",
+   "slides": "Hypothesis, experiments, findings, failed test, conclusion",
+   "fits": [
+    "experiment",
+    "tested",
+    "hypothesis"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "What Failed",
+   "slides": "Mistake, consequences, correction, learning",
+   "fits": [
+    "failed",
+    "failure",
+    "mistake"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Customer Transformation",
+   "slides": "Initial situation, intervention, improvements, outcome",
+   "fits": [
+    "customer",
+    "client",
+    "users"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Credibility Stack",
+   "slides": "Experience, methodology, evidence, practical takeaway",
+   "fits": [
+    "experience",
+    "method",
+    "evidence"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Behind the Scenes",
+   "slides": "Final output, process, tools, challenges, outcome",
+   "fits": [
+    "behind",
+    "process",
+    "how i",
+    "built"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Monthly Retrospective",
+   "slides": "What worked, what failed, why, next experiment",
+   "fits": [
+    "retro",
+    "month",
+    "review"
+   ]
+  },
+  {
+   "group": "Storytelling",
+   "name": "Community Wins",
+   "slides": "Individual achievements, approaches, lessons",
+   "fits": [
+    "community",
+    "wins"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Resource Roundup",
+   "slides": "Topic, curated resources, one per slide, best starting point",
+   "fits": [
+    "resources",
+    "links",
+    "list"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Best Tools List",
+   "slides": "Tool, purpose, key feature, ideal user",
+   "fits": [
+    "tools",
+    "tool",
+    "apps"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Article Recommendation",
+   "slides": "Article title, problem addressed, key insights, who should read it",
+   "fits": [
+    "article",
+    "blog",
+    "read",
+    "paper"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Documentation Guide",
+   "slides": "Documentation, important sections, use cases, learning order",
+   "fits": [
+    "docs",
+    "documentation",
+    "guide",
+    "reference"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "GitHub Repository Collection",
+   "slides": "Repository, purpose, notable capabilities, who should explore it",
+   "fits": [
+    "github",
+    "repo",
+    "repository",
+    "open source"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Skills Recommendation",
+   "slides": "Skill, what it does, when to use it, example",
+   "fits": [
+    "skill",
+    "skills",
+    "plugin"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Learning Roadmap",
+   "slides": "Starting level, learning stages, resources, practical project",
+   "fits": [
+    "roadmap",
+    "learn",
+    "path",
+    "course"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Book and Course List",
+   "slides": "Resource, what you learn, difficulty, audience",
+   "fits": [
+    "book",
+    "course",
+    "books"
+   ]
+  },
+  {
+   "group": "Resources",
+   "name": "Monthly Discovery",
+   "slides": "Discoveries, why they matter, best picks, recommendation",
+   "fits": [
+    "discover",
+    "new",
+    "found"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Path A vs. Path B",
+   "slides": "Option A, option B, trade-offs, verdict",
+   "fits": [
+    "vs",
+    "versus",
+    "or",
+    "choose"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Objection Handling",
+   "slides": "Objection, explanation, evidence, response",
+   "fits": [
+    "objection",
+    "but",
+    "concern"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Product Walkthrough",
+   "slides": "Problem, features, workflow, benefits",
+   "fits": [
+    "product",
+    "feature",
+    "features",
+    "app"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Decision Matrix",
+   "slides": "Criteria, comparison, trade-offs, decision",
+   "fits": [
+    "criteria",
+    "compare",
+    "decision",
+    "choose"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Feature-to-Benefit",
+   "slides": "Feature, functionality, user benefit, example",
+   "fits": [
+    "feature",
+    "benefit"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "30-Day Challenge",
+   "slides": "Goal, weekly milestones, daily actions, tracking",
+   "fits": [
+    "challenge",
+    "30 days",
+    "daily"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Playbook Update",
+   "slides": "Old approach, what changed, new approach, implementation",
+   "fits": [
+    "changed",
+    "update",
+    "new approach",
+    "now"
+   ]
+  },
+  {
+   "group": "Business",
+   "name": "Roadmap",
+   "slides": "Vision, milestones, dependencies, next action",
+   "fits": [
+    "roadmap",
+    "milestone",
+    "plan",
+    "vision"
+   ]
+  }
  ]
 }

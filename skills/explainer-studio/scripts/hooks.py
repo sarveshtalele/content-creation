@@ -10,11 +10,20 @@ def load():
 
 def _words(t): return set(re.findall(r"[a-z][a-z'-]+", t.lower()))
 
-def suggest(text, kind='carousel', n=5):
-    """kind: 'carousel' (first-slide formulas) or 'line' (opening lines for a post, Reel or GIF). Returns [{category, text, score}] best first."""
+def _fit(it, w, low): return sum(2 for f in it['fits'] if f in w) + sum(1 for f in it['fits'] if f not in w and (' ' + f) in low)
+
+def suggest(text, kind='carousel', n=5, families=None):
+    """kind: 'carousel' (first-slide formulas), 'line' (opening lines for a post, Reel or GIF), 'visual' (Reel visual hooks),
+    'format' (Reel content formats) or 'structure' (carousel slide sequences). families: hook categories the decision matrix chose
+    for this content (they get +3). Returns [{category, text, score}] best first."""
     lib = load(); w = _words(text); low = ' ' + re.sub(r'\s+', ' ', text.lower()) + ' '; out = []
+    if kind in ('visual', 'format', 'structure'):
+        key = {'visual': 'visual', 'format': 'reel_formats', 'structure': 'structures'}[kind]
+        res = [{'category': it.get('group', kind), 'text': it['name'] + ': ' + (it.get('how') or it.get('slides')), 'score': _fit(it, w, low) + (3 if families and it['name'] in families else 0)} for it in lib[key]]
+        return sorted(res, key=lambda x: -x['score'])[:n]
+    fam = set(families or [])
     for it in lib['carousel' if kind == 'carousel' else 'line']:
-        sc = sum(2 for f in it['fits'] if f in w) + sum(1 for f in it['fits'] if f not in w and (' ' + f) in low)
+        sc = _fit(it, w, low) + (3 if it['category'] in fam else 0)
         if re.search(r'\b\d{1,3}(?:,\d{3})*\b', text) and re.search(r'list|number|resources|top|tools|steps', ' '.join(it['fits']) + it['category'].lower()): sc += 1
         out.append({'category': it['category'], 'text': it.get('template') or it['hook'], 'score': sc})
     if kind != 'carousel':                          # opening lines: best three categories, two lines each

@@ -1,0 +1,751 @@
+{
+ "note": "Decision matrix for explainer-studio (docs/PLAN-v3.md section A/B). scripts/matrix.py scores each shape from the source and ranks options per format. The person always makes the final choice.",
+ "shapes": [
+  {
+   "id": "narrowing",
+   "label": "Narrowing numbers",
+   "signals": [
+    "funnel",
+    "conversion",
+    "convert",
+    "drop",
+    "drop-off",
+    "dropoff",
+    "churn",
+    "retention",
+    "of those",
+    "remain",
+    "filtered",
+    "shortlist",
+    "signups",
+    "reach"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "cone",
+    "waffle",
+    "lollipop"
+   ],
+   "gif": [
+    "funnel",
+    "conveyor"
+   ],
+   "reel_motion": "cone fills slice by slice; counters tick down",
+   "line_hooks": [
+    "Proof",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Evidence-led",
+    "Mistakes"
+   ],
+   "visual_hook": "Proof-first",
+   "structure": "Case study"
+  },
+  {
+   "id": "volume_flow",
+   "label": "Flow of volume between stages",
+   "signals": [
+    "flows",
+    "split",
+    "route",
+    "routed",
+    "sources",
+    "sinks",
+    "goes to",
+    "end up",
+    "breakdown of traffic",
+    "allocation",
+    "tokens",
+    "requests"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "sankey",
+    "alluvial"
+   ],
+   "gif": [
+    "pipeline",
+    "conveyor"
+   ],
+   "reel_motion": "particles flow along ribbons; ribbons draw in with easing",
+   "line_hooks": [
+    "Curiosity",
+    "Quick win"
+   ],
+   "carousel_hooks": [
+    "How-to",
+    "Curiosity gap"
+   ],
+   "visual_hook": "Start with the result",
+   "structure": "Diagnose to Decision"
+  },
+  {
+   "id": "steps",
+   "label": "Ordered steps",
+   "signals": [
+    "step",
+    "steps",
+    "first",
+    "then",
+    "next",
+    "finally",
+    "stage",
+    "phase",
+    "sequence",
+    "process",
+    "workflow",
+    "how to"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "flow",
+    "timeline",
+    "terminal"
+   ],
+   "gif": [
+    "pipeline",
+    "isoflow",
+    "stairs"
+   ],
+   "reel_motion": "path tracing with staggered cards",
+   "line_hooks": [
+    "Quick win",
+    "List"
+   ],
+   "carousel_hooks": [
+    "Framework",
+    "How-to"
+   ],
+   "visual_hook": "Screen recording",
+   "structure": "Step-by-Step Tutorial"
+  },
+  {
+   "id": "agent_loop",
+   "label": "Agent or AI workflow",
+   "signals": [
+    "agent",
+    "agents",
+    "tool call",
+    "loop",
+    "retry",
+    "verify",
+    "orchestrat",
+    "subagent",
+    "autonomous"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "flowchart",
+    "loop",
+    "network"
+   ],
+   "gif": [
+    "pipeline",
+    "conveyor",
+    "hub"
+   ],
+   "reel_motion": "node pulses travel the loop; decision diamond flips",
+   "line_hooks": [
+    "Curiosity",
+    "Question"
+   ],
+   "carousel_hooks": [
+    "Beginner guide",
+    "Curiosity gap"
+   ],
+   "visual_hook": "Open mid-action",
+   "structure": "Product Walkthrough"
+  },
+  {
+   "id": "architecture",
+   "label": "Architecture and connections",
+   "signals": [
+    "mcp",
+    "server",
+    "client",
+    "api",
+    "integration",
+    "integrations",
+    "connect",
+    "connects",
+    "protocol",
+    "gateway",
+    "host",
+    "architecture"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "network",
+    "arc",
+    "stack"
+   ],
+   "gif": [
+    "orbit",
+    "hub",
+    "ecosystem"
+   ],
+   "reel_motion": "network animation: links draw, nodes pop in, dots travel",
+   "line_hooks": [
+    "Curiosity",
+    "Question"
+   ],
+   "carousel_hooks": [
+    "Beginner guide",
+    "Framework"
+   ],
+   "visual_hook": "Zoom reveal",
+   "structure": "Documentation Guide"
+  },
+  {
+   "id": "layers",
+   "label": "Layers or a stack",
+   "signals": [
+    "layer",
+    "layers",
+    "stack",
+    "tier",
+    "tiers",
+    "runtime",
+    "foundation",
+    "underneath",
+    "on top of",
+    "built on"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "stack",
+    "sunburst"
+   ],
+   "gif": [
+    "lanes",
+    "exploded",
+    "tower"
+   ],
+   "reel_motion": "exploded parallax: layers pull apart",
+   "line_hooks": [
+    "List",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Beginner guide",
+    "Framework"
+   ],
+   "visual_hook": "Zoom reveal",
+   "structure": "Beginner Playbook"
+  },
+  {
+   "id": "versus",
+   "label": "A versus B",
+   "signals": [
+    "vs",
+    "versus",
+    "instead of",
+    "compared",
+    "compare",
+    "old way",
+    "new way",
+    "before",
+    "after",
+    "difference between"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "compare",
+    "dumbbell",
+    "slope"
+   ],
+   "gif": [
+    "columns",
+    "skyline"
+   ],
+   "reel_motion": "split screen, then morph A into B",
+   "line_hooks": [
+    "Question",
+    "Contrarian"
+   ],
+   "carousel_hooks": [
+    "Comparison",
+    "Contrarian"
+   ],
+   "visual_hook": "Split screen",
+   "structure": "Path A vs. Path B"
+  },
+  {
+   "id": "multi_criteria",
+   "label": "Options scored on several criteria",
+   "signals": [
+    "benchmark",
+    "score",
+    "scores",
+    "rating",
+    "criteria",
+    "accuracy",
+    "latency",
+    "cost",
+    "speed",
+    "evaluate",
+    "eval",
+    "evals"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "radar",
+    "heatmap",
+    "bullet"
+   ],
+   "gif": [
+    "skyline",
+    "columns"
+   ],
+   "reel_motion": "radar draws axis by axis; heat cells fill",
+   "line_hooks": [
+    "Proof",
+    "List"
+   ],
+   "carousel_hooks": [
+    "Comparison",
+    "Evidence-led"
+   ],
+   "visual_hook": "Proof-first",
+   "structure": "Decision Matrix"
+  },
+  {
+   "id": "ranking",
+   "label": "Ranking or sizes",
+   "signals": [
+    "rank",
+    "ranking",
+    "top",
+    "biggest",
+    "largest",
+    "leaderboard",
+    "market share",
+    "largest share"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "lollipop",
+    "bars"
+   ],
+   "gif": [
+    "skyline"
+   ],
+   "reel_motion": "bar race with counters",
+   "line_hooks": [
+    "List",
+    "Proof"
+   ],
+   "carousel_hooks": [
+    "Resource list",
+    "Evidence-led"
+   ],
+   "visual_hook": "Start with the result",
+   "structure": "Best Tools List"
+  },
+  {
+   "id": "part_whole",
+   "label": "Part of a whole",
+   "signals": [
+    "share",
+    "percent",
+    "%",
+    "split",
+    "breakdown",
+    "portion",
+    "of all",
+    "of the total",
+    "mix"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "donut",
+    "waffle",
+    "treemap"
+   ],
+   "gif": [
+    "framework",
+    "grid"
+   ],
+   "reel_motion": "donut sweep; waffle cells fill in order",
+   "line_hooks": [
+    "Proof",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Evidence-led",
+    "Myth-busting"
+   ],
+   "visual_hook": "Proof-first",
+   "structure": "Three Metrics"
+  },
+  {
+   "id": "hierarchy",
+   "label": "Hierarchy or taxonomy",
+   "signals": [
+    "category",
+    "categories",
+    "type of",
+    "types of",
+    "kinds of",
+    "family",
+    "families",
+    "subtype",
+    "belongs to",
+    "taxonomy",
+    "includes"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "sunburst",
+    "treemap",
+    "mindmap"
+   ],
+   "gif": [
+    "ecosystem",
+    "hub",
+    "columns"
+   ],
+   "reel_motion": "zoom reveal into one branch",
+   "line_hooks": [
+    "List",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Framework",
+    "Resource list"
+   ],
+   "visual_hook": "Zoom reveal",
+   "structure": "Content Principles"
+  },
+  {
+   "id": "decision",
+   "label": "Choosing what to use",
+   "signals": [
+    "when to use",
+    "choose",
+    "which one",
+    "should you",
+    "depends",
+    "if you",
+    "use case",
+    "decide",
+    "pick"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "decision",
+    "compare"
+   ],
+   "gif": [
+    "framework",
+    "columns"
+   ],
+   "reel_motion": "branch highlight travels down the chosen path",
+   "line_hooks": [
+    "Question",
+    "Quick win"
+   ],
+   "carousel_hooks": [
+    "Question",
+    "Comparison"
+   ],
+   "visual_hook": "Mistake demonstration",
+   "structure": "Diagnose to Decision"
+  },
+  {
+   "id": "history",
+   "label": "Time and history",
+   "signals": [
+    "year",
+    "years",
+    "version",
+    "release",
+    "released",
+    "launched",
+    "history",
+    "timeline",
+    "era",
+    "since",
+    "roadmap"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "timeline",
+    "gantt"
+   ],
+   "gif": [
+    "stairs",
+    "pipeline"
+   ],
+   "reel_motion": "camera pans along the timeline",
+   "line_hooks": [
+    "Story",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Transformation",
+    "Personal experience"
+   ],
+   "visual_hook": "Transformation",
+   "structure": "Founder Lesson"
+  },
+  {
+   "id": "plan",
+   "label": "Plan or roadmap",
+   "signals": [
+    "week",
+    "weeks",
+    "month",
+    "months",
+    "quarter",
+    "milestone",
+    "milestones",
+    "rollout",
+    "phase",
+    "phases",
+    "schedule"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "gantt",
+    "timeline"
+   ],
+   "gif": [
+    "stairs"
+   ],
+   "reel_motion": "bars grow along the time scale",
+   "line_hooks": [
+    "Quick win",
+    "Story"
+   ],
+   "carousel_hooks": [
+    "Framework",
+    "How-to"
+   ],
+   "visual_hook": "Fast transitions",
+   "structure": "Roadmap"
+  },
+  {
+   "id": "net_change",
+   "label": "Change in a total",
+   "signals": [
+    "added",
+    "removed",
+    "net",
+    "saved",
+    "cost",
+    "costs",
+    "spent",
+    "lost",
+    "gained",
+    "minus",
+    "plus"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "waterfall",
+    "bars"
+   ],
+   "gif": [
+    "skyline"
+   ],
+   "reel_motion": "bars step up and down to the total",
+   "line_hooks": [
+    "Proof",
+    "Warning"
+   ],
+   "carousel_hooks": [
+    "Evidence-led",
+    "Mistakes"
+   ],
+   "visual_hook": "Before and after",
+   "structure": "Before and After"
+  },
+  {
+   "id": "trend",
+   "label": "Trend over time",
+   "signals": [
+    "growth",
+    "grew",
+    "grow",
+    "trend",
+    "over time",
+    "per week",
+    "per month",
+    "monthly",
+    "weekly",
+    "increase",
+    "decrease",
+    "adoption"
+   ],
+   "needs_numbers": true,
+   "carousel": [
+    "line",
+    "slope"
+   ],
+   "gif": [
+    "skyline",
+    "stairs"
+   ],
+   "reel_motion": "line draws with easing; end counter ticks up",
+   "line_hooks": [
+    "Proof",
+    "Curiosity"
+   ],
+   "carousel_hooks": [
+    "Evidence-led",
+    "Transformation"
+   ],
+   "visual_hook": "Start with the result",
+   "structure": "Monthly Retrospective"
+  },
+  {
+   "id": "commands",
+   "label": "Commands and setup",
+   "signals": [
+    "install",
+    "command",
+    "cli",
+    "terminal",
+    "npm",
+    "pip",
+    "brew",
+    "curl",
+    "flag",
+    "$"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "terminal",
+    "flow"
+   ],
+   "gif": [
+    "hub",
+    "pipeline"
+   ],
+   "reel_motion": "typed terminal with cursor",
+   "line_hooks": [
+    "Quick win",
+    "Warning"
+   ],
+   "carousel_hooks": [
+    "How-to",
+    "Checklist"
+   ],
+   "visual_hook": "Screen recording",
+   "structure": "Step-by-Step Tutorial"
+  },
+  {
+   "id": "opinion",
+   "label": "Myth or strong opinion",
+   "signals": [
+    "myth",
+    "wrong",
+    "stop",
+    "never",
+    "overrated",
+    "actually",
+    "misconception",
+    "unpopular",
+    "not a",
+    "truth"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "big",
+    "compare"
+   ],
+   "gif": [],
+   "reel_motion": "kinetic typography: the claim builds word by word",
+   "line_hooks": [
+    "Contrarian",
+    "Warning"
+   ],
+   "carousel_hooks": [
+    "Myth-busting",
+    "Contrarian"
+   ],
+   "visual_hook": "Text-first",
+   "structure": "Myth vs. Reality"
+  },
+  {
+   "id": "resources",
+   "label": "Resource list",
+   "signals": [
+    "repo",
+    "repos",
+    "repository",
+    "github",
+    "article",
+    "resources",
+    "links",
+    "course",
+    "book",
+    "documentation",
+    "docs"
+   ],
+   "needs_numbers": false,
+   "carousel": [
+    "resources",
+    "grid",
+    "shot"
+   ],
+   "gif": [
+    "grid",
+    "columns"
+   ],
+   "reel_motion": "card flip per resource",
+   "line_hooks": [
+    "List",
+    "Save and share"
+   ],
+   "carousel_hooks": [
+    "Resource list",
+    "Practical template"
+   ],
+   "visual_hook": "Fast transitions",
+   "structure": "Resource Roundup"
+  }
+ ],
+ "formats": {
+  "carousel": {
+   "structure": "Pick a structure from hooks.json structures; every content slide gets a different chart family",
+   "motion": [],
+   "hook_rule": "First slide hook <= 60 chars from a carousel hook template; slide 2 re-hooks; last slide = save/share CTA"
+  },
+  "gif": {
+   "structure": "One diagram, title hook",
+   "motion": [
+    "staggering",
+    "path tracing",
+    "masking reveal",
+    "looping",
+    "easing"
+   ],
+   "hook_rule": "Title = question or curiosity line"
+  },
+  "reel": {
+   "structure": "Hook (0-3 s), stakes, answer, how, proof, takeaway, engage",
+   "motion": [
+    "kinetic typography",
+    "camera pan/zoom",
+    "morphing",
+    "animated counters",
+    "particle flow",
+    "parallax"
+   ],
+   "hook_rule": "Spoken hook + on-screen hook + visual hook chosen together"
+  },
+  "cover": {
+   "structure": "Big hook, hero visual, avatar",
+   "motion": [],
+   "hook_rule": "Same family as the Reel hook; 6 words or fewer is best; safe for 4:5 crop"
+  },
+  "post": {
+   "structure": "Hook question, bullets, CTA",
+   "motion": [],
+   "hook_rule": "Question or contrarian line; save/share CTA when the post has reference value"
+  }
+ }
+}
