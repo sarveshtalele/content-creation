@@ -13,8 +13,9 @@ import { buildTower } from './gif_tower.js';
 import { buildSkyline } from './gif_skyline.js';
 import { buildConveyor } from './gif_conveyor.js';
 import { buildFunnel } from './gif_funnel.js';
+import { buildChart } from './gif_chart.js';
 import { buildGrid } from './gif_grid.js';
-const T = { grid: buildGrid, hub: buildHub, columns: buildColumns, pipeline: buildPipeline, lanes: buildLanes, ecosystem: buildEcosystem, framework: buildFramework, exploded: buildExploded, isoflow: buildIsoflow, orbit: buildOrbit, stairs: buildStairs, tower: buildTower, skyline: buildSkyline, conveyor: buildConveyor, funnel: buildFunnel };
+const T = { chart: buildChart, grid: buildGrid, hub: buildHub, columns: buildColumns, pipeline: buildPipeline, lanes: buildLanes, ecosystem: buildEcosystem, framework: buildFramework, exploded: buildExploded, isoflow: buildIsoflow, orbit: buildOrbit, stairs: buildStairs, tower: buildTower, skyline: buildSkyline, conveyor: buildConveyor, funnel: buildFunnel };
 export function buildGif(stage, D) {
   const f = T[D.gif.template || 'hub']; if (!f) throw new Error('unknown gif template ' + D.gif.template);
   return f(stage, D);

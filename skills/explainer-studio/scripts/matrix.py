@@ -44,14 +44,13 @@ def recommend(text, meta=None, recent=None):
     M = {s['id']: s for s in load()['shapes']}; ranked, nums = shapes(text); top = [r for r in ranked if r['score'] > 0][:4] or ranked[:2]
     base = PK.pick(text, meta)['scores']; mx = max(base.values()) or 1; recent = recent if recent is not None else recent_templates()
     gif = []
+    for t in {g for s in M.values() for g in s['gif']} - set(base): base[t] = 0.0   # templates the structural picker does not score (chart)
     for t, v in base.items():
         sc = 60 * v / mx; why = [PK.WHY.get(t, '')]
         for r in top:
             if t in M[r['id']]['gif']: bonus = 25 * (1 - M[r['id']]['gif'].index(t) * .25) * min(1, r['score'] / (top[0]['score'] or 1)); sc += bonus; why.append('fits ' + r['label'].lower())
         if t in recent: sc *= .75; why.append('used in a recent build')
         gif.append({'template': t, 'score': round(sc, 1), 'why': '; '.join(w for w in why if w)})
-    for t in ('grid',):
-        if t not in base: gif.append({'template': t, 'score': 20.0, 'why': 'a card grid poster works for any list of 4, 6 or 9 ideas'})
     gif.sort(key=lambda g: -g['score'])
     car, seen = [], set()
     for r in top:

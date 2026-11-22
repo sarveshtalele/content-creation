@@ -1,0 +1,48 @@
+{
+ "meta": {
+  "title": "Where 1,000 agent requests go",
+  "slug": "agent-requests-sankey"
+ },
+ "gif": {
+  "template": "chart",
+  "title": "Where 1,000 agent requests go",
+  "subtitle": "400 answered from the cache; 600 needed a model call",
+  "chart": {
+   "type": "sankey",
+   "flows": [
+    {
+     "from": "Requests",
+     "to": "Cache",
+     "num": 400,
+     "value": "400"
+    },
+    {
+     "from": "Requests",
+     "to": "Model call",
+     "num": 600,
+     "value": "600"
+    },
+    {
+     "from": "Model call",
+     "to": "Answered directly",
+     "num": 450
+    },
+    {
+     "from": "Model call",
+     "to": "Tool call",
+     "num": 150
+    },
+    {
+     "from": "Tool call",
+     "to": "Succeeded",
+     "num": 120
+    },
+    {
+     "from": "Tool call",
+     "to": "Retry",
+     "num": 30
+    }
+   ]
+  }
+ }
+}

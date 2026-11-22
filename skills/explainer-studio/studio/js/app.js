@@ -16,7 +16,7 @@ function route() {
   const m = $('#view'); m.innerHTML = ''; scrollTo(0, 0); PAGES[page](m); document.title = TITLES[page] + ' · Explainer Studio'; m.focus({ preventScroll: true });
 }
 
-const MEDIA = [['gif', 'GIF', 'A looping diagram for LinkedIn, chosen from 15 templates ranked for your content.'], ['carousel', 'Carousel', 'Cover, up to five chart slides and a closing slide, as PDF and images.'],
+const MEDIA = [['gif', 'GIF', 'A looping diagram for LinkedIn, chosen from 16 templates ranked for your content.'], ['carousel', 'Carousel', 'Cover, up to five chart slides and a closing slide, as PDF and images.'],
   ['reel', 'Reel', 'A narrated vertical video in the Claude light theme, with motion picked for your content.'], ['cover', 'Reel cover', 'A designed 1080x1920 cover in five layouts, safe for the grid crop.'],
   ['walkthrough', 'Walkthrough video', 'A real step-by-step guide run in a browser, every step verified, as a Reel.'], ['post', 'Post', 'Post text with a matching image and the first comment.']];
 

@@ -41,7 +41,7 @@ def run(out, only):
     def rec(name, ok, secs, files, **kw): R.append({'media': name, 'ok': bool(ok), 'seconds': secs, 'files': [os.path.relpath(f, out) for f in files], **kw}); print(('PASS ' if ok else 'FAIL ') + name, secs, 's', flush=True)
 
     if 'gif' in only:
-        for fx in ('funnel', 'https'):
+        for fx in ('funnel', 'https', 'chart'):
             w = os.path.join(wk, 'gif-' + fx); project(w, fx); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'gif'])
             g = gates(w); rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100, s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', 'review/*.png']), **g)
     if 'carousel' in only:

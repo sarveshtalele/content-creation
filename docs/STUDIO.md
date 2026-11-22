@@ -15,7 +15,7 @@ The link works only on this computer. The app listens on 127.0.0.1, checks a ran
 | Workspace | Flow | Builds here? |
 |---|---|---|
 | **Home** | Paste a source and click **Analyse**. You see its content shapes, the number of figures, and the top GIF templates, carousel slides, Reel motion and hooks | – |
-| **GIF** | All 15 templates, ranked (#, fit bar, reason). Then pick an opening line and describe the GIF. You get a request to paste into your agent | via your agent |
+| **GIF** | All 16 templates, ranked (#, fit bar, reason). Then pick an opening line and describe the GIF. You get a request to paste into your agent | via your agent |
 | **Carousel** | Choose a cover, then up to 5 slides from the ranked gallery (cone funnel, 21 charts, stat, bars, stack, loop, compare, grid). Edit each design (chart data as JSON) and the closing slide, then build. Or switch to **One infographic image** | yes: PDF + PNGs |
 | **Reel** | Pick the spoken hook, the opening visual, the Reel format and the look (Claude light by default). The motion the matrix chose is shown | via your agent |
 | **Reel cover** | Write the hook, a line, tags and an optional mini diagram. Pick a preferred layout, then render. Every supported layout comes back | yes: PNG per layout |

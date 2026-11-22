@@ -1,0 +1,11 @@
+name: Feature or design request
+description: A new chart, template, motion, cover layout or workflow
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes: {label: What do you want to make, description: "The content and the result you have in mind. A reference image helps."}
+    validations: {required: true}
+  - type: textarea
+    id: fit
+    attributes: {label: When would the decision matrix pick it, description: "Which content shape (steps, A vs B, numbers that narrow, hierarchy...) it serves."}

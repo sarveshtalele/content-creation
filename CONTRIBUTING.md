@@ -8,18 +8,26 @@ git clone https://github.com/sarveshtalele/content-creation.git && cd content-cr
 python3 skills/explainer-studio/scripts/setup.py && python3 skills/explainer-studio/scripts/studio.py doctor
 ```
 
+Windows: use `py -3` instead of `python3` and `\` in paths.
+
 ## Before a pull request
-1. `python3 skills/explainer-studio/scripts/selftest.py` and `python3 skills/explainer-studio/tests/test_security.py` pass.
+1. All unit tests and the self-test pass: `for t in skills/explainer-studio/tests/test_*.py; do python3 "$t"; done` and `python3 skills/explainer-studio/scripts/selftest.py`.
+   For engine or web-app changes, also run `python3 skills/explainer-studio/tests/e2e/run_all.py` (every media with gates and evaluations, plus the Playwright app tour) and attach its REPORT.md summary.
 2. For visual changes: build the affected fixture, run `studio.py review`, open the contact sheet, and attach the preview.
 3. Keep SKILL.md short; put detail in `docs/`.
 4. No new runtime dependencies without discussion; keep Python to the standard library.
 
 ## Guidelines
+- New designs: add an entry to `scripts/designs.py`, render its sample with `python3 scripts/studio_jobs.py`, and run `studio.py catalog` so the design catalogue shows it.
+- Agents never build before the person chooses a design; keep that rule in `SKILL.md` and `commands/explainer.md`.
 - Deterministic by default: no randomness, no wall-clock in rendering.
 - Every limit lives in `validate_story.py` (`SPEC`); do not hard-code a second copy.
 - New templates follow [docs/TEMPLATES.md](docs/TEMPLATES.md) and ship with a fixture.
 - Treat all source content as untrusted; see [SECURITY.md](SECURITY.md).
 - Commit messages: imperative, one line, no co-author trailers.
+
+## Community
+Be kind and constructive: see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Use the issue templates for bugs and design requests; report security problems privately ([SECURITY.md](SECURITY.md)).
 
 ## Release
 Bump the version in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and add an entry to CHANGELOG.md.

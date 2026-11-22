@@ -100,19 +100,22 @@ export function charts(K) {
       F.forEach(f => { if (!names.includes(f.from)) names.push(f.from); if (!names.includes(f.to)) names.push(f.to); });
       const depth = {}; names.forEach(x => depth[x] = 0);
       for (let it = 0; it < names.length; it++) F.forEach(f => { depth[f.to] = Math.max(depth[f.to], depth[f.from] + 1); });
-      const D = Math.max(...Object.values(depth)) + 1, val = x => Math.max(F.filter(f => f.from === x).reduce((a, f) => a + +f.num, 0), F.filter(f => f.to === x).reduce((a, f) => a + +f.num, 0));
+      const maxD = Math.max(...Object.values(depth)); names.forEach(x => { if (!F.some(f => f.from === x)) depth[x] = maxD; });   // end nodes line up in the last column
+      const D = maxD + 1, val = x => Math.max(F.filter(f => f.from === x).reduce((a, f) => a + +f.num, 0), F.filter(f => f.to === x).reduce((a, f) => a + +f.num, 0));
       if (cols && s.stages) { s.stages.slice(0, D).forEach((t, d) => { const x = X0 + (XW - 28) * d / (D - 1); lab(root, `al-s${d}`, t, { x: Math.max(X0, Math.min(W - X0 - 220, x - 96)), y, w: 220, h: 40, max: 26, weight: 700, color: C.mid, align: d === 0 ? 'left' : d === D - 1 ? 'right' : 'center' }); }); y += 56; }
       const t0 = y + 10, t1 = BODY1 - 20, gap = 26, colN = d => names.filter(x => depth[x] === d);
       const scale = Math.min(...[...Array(D).keys()].map(d => (t1 - t0 - gap * (colN(d).length - 1)) / colN(d).reduce((a, x) => a + val(x), 0)));
       const NW = 28, pos = {};
-      for (let d = 0; d < D; d++) { const c = colN(d), h = c.reduce((a, x) => a + val(x) * scale, 0) + gap * (c.length - 1); let yy = t0 + (t1 - t0 - h) / 2;
+      for (let d = 0; d < D; d++) { let c = colN(d); const h = c.reduce((a, x) => a + val(x) * scale, 0) + gap * (c.length - 1); let yy = t0 + (t1 - t0 - h) / 2;
+        if (d) { const my = x => { const ins = F.filter(f => f.to === x && pos[f.from]); const w = ins.reduce((a, f) => a + +f.num, 0) || 1; return ins.reduce((a, f) => a + (pos[f.from].y + pos[f.from].h / 2) * +f.num, 0) / w; }; c = [...c].sort((p_, q_) => my(p_) - my(q_)); }   // order by where the inputs come from
         c.forEach(x => { pos[x] = { x: X0 + (XW - NW) * d / (D - 1), y: yy, h: val(x) * scale, out: 0, in: 0, d, k: names.indexOf(x) }; yy += val(x) * scale + gap; }); }
-      F.forEach((f, k) => { const a = pos[f.from], b = pos[f.to], th = +f.num * scale, ya = a.y + a.out + th / 2, yb = b.y + b.in + th / 2, x0 = a.x + NW, x1 = b.x, mx = (x0 + x1) / 2; a.out += th; b.in += th;
-        const p = path(svg, `M${x0} ${ya}C${mx} ${ya} ${mx} ${yb} ${x1} ${yb}`, { stroke: mid(a.k), w: Math.max(3, th - 3), cap: 'butt' }); p.setAttribute('stroke-opacity', '.42'); });
+      const ny = x => pos[x].y + pos[x].h / 2;   // ribbons leave and arrive in the order of the node they go to, so they do not cross
+      [...F].sort((p_, q_) => ny(p_.from) - ny(q_.from) || ny(p_.to) - ny(q_.to)).forEach((f, k) => { const a = pos[f.from], b = pos[f.to], th = +f.num * scale, ya = a.y + a.out + th / 2, yb = b.y + b.in + th / 2, x0 = a.x + NW, x1 = b.x, mx = (x0 + x1) / 2; a.out += th; b.in += th;
+        const h2 = Math.max(1.5, th / 2 - 1.5), p = path(svg, `M${x0} ${ya - h2}C${mx} ${ya - h2} ${mx} ${yb - h2} ${x1} ${yb - h2}L${x1} ${yb + h2}C${mx} ${yb + h2} ${mx} ${ya + h2} ${x0} ${ya + h2}Z`, { stroke: 'none', fill: mid(a.k), sharp: true }); p.setAttribute('fill-opacity', '.42'); });   // a filled band, not a thick stroke: no blobs on steep curves
       names.forEach(x => { const p = pos[x], P = grp(p.k); E(root, 'abs', `left:${p.x}px;top:${p.y}px;width:${NW}px;height:${Math.max(8, p.h)}px;border-radius:12px;background:${P.bd}`);
         const last = p.d === D - 1, w = 250, v = F.filter(f => f.from === x || f.to === x)[0], tot = (p.d === 0 ? F.filter(f => f.from === x) : F.filter(f => f.to === x)).map(f => f.value).filter(Boolean);
         const t = x + (p.d === 0 && tot.length === 1 ? ' · ' + tot[0] : '');
-        lab(root, `fl-${p.k}`, t, { x: last ? p.x - w - 12 : p.x + NW + 12, y: p.y + p.h / 2 - 30, w, h: 60, max: 26, min: 17, weight: 700, color: P.ink, css: `${last ? 'justify-content:flex-end;text-align:right;' : ''}` }); });
+        lab(root, `fl-${p.k}`, t, { x: last ? p.x - w - 12 : p.x + NW + 12, y: p.y + p.h / 2 - 30, w, h: 60, max: 26, min: 17, weight: 700, color: P.ink, css: `${last ? 'justify-content:flex-end;text-align:right;' : ''}text-shadow:0 0 4px ${C.bg},0 0 4px ${C.bg},0 0 8px ${C.bg};` }); });
     },
     network(root, s) {
       const y = top(root, s, 'nw-h'), svg = svgLayer(root, W, 1350), cx = W / 2, n = s.nodes.length, cy = (y + BODY1) / 2, rx = 360, ry = Math.min(380, (BODY1 - y) / 2 - 80), cw = 270, ch = 92;

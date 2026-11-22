@@ -39,10 +39,12 @@ def ignore(_d, names): return [n for n in names if n in SKIP or n.endswith('.pyc
 
 def copy_skill(dst):
     shutil.rmtree(dst, ignore_errors=True); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copytree(SRC, dst, ignore=ignore)
-    rt = os.path.join(SRC, 'runtime', 'node_modules')            # share the installed runtime instead of copying 100+ MB per agent
+    shared = os.path.join(EH, 'node', 'node_modules'); rt = shared if os.path.isdir(shared) else os.path.join(SRC, 'runtime', 'node_modules')   # one runtime for every copy (setup.py installs it once)
     if os.path.isdir(rt):
-        try: os.symlink(rt, os.path.join(dst, 'runtime', 'node_modules'), target_is_directory=True)
-        except OSError: pass                                     # Windows without developer mode: setup.py installs it in the copy on first run
+        link = os.path.join(dst, 'runtime', 'node_modules')
+        try: os.symlink(rt, link, target_is_directory=True)
+        except OSError:
+            if os.name == 'nt': subprocess.run(['cmd', '/c', 'mklink', '/J', link, rt], capture_output=True)   # a junction needs no admin rights or developer mode
     say('  skill    ', dst)
 def copy_cmds(dst_dir, skill_path):
     os.makedirs(dst_dir, exist_ok=True)

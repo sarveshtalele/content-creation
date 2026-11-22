@@ -2,6 +2,9 @@
 
 ## 3.0.0
 
+- **Animated chart GIF** (`gif.template: chart`): any of the 21 charts as a GIF, with blocks revealed in reading order, lines tracing in and shapes fading in. Sankey layout: end nodes share the last column, columns are ordered by their inputs, ribbons are filled bands that do not cross, and labels have a halo.
+- **Design catalogue** (`studio.py catalog`, `/catalog`); agents must show it and wait for your design choice before building. The editorial cover has a curved glossy funnel. The bars slide fills its space. The number cover needs a real figure.
+- **Open-source project files**: README with macOS and Windows commands and step-by-step guides for Claude Code, Codex and Antigravity; code of conduct; issue and pull request templates; CI badge; a 50-second demo video (`docs/media/explainer-studio-demo.mp4`).
 - **Decision matrix** (`data/matrix.json`, [docs/DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md)): 19 content shapes scored from the source; ranked GIF templates, carousel charts, Reel motion, hook families, visual hook and carousel structure per format. `studio.py pick` lists every GIF template ranked with a reason (with a variety penalty for the last three builds) and asks you to choose; `--template NAME` prints the skeleton.
 - **21 chart slides** (`engine/charts.js`): lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle/pictogram, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap. Declarative limits in the validator; **data charts refuse any figure that is not in the source**.
 - **Glossy 3D cone funnel** replaces the tower and ring funnels (old slide types draw as the cone); the GIF funnel uses the same look.

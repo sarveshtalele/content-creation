@@ -24,7 +24,8 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'chart | grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'chart': 'any of the 21 chart slides animated: gif.chart{type lollipop|dumbbell|slope|bullet|radar|sankey|alluvial|network|arc|flowchart|donut|waffle|treemap|sunburst|mindmap|decision|timeline|gantt|waterfall|line|heatmap, ...the same fields as the carousel slide (docs/CAROUSEL.md)}; data charts take only figures from the source',
     'grid': 'poster of 4, 6 or 9 numbered cards, each with a mini diagram: gif.grid{kicker?,legend[0-4]{label<=20,group},cards[4|6|9]{motif bars|curve|tree|flow|cluster|network|loop|steps|split|pixels,caption<=30,title<=24,sub 10-70,group}}  (also carousel slide type grid)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
     'columns': 'catalogue by category: gif.hub{title,sub?,tagline}, gif.columns[3-4]{label,icon,group,items[2-3]{title<=22,sub<=60,icon}}',
@@ -175,6 +176,11 @@ def validate(story, chunks, full_text):
                 if cv.get(k) is not None:
                     _S(v, f'reel.cover.{k}', cv[k], 0 if k != 'hook' else 10, mx); cw = content_words(cv[k])
                     if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'reel.cover.{k} not grounded in source: reuse the source\'s words')
+    gc = (story.get('gif') or {}).get('chart') if (story.get('gif') or {}).get('template') == 'chart' else None
+    if isinstance(gc, dict) and gc.get('type') in NUMERIC_CHARTS:
+        sn = source_numbers(full_text)
+        for w, t in chart_numbers(gc):
+            if _norm(t) not in sn: v.e(f'gif.chart{w}: the figure {t} is not in the source. Data charts show only numbers the source gives')
     if 'carousel' in story:
         v_carousel(v, story['carousel'], icons)
         srcnums = source_numbers(full_text)
@@ -420,7 +426,7 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
-TEMPLATES = ('grid', 'hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
+TEMPLATES = ('chart', 'grid', 'hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
 VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
@@ -510,6 +516,10 @@ def v_gif(v, g, icons):
     if tpl == 'framework': return v_framework(v, g, icons)
     if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
     if tpl == 'grid': return v_grid(v, g, icons)
+    if tpl == 'chart':
+        c = g.get('chart') if isinstance(g.get('chart'), dict) else {}
+        if c.get('type') not in CHART_SPEC: v.e('gif.chart.type must be one of ' + '|'.join(CHART_SPEC)); return
+        check_spec(v, 'gif.chart', c, CHART_SPEC[c['type']], icons); chart_extra(v, 'gif.chart', c); return
     if tpl in ('exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel'): return {'exploded': v_exploded, 'isoflow': v_isoflow, 'orbit': v_orbit, 'stairs': v_stairs, 'tower': v_tower, 'skyline': v_skyline, 'conveyor': v_conveyor, 'funnel': v_funnel}[tpl](v, g, icons)
     if tpl == 'columns':
         h = g.get('hub', {}); _S(v, 'gif.hub.title', h.get('title'), 2, 22); _S(v, 'gif.hub.tagline', h.get('tagline'), 4, 34)

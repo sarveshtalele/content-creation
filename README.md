@@ -6,6 +6,7 @@
 
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
+[![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
 ![Version](https://img.shields.io/badge/version-3.0.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
@@ -13,6 +14,8 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 ![License](https://img.shields.io/badge/license-MIT-788C5D)
 
 <img src="docs/img/demo.gif" alt="An animated funnel GIF made by explainer-studio" width="380">
+
+**[▶ Watch the 50-second demo](docs/media/explainer-studio-demo.mp4)**: the web app, a Reel, a verified walkthrough video and a GIF, all made by explainer-studio
 
 </div>
 
@@ -23,8 +26,8 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 1. [What it makes](#what-it-makes)
 2. [How it works](#how-it-works)
 3. [Requirements](#requirements)
-4. [Install](#install) · [Claude Code](#claude-code) · [Codex](#codex) · [Antigravity](#antigravity)
-5. [First run](#first-run)
+4. [Quick start](#quick-start) (macOS and Windows)
+5. [Install](#install): [Claude Code](#claude-code-step-by-step) · [Codex](#codex-step-by-step) · [Antigravity](#antigravity-step-by-step)
 6. [Use it](#use-it): [slash commands](#slash-commands) · [Design Studio web app](#design-studio-web-app) · [command line](#command-line)
 7. [Update, reinstall, clean, uninstall](#update-reinstall-clean-uninstall)
 8. [Quality: checks, evaluations and end-to-end tests](#quality-checks-evaluations-and-end-to-end-tests)
@@ -39,7 +42,7 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 | Media | Output | Highlights |
 |---|---|---|
-| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 15 diagram templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid…), **ranked for your content**; you choose |
+| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 16 diagram templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid…) plus an **animated chart** template that turns any of the 21 charts into a GIF, all **ranked for your content**; you choose |
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
@@ -70,70 +73,133 @@ flowchart LR
 
 ## Requirements
 
-| | Version | Notes |
-|---|---|---|
-| Python | 3.11 – 3.13 | standard library only for the installer |
-| Node.js | 20 or newer (with npm) | rendering engine and Playwright |
-| git | any | for `install.py update` |
-| ffmpeg | 7 or newer | downloaded by setup when missing |
-| Disk | about 600 MB | browser, voice model (350 MB) and runtime, in `~/.cache/explainer-studio` |
+| | Version | macOS | Windows |
+|---|---|---|---|
+| Python | 3.11 – 3.13 | `brew install python@3.12` | `winget install Python.Python.3.12` |
+| Node.js | 20 or newer (with npm) | `brew install node` | `winget install OpenJS.NodeJS.LTS` |
+| git | any | `xcode-select --install` | `winget install Git.Git` (also provides `sh` for Reels) |
+| ffmpeg | 7 or newer | downloaded by setup | downloaded by setup |
+| Disk | about 600 MB | browser, voice model (350 MB) and runtime in `~/.cache/explainer-studio` | same, in `%USERPROFILE%\.cache\explainer-studio` |
 
-Works the same on macOS, Linux and Windows.
+Linux works like macOS: install Python, Node.js and git with your package manager.
+
+## Quick start
+
+Four steps, about 5 minutes (most of it is the one-time download in step 3).
+
+<table>
+<tr><th>macOS / Linux (Terminal)</th><th>Windows (PowerShell)</th></tr>
+<tr><td>
+
+```bash
+# 1. get the plugin
+git clone https://github.com/sarveshtalele/content-creation.git explainer-studio
+cd explainer-studio
+
+# 2. install it for your agents
+python3 install.py install
+
+# 3. one-time setup + health check
+python3 skills/explainer-studio/scripts/setup.py
+python3 skills/explainer-studio/scripts/studio.py doctor
+
+# 4. your brand (shown on every output)
+python3 skills/explainer-studio/scripts/studio.py brand \
+  --name "Your Name" --tagline "What you post about" \
+  --avatar ~/Pictures/me.png
+```
+
+</td><td>
+
+```powershell
+# 1. get the plugin
+git clone https://github.com/sarveshtalele/content-creation.git explainer-studio
+cd explainer-studio
+
+# 2. install it for your agents
+py -3 install.py install
+
+# 3. one-time setup + health check
+py -3 skills\explainer-studio\scripts\setup.py
+py -3 skills\explainer-studio\scripts\studio.py doctor
+
+# 4. your brand (shown on every output)
+py -3 skills\explainer-studio\scripts\studio.py brand `
+  --name "Your Name" --tagline "What you post about" `
+  --avatar "$HOME\Pictures\me.png"
+```
+
+</td></tr>
+</table>
+
+`doctor` prints `READY`, or exactly what is missing. Then open your agent and type `/explainer <a link or some text>`.
+
+No git? Download the latest release zip (`explainer-studio-plugin.zip`), unzip it, open a terminal in that folder and continue from step 2.
 
 ## Install
 
-```bash
-git clone https://github.com/<you>/explainer-studio.git
-cd explainer-studio
-python3 install.py install          # all agents; or --for claude | codex | antigravity
-```
+One Python command installs the skill and the slash commands into each agent's own folders:
 
-The installer copies the skill and the slash commands to each agent and records what it installed, so `update`, `reinstall` and `uninstall` know where to look. Run `python3 install.py status` at any time.
+| Agent | macOS / Linux | Windows |
+|---|---|---|
+| All three | `python3 install.py install` | `py -3 install.py install` |
+| Claude Code only | `python3 install.py install --for claude` | `py -3 install.py install --for claude` |
+| Codex only | `python3 install.py install --for codex` | `py -3 install.py install --for codex` |
+| Antigravity only | `python3 install.py install --for antigravity` | `py -3 install.py install --for antigravity` |
+| Several | `python3 install.py install --for codex,antigravity` | `py -3 install.py install --for codex,antigravity` |
 
-### Claude Code
+The installer records what it installed, so `update`, `reinstall` and `uninstall` know where to look. `install.py status` shows what is installed and where.
 
-**Option A: plugin (recommended).** You get automatic updates through the marketplace.
+### Claude Code, step by step
 
-```bash
-claude plugin marketplace add /path/to/explainer-studio
-claude plugin install explainer-studio@explainer-studio-marketplace
-```
+1. **Install.** Pick one of the two options.
+   - **Plugin (recommended, updates through the marketplace):**
+     ```bash
+     claude plugin marketplace add /path/to/explainer-studio
+     claude plugin install explainer-studio@explainer-studio-marketplace
+     ```
+   - **Copy:** `python3 install.py install --for claude` (Windows: `py -3 install.py install --for claude`). It writes the skill to `~/.claude/skills/explainer-studio` and the commands to `~/.claude/commands/explainer*.md`.
 
-**Option B: copy.** `python3 install.py install --for claude` writes:
-- the skill to `~/.claude/skills/explainer-studio`
-- the commands to `~/.claude/commands/explainer*.md`
+   Use one option, not both.
+2. **Restart Claude Code**, or start a new session.
+3. **Check.** Type `/explainer-setup`. The agent runs `doctor` and fixes anything missing.
+4. **Use.** Type `/explainer https://example.com/article carousel`. The agent shows the ranked designs and the catalogue, waits for your choice, then builds.
 
-Use one option, not both.
+### Codex, step by step
 
-### Codex
+1. **Install:**
+   ```bash
+   python3 install.py install --for codex          # Windows: py -3 install.py install --for codex
+   ```
+   - Skill: `~/.agents/skills/explainer-studio` (Windows: `%USERPROFILE%\.agents\skills\explainer-studio`)
+   - Commands, as Codex custom prompts: `~/.codex/prompts/explainer*.md`
+2. **Optional workspace copy:** a project-level copy in `<project>/.agents/skills` so the whole team gets the skill:
+   ```bash
+   python3 install.py install --for codex --project ~/work/my-app
+   ```
+3. **Restart Codex** (CLI or IDE extension) so it reloads skills and prompts.
+4. **Check.** In Codex, type `/` and choose `explainer-setup` (newer versions list custom prompts as `/prompts:explainer-setup`).
+5. **Use.** Run `/explainer` (or `/prompts:explainer`) followed by a link or some text, then the media you want. You can also just ask: *"Use explainer-studio to make a GIF from this article"*.
 
-```bash
-python3 install.py install --for codex                    # ~/.agents/skills + ~/.codex/prompts
-python3 install.py install --for codex --project ~/work/app   # also a workspace copy in .agents/skills
-```
+### Antigravity, step by step
 
-### Antigravity
+1. **Install:**
+   ```bash
+   python3 install.py install --for antigravity    # Windows: py -3 install.py install --for antigravity
+   ```
+   - Skill: `~/.gemini/config/skills/explainer-studio`
+   - Commands, as global workflows: `~/.gemini/antigravity/global_workflows/explainer*.md`
+2. **Optional workspace copy:** a copy in `<project>/.agents/skills` that Antigravity reads for that workspace:
+   ```bash
+   python3 install.py install --for antigravity --project ~/work/my-app
+   ```
+3. **Restart Antigravity** (or reload the window) so it picks up the skill and workflows.
+4. **Check.** In the agent panel, type `/explainer-setup` (workflows appear in the `/` menu).
+5. **Use.** Type `/explainer` followed by a link or some text, then the media you want. You can also ask in plain words: *"Use explainer-studio to make a carousel from this page"*.
 
-```bash
-python3 install.py install --for antigravity    # ~/.gemini/config/skills + ~/.gemini/antigravity/global_workflows
-```
+### ChatGPT (skill only)
 
-**ChatGPT (skill only).** Run `python3 install.py zip`, then upload `dist/explainer-studio-skill.zip` under Skills > Create > Upload. In its sandbox, run `python3 scripts/setup.py light`. That mode covers GIFs and carousels; Reels need a local agent.
-
-## First run
-
-```bash
-python3 skills/explainer-studio/scripts/setup.py      # once: runtime, headless browser, voice model, ffmpeg
-python3 skills/explainer-studio/scripts/studio.py doctor
-```
-
-`doctor` prints READY or exactly what is missing. In an agent, `/explainer-setup` does both.
-
-Set your brand once. It is stored outside the repository:
-
-```bash
-python3 skills/explainer-studio/scripts/studio.py brand --name "Your Name" --tagline "What you post about" --avatar photo.png
-```
+Run `python3 install.py zip` (Windows: `py -3 install.py zip`), then upload `dist/explainer-studio-skill.zip` under **Skills > Create > Upload**. In ChatGPT's sandbox, run `python3 scripts/setup.py light`. That mode covers GIFs and carousels; Reels need a local agent.
 
 ## Use it
 
@@ -171,7 +237,7 @@ python3 skills/explainer-studio/scripts/studio.py studio    # prints a private 1
 | Workspace | What you do there |
 |---|---|
 | **Home** | Paste a source. The decision matrix shows its shapes and the top picks for each media |
-| **GIF** | Pick from all 15 templates, ranked with a fit bar and a reason. Choose a hook, then hand the request to your agent |
+| **GIF** | Pick from all 16 templates, ranked with a fit bar and a reason. Choose a hook, then hand the request to your agent |
 | **Carousel** | Pick a cover and up to five chart slides (ranked) and edit the content. Builds the PDF and PNGs directly |
 | **Reel** | Pick a spoken hook, an opening visual, a format and a look. The matrix shows the motion it chose |
 | **Reel cover** | Write a hook and render every layout directly |
@@ -259,7 +325,8 @@ explainer-studio/
 │   └── tests/               unit tests and tests/e2e (run_all.py, app_tour.mjs)
 ├── docs/                    architecture, templates, carousel schemas, design matrix, studio, customise, evaluation
 ├── install.py · install.sh  installer and lifecycle manager
-└── README.md · CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · CREDITS.md · LICENSE
+├── .github/                 CI, issue templates, pull request template
+└── README.md · CHANGELOG.md · CONTRIBUTING.md · CODE_OF_CONDUCT.md · SECURITY.md · CREDITS.md · LICENSE
 ```
 
 ## Privacy and security
@@ -305,6 +372,8 @@ for t in skills/explainer-studio/tests/test_*.py; do python3 "$t"; done
 python3 skills/explainer-studio/scripts/selftest.py
 python3 skills/explainer-studio/tests/e2e/run_all.py --only gif,carousel,app
 ```
+
+Ideas, bugs and design requests are welcome: use the [issue templates](https://github.com/sarveshtalele/content-creation/issues/new/choose). Please follow the [code of conduct](CODE_OF_CONDUCT.md), and report security problems privately ([SECURITY.md](SECURITY.md)).
 
 ## License
 

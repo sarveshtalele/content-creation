@@ -196,6 +196,7 @@ def assemble(items, closing, theme, single, brand_name):
 
 # GIF styles shown on the studio's GIF page (preview stills are studio/samples/gif-<id>.jpg, made by gif_samples.py)
 GIF_STYLES = [
+    {'id': 'chart', 'name': 'Animated chart', 'tag': 'Any of the 21 charts, drawn and revealed', 'best': 'Flows, shares, trends and comparisons with real figures'},
     {'id': 'grid', 'name': 'Card grid poster', 'tag': 'Numbered cards, each with a small moving diagram', 'best': 'Lists of 4, 6 or 9 ideas, tools or algorithms'},
     {'id': 'hub', 'name': 'Hub and cards', 'tag': 'One idea in the middle, nine parts around it', 'best': 'A concept with many parts'},
     {'id': 'columns', 'name': 'Catalogue columns', 'tag': 'Three or four categories with items', 'best': 'A catalogue grouped by type'},

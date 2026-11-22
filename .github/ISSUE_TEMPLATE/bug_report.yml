@@ -1,0 +1,24 @@
+name: Bug report
+description: Something renders wrong, a check fails unexpectedly, or a command errors
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: {label: What happened, description: "What you ran, what you expected, what you got. Paste the shortest decisive error line."}
+    validations: {required: true}
+  - type: dropdown
+    id: media
+    attributes: {label: Media, options: [GIF, Carousel, Reel, Reel cover, Walkthrough video, Post, Design Studio web app, Installer]}
+    validations: {required: true}
+  - type: dropdown
+    id: agent
+    attributes: {label: Agent, options: [Claude Code, Codex, Antigravity, ChatGPT, Command line only]}
+  - type: input
+    id: os
+    attributes: {label: OS and versions, placeholder: "macOS 15 / Windows 11, Python 3.12, Node 22"}
+  - type: textarea
+    id: doctor
+    attributes: {label: "Output of studio.py doctor", render: text}
+  - type: textarea
+    id: shot
+    attributes: {label: Screenshot or contact sheet, description: "Drag in out/review/*.png if it is a visual problem. Remove anything private first."}

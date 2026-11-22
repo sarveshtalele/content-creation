@@ -10,7 +10,7 @@ const box = (title, ...kids) => el('div', { class: 'card pad' }, el('h3', { text
 
 // —— GIF: every template, ranked for the content, the person picks ——
 export function gifPage(m) {
-  head(m, 'GIF', 'A looping diagram for LinkedIn (1080x1350, under 5 MB) plus the still PNG. All 15 templates are ranked for your content; pick the one you like.');
+  head(m, 'GIF', 'A looping diagram for LinkedIn (1080x1350, under 5 MB) plus the still PNG. All 16 templates are ranked for your content; pick the one you like.');
   analysisBanner(m);
   const rank = S.analysis ? Object.fromEntries(S.analysis.gif.map(g => [g.template, g])) : {};
   const items = S.D.gifStyles.map(g => ({ id: g.id, name: g.name, tag: g.best, img: '/samples/gif-' + g.id + '.jpg', score: rank[g.id] ? rank[g.id].score : (S.analysis ? 0 : null), why: rank[g.id] ? rank[g.id].why : g.tag }));
