@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.17.0
+
+- **Reel narration**: capitalised words in code or text (SKILL, NEVER) are spoken as words instead of letter by letter; only known initialisms (API, CLI, ...) are spelled. Faster voice (1.12), tighter pauses, narration capped at about 130 words so reels stay short.
+- **Carousel workflow**: you choose an infographic for each slide; the cover is made from your headline (no template step). The PDF and separate PNG images are always both delivered.
+- **3D ring funnel** redrawn as lit cylinders in the Claude light palette.
+
 ## 2.16.0
 
 - **Two new funnel infographics** built from the reference designs: **3D Ring Funnel** (`ring`: icons feed a stack of blue rings that narrow to a glowing spout, with a numbered list) and **Cut-away Tower Funnel** (`tower`: floors are stages, with banners, a note and a figure on the right and altitude notes on the left). They replace the flat bar funnel in the studio.

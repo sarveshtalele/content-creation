@@ -8,7 +8,7 @@ NEED_CITE = {'stakes', 'answer', 'how', 'proof'}
 S = lambda lo, hi: ('str', lo, hi)
 ITEM = lambda **kw: ('obj', kw)
 SPEC = {
-  'narration': {'lines': [7, 15], 'words_per_line': [6, 30], 'max_sentence_words': 22, 'total_words': [90, 170], 'reel_seconds': [40, 90], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
+  'narration': {'lines': [6, 12], 'words_per_line': [5, 24], 'max_sentence_words': 18, 'total_words': [60, 130], 'reel_seconds': [22, 55], 'engage': 'LAST beat: ask the viewer a question or give a 1-step challenge (needs ? or starts with a verb like Try/Check/Pick); no cite needed', 'direct_address': 'at least 3 beats use you/your'},
   'reel_scenes': {
     'hook':   {'q': S(10, 130), 'sub': S(0, 110), 'chips': ('list', 0, 4, S(2, 24))},
     'flow':   {'title': S(0, 48), 'steps': ('list', 2, 4, ITEM(label=S(2, 22), sub=S(0, 34), icon='icon')), 'loop': 'bool'},
@@ -138,7 +138,7 @@ def validate(story, chunks, full_text):
         if beats[0].get('role') != 'hook' or not beats[0].get('say', '').strip().endswith('?'): v.e('beats[0]: must be role "hook" and a question ending with "?"')
         if not any(b.get('role') == 'takeaway' for b in beats): v.e('need a beat with role "takeaway" before the engage beat')
         if not any(b.get('role') == 'answer' for b in beats): v.e('need a beat with role "answer"')
-    if beats and not N['total_words'][0] <= tw <= N['total_words'][1]: v.e(f'narration total {tw} words, allowed {N["total_words"][0]}-{N["total_words"][1]} (≈ {tw/1.9:.0f}s with the male voice; the Reel must stay <= 90 s)')
+    if beats and not N['total_words'][0] <= tw <= N['total_words'][1]: v.e(f'narration total {tw} words, allowed {N["total_words"][0]}-{N["total_words"][1]} (≈ {tw/2.5:.0f}s at the default pace; keep the Reel under about 50 s or viewers leave: cut words, one idea per line)')
     # ── scenes ──
     seen = []; types = SPEC['reel_scenes']
     for i, sc in enumerate(scenes):

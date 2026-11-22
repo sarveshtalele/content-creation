@@ -298,27 +298,33 @@ const TYPES = {
     const lw = Math.min(XW, Math.round((s.short || '').length * 14.4 + 120)), link = box(root, { x: X0, y: yy, w: lw, h: 46, r: 23, fill: C.sand, bd: C.line, bw: 2, shadow: false });
     E(link, 'abs', 'left:14px;top:10px', icon('globe', 24, C.clayD, 2)); tx(link, 'sh-l', s.short || '', { x: 52, y: 4, w: lw - 64, h: 36, size: 24, weight: 500, font: MONO });
   },
-  // 3D ring funnel (reference: "5-step marketing funnel"): icons arrow into a stack of blue rings that narrow to a glowing spout; numbered list on the left
+  // 3D ring funnel in the Claude palette: each ring is a lit cylinder (light edge, dark side), icons feed it from above, numbered list on the left
   ring(root, s) {
     const st = s.steps, n = st.length, y0 = heading(root, 'rg-h', s.title) + 18, svg = svgLayer(root, W, H);
-    const cx = 764, rx0 = 258, rx1 = 100, ry0 = 50, iR = 40, iy = y0 + iR + 4, rimY = iy + iR + 96, th = Math.min(n <= 3 ? 150 : n === 4 ? 136 : 124, Math.floor((BODY1 - 150 - rimY) / n));
-    const r = d => rx0 + (rx1 - rx0) * d / n, ryOf = rr => ry0 * rr / rx0, col = k => mix(C.blueD, .30 * k / Math.max(1, n - 1)), ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
-    const pad = k => String(k + 1).padStart(2, '0'), bot = rimY + n * th;
-    for (let g = 3; g >= 1; g--) path(svg, ell(cx, bot + 70, 70 + g * 52, 12 + g * 9), { stroke: 'none', fill: C.blue, w: 0 }).setAttribute('opacity', String(.11 * (4 - g)));
-    path(svg, `M${cx - r(n) * .42} ${bot} L${cx - r(n) * .42} ${bot + 62} A${r(n) * .42} 14 0 0 0 ${cx + r(n) * .42} ${bot + 62} L${cx + r(n) * .42} ${bot} Z`, { stroke: mix(C.blueD, .5), w: 3, fill: mix(C.blueD, .35) });
-    path(svg, ell(cx, rimY, rx0 + 6, ry0 + 3), { stroke: mix(C.blueD, .55), w: 5, fill: C.blueD }); path(svg, ell(cx, rimY + 2, rx0 - 20, ry0 - 12), { stroke: 'none', fill: mix(C.blueD, -0) }).setAttribute('opacity', '.55');
+    const cx = 764, rx0 = 258, rx1 = 104, ry0 = 52, iR = 40, iy = y0 + iR + 4, rimY = iy + iR + 96, th = Math.min(n <= 3 ? 150 : n === 4 ? 136 : 124, Math.floor((BODY1 - 150 - rimY) / n));
+    const r = d => rx0 + (rx1 - rx0) * d / n, ryOf = rr => ry0 * rr / rx0, ell = (x, y, a, b) => `M${x - a} ${y} a${a} ${b} 0 1 0 ${2 * a} 0 a${a} ${b} 0 1 0 ${-2 * a} 0`;
+    const shade = (hex, f) => { const v = parseInt(hex.slice(1), 16); const c = i => Math.max(0, Math.min(255, Math.round(((v >> i) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
+    const defs = document.createElementNS(svgNS, 'defs'); svg.appendChild(defs);
+    const grad = (id, hex) => { const g = document.createElementNS(svgNS, 'linearGradient'); g.setAttribute('id', id); g.setAttribute('x1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y1', '0'); g.setAttribute('y2', '0');
+      [[0, shade(hex, 1.0)], [.22, mix(hex, .22)], [.5, hex], [1, shade(hex, .72)]].forEach(([o, c]) => { const t = document.createElementNS(svgNS, 'stop'); t.setAttribute('offset', o); t.setAttribute('stop-color', c); g.appendChild(t); }); defs.appendChild(g); return `url(#${id})`; };
+    const pad = k => String(k + 1).padStart(2, '0'), bot = rimY + n * th, base = k => grp(k).ink;
+    for (let g = 3; g >= 1; g--) path(svg, ell(cx, bot + 74, 64 + g * 54, 12 + g * 9), { stroke: 'none', fill: C.clay, w: 0 }).setAttribute('opacity', String(.10 * (4 - g)));
+    path(svg, ell(cx, bot + 20, r(n) * .5, 12), { stroke: 'none', fill: '#000' }).setAttribute('opacity', '.10');
+    path(svg, `M${cx - r(n) * .42} ${bot} L${cx - r(n) * .42} ${bot + 60} A${r(n) * .42} 14 0 0 0 ${cx + r(n) * .42} ${bot + 60} L${cx + r(n) * .42} ${bot} Z`, { stroke: shade(base(n - 1), .7), w: 3, fill: grad('rg-sp', base(n - 1)) });
+    path(svg, ell(cx, rimY, rx0 + 8, ry0 + 4), { stroke: shade(base(0), .75), w: 5, fill: C.card }); path(svg, ell(cx, rimY + 3, rx0 - 14, ry0 - 9), { stroke: 'none', fill: shade(base(0), .55) });
     for (let k = 0; k < n; k++) {
-      const yt = rimY + k * th, yb = yt + th, rt = r(k), rb = r(k + 1), at = ryOf(rt), ab = ryOf(rb);
-      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt} L${cx + rb} ${yb} A${rb} ${ab} 0 0 1 ${cx - rb} ${yb} Z`, { stroke: mix(col(k), .45), w: 3, fill: col(k) });
-      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt}`, { stroke: mix(col(k), .6), w: 5 });
+      const yt = rimY + k * th, yb = yt + th, rt = r(k), rb = r(k + 1), at = ryOf(rt), ab = ryOf(rb), f = grad('rg-g' + k, base(k));
+      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt} L${cx + rb} ${yb} A${rb} ${ab} 0 0 1 ${cx - rb} ${yb} Z`, { stroke: shade(base(k), .7), w: 3, fill: f });
+      path(svg, `M${cx - rt} ${yt} A${rt} ${at} 0 0 0 ${cx + rt} ${yt}`, { stroke: mix(grp(k).bd, .55), w: 5 });
       const rm = (rt + rb) / 2, yc = ((yt + at) + (yb + ab)) / 2, lab = `${pad(k)}  ${st[k].title.toUpperCase()}`, tw = rm * 1.45, z = fitSize(lab, { w: tw, h: 44, max: 32, min: 18, weight: 700, lh: 1.1 });
-      tx(root, `rg-t${k}`, lab, { x: cx - tw / 2, y: yc - 24, w: tw, h: 48, size: z, weight: 700, color: '#fff', align: 'center', ls: .02 });
+      tx(root, `rg-t${k}`, lab, { x: cx - tw / 2, y: yc - 24, w: tw, h: 48, size: z, weight: 700, color: '#fff', align: 'center' });
     }
     const gap = Math.min(112, (rx0 * 1.5) / Math.max(1, n - 1));
-    st.forEach((a, k) => { const xi = cx + (k - (n - 1) / 2) * gap, tx_ = cx + (xi - cx) * .55, ty = rimY - ry0 + 4;
-      path(svg, `M${xi} ${iy + iR} C${xi} ${iy + iR + 56} ${tx_} ${ty - 56} ${tx_} ${ty}`, { stroke: C.blue, w: 3 }); path(svg, `M${tx_ - 9} ${ty - 13} L${tx_} ${ty} L${tx_ + 9} ${ty - 13}`, { stroke: C.blue, w: 3 });
-      const b = box(root, { x: xi - iR, y: iy - iR, w: iR * 2, h: iR * 2, r: iR, bd: C.blue, bw: 3, shadow: false }); E(b, 'abs', `left:${iR - 21}px;top:${iR - 21}px`, icon(a.icon || 'star', 36, C.blueD, 2)); });
-    st.forEach((a, k) => { const yc = rimY + (k + .5) * th + 18, c = E(root, 'abs', `left:${X0}px;top:${yc - 38}px;width:76px;height:76px;border-radius:50%;background:${C.blueD};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px ${C.blueSoft}`, icon(a.icon || 'star', 36, '#fff', 2));
+    st.forEach((a, k) => { const P = grp(k), xi = cx + (k - (n - 1) / 2) * gap, tx_ = cx + (xi - cx) * .55, ty = rimY - ry0 + 4;
+      path(svg, `M${xi} ${iy + iR} C${xi} ${iy + iR + 56} ${tx_} ${ty - 56} ${tx_} ${ty}`, { stroke: P.bd, w: 3 }); path(svg, `M${tx_ - 9} ${ty - 13} L${tx_} ${ty} L${tx_ + 9} ${ty - 13}`, { stroke: P.bd, w: 3 });
+      const b = box(root, { x: xi - iR, y: iy - iR, w: iR * 2, h: iR * 2, r: iR, bd: P.bd, bw: 3, shadow: false }); E(b, 'abs', `left:${iR - 21}px;top:${iR - 21}px`, icon(a.icon || 'star', 36, P.ink, 2)); });
+    st.forEach((a, k) => { const P = grp(k), yc = rimY + (k + .5) * th + 18;
+      E(root, 'abs', `left:${X0}px;top:${yc - 38}px;width:76px;height:76px;border-radius:50%;background:${P.ink};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px ${P.soft}`, icon(a.icon || 'star', 36, '#fff', 2));
       tx(root, `rg-l${k}`, `${pad(k)}. ${a.title}`, { x: X0 + 98, y: yc - 42, w: 330, h: 40, size: 31, weight: 700, color: C.ink });
       if (a.sub) tx(root, `rg-s${k}`, a.sub, { x: X0 + 98, y: yc - 2, w: 330, h: 62, size: 23, weight: 500, color: C.mid, wrap: true, lh: 1.2 });
       if (k < n - 1) path(svg, `M${X0 + 98} ${yc + th / 2 - 8} L${X0 + 420} ${yc + th / 2 - 8}`, { stroke: C.lineD, w: 2, dash: '3 7' }); });

@@ -177,7 +177,7 @@ def has_claude(work):
     return bool(re.search(r'\bclaude\b', open(os.path.join(work, 'source_full.txt'), encoding='utf-8').read(), re.I))
 def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
-    tails, end_hold = {}, 4.4
+    tails, end_hold = {}, 3.2
     for it in range(5):
         D = TL.build(story, dur, tails, end_hold); D['brand'] = brand_for_film(b); D['logo'] = has_claude(work); D['look'] = 'light' if (story.get('reel') or {}).get('look') == 'light' else 'cinematic'
         film = stage(work, '.film-reel', D); bad, txt, rc = readcheck(lib, env, film, '1080x1920')
@@ -323,9 +323,7 @@ def build(a):
     ff_ = os.path.join(work, '.carousel_format')
     if getattr(a, 'format', None): open(ff_, 'w', encoding='utf-8').write(a.format)
     elif os.path.isfile(ff_): a.format = open(ff_, encoding='utf-8').read().strip()      # a rebuild after edit/cta reuses what the person chose
-    if 'carousel' in arts and getattr(a, 'format', None) is None:
-        print('ASK THE USER FIRST: do you want the carousel as a PDF (one LinkedIn document upload), as separate PNG images (one per slide), or both?\n'
-              'Nothing was built. After they answer, re-run with --format pdf | images | both.'); return 3
+    if 'carousel' in arts and getattr(a, 'format', None) is None: a.format = 'both'      # the person always gets the PDF and the separate images
     slug = story['meta']['slug']; out = os.path.join(work, 'out'); res = {}
     if not story['meta'].get('url'): story['meta']['url'] = load(os.path.join(work, 'source.meta.json')).get('url', '')
     if 'post' in arts:
@@ -462,8 +460,8 @@ def set_brand(a):
         else: cur['post_cta'] = [x.strip() for x in a.cta]
     if a.voice: cur['voice'] = a.voice.strip()
     if a.speed is not None:
-        if 0.8 <= a.speed <= 1.2: cur['speed'] = a.speed
-        else: errs.append('--speed: use 0.8-1.2')
+        if 0.8 <= a.speed <= 1.3: cur['speed'] = a.speed
+        else: errs.append('--speed: use 0.8-1.3')
     if a.avatar:
         ext = os.path.splitext(a.avatar)[1].lower()
         if not os.path.isfile(a.avatar) or ext not in ('.png', '.jpg', '.jpeg', '.webp'): errs.append('--avatar: give an existing .png, .jpg or .webp file')
@@ -586,7 +584,7 @@ def plan_cmd(a):
     if re.search(r'`[^`]+`|\$ \w+|\bnpm |\bpip |\bgit \w+', src): sig.append(('terminal', 'commands in the text', 'a command transcript'))
     if re.search(r'https?://', src): sig.append(('shot', 'links in the text', 'a framed page card per recommended link'))
     if not sig: sig.append(('points / big', 'no numbers, steps or contrasts found', 'icon points for the list, one big quote for the key line'))
-    L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Output format: PDF (one LinkedIn document upload), separate PNG images (one per slide), or both? Do not build until they answer.', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
+    L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Which infographic type should each content slide use (ring funnel, tower funnel, stat, bars, compare, flow, loop, stack, terminal, points)? Output is always the PDF and the separate PNG images.', '1. Who is this for, and what should they do after the last slide (save, comment, click, follow)?', '2. Which hook style: contrarian reframe, specific reader, "read this before...", number proof, or POV?', '3. Tone: calm explainer, punchy, or technical?', '4. Any slide that must be there, or a claim that must not be made?', '', '## What the source supports', '']
     L += [f'- **{t}**: {why}. Idea: {idea}.' for t, why, idea in sig]
     L += ['', 'Design choice: see docs/DESIGN_MATRIX.md (conveyor for gates, funnel for narrowing shares, tower for layers, skyline for rankings, poster slide for a bold claim).']
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']

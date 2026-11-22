@@ -13,7 +13,7 @@
   {
    "id": "b2",
    "role": "stakes",
-   "say": "Here's the problem. Anyone on the path could read or change plain HTTP traffic.",
+   "say": "Here's the problem. Anyone on the path could read plain HTTP traffic.",
    "cite": [
     [
      "c01",
@@ -24,7 +24,7 @@
   {
    "id": "b3",
    "role": "answer",
-   "say": "The fix is HTTPS. It wraps HTTP inside TLS, and gives you three things: encryption, integrity, and authentication.",
+   "say": "The fix is HTTPS. It wraps HTTP in TLS for encryption, integrity, and authentication.",
    "cite": [
     [
      "c02",
@@ -35,7 +35,7 @@
   {
    "id": "b4",
    "role": "how",
-   "say": "Every connection starts with a handshake. Your browser lists what it supports, and the server replies with its choice and its certificate.",
+   "say": "Every connection starts with a handshake. The server replies with its choice and its certificate.",
    "cite": [
     [
      "c03",
@@ -46,7 +46,7 @@
   {
    "id": "b5",
    "role": "how",
-   "say": "Next, your browser checks that certificate. If the signature or the name doesn't match, you get a warning.",
+   "say": "Next, your browser checks that certificate. If the name doesn't match, you get a warning.",
    "cite": [
     [
      "c04",
@@ -57,7 +57,7 @@
   {
    "id": "b6",
    "role": "how",
-   "say": "Then both sides agree on a shared secret. With ephemeral Diffie-Hellman, each session gets fresh keys.",
+   "say": "Then both sides agree on a shared secret, with fresh keys every session.",
    "cite": [
     [
      "c05",
@@ -79,7 +79,7 @@
   {
    "id": "b8",
    "role": "proof",
-   "say": "Even if a server key leaks later, past sessions stay protected. And certificates renew automatically, usually after 90 days.",
+   "say": "Even if a server key leaks later, past sessions stay protected.",
    "cite": [
     [
      "c05",
@@ -105,7 +105,7 @@
   {
    "id": "b10",
    "role": "engage",
-   "say": "Next time you see that padlock, which step of the handshake will you picture first?"
+   "say": "Next time you see that padlock, which handshake step will you picture first?"
   }
  ],
  "scenes": [
@@ -170,7 +170,7 @@
       "label": "Hello",
       "sub": "Browser lists what it supports",
       "icon": "chat",
-      "cue": "lists what"
+      "cue": "starts with a handshake"
      },
      {
       "label": "Certificate",
@@ -215,7 +215,7 @@
      {
       "label": "Automatic renewal",
       "sub": "Certificates expire after 90 days",
-      "cue": "renew"
+      "cue": "stay protected"
      }
     ]
    }
