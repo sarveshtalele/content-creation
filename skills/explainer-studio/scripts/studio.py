@@ -292,8 +292,8 @@ def build(a):
     arts = set((['reel', 'gif', 'post'] + (['carousel'] if 'carousel' in story else [])) if a.artifacts == 'all' else (a.artifacts or default).split(','))
     if not arts <= {'reel', 'gif', 'post', 'carousel'}: sys.exit('artifacts: reel,gif,post,carousel or all')
     ff_ = os.path.join(work, '.carousel_format')
-    if getattr(a, 'format', None): open(ff_, 'w').write(a.format)
-    elif os.path.isfile(ff_): a.format = open(ff_).read().strip()      # a rebuild after edit/cta reuses what the person chose
+    if getattr(a, 'format', None): open(ff_, 'w', encoding='utf-8').write(a.format)
+    elif os.path.isfile(ff_): a.format = open(ff_, encoding='utf-8').read().strip()      # a rebuild after edit/cta reuses what the person chose
     if 'carousel' in arts and getattr(a, 'format', None) is None:
         print('ASK THE USER FIRST: do you want the carousel as a PDF (one LinkedIn document upload), as separate PNG images (one per slide), or both?\n'
               'Nothing was built. After they answer, re-run with --format pdf | images | both.'); return 3
