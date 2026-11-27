@@ -13,9 +13,11 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
 ![License](https://img.shields.io/badge/license-MIT-788C5D)
 
-<img src="docs/img/demo.gif" alt="An animated funnel GIF made by explainer-studio" width="380">
+<img src="docs/img/demo.gif" alt="An animated funnel GIF made by explainer-studio" width="300">&nbsp;&nbsp;<img src="docs/img/arch/rag-architecture.gif" alt="An animated architecture diagram made by explainer-studio: only the request flow moves" width="300">
 
-**[▶ Watch the 50-second demo](docs/media/explainer-studio-demo.mp4)**: the web app, a Reel, a verified walkthrough video and a GIF, all made by explainer-studio
+<a href="docs/media/design-studio-tour.mp4"><img src="docs/img/studio-tour.gif" alt="The Design Studio gallery: every design with motion on hover, ranked for your content" width="720"></a>
+
+**[▶ Watch the Design Studio tour (56 s)](docs/media/design-studio-tour.mp4)** · **[▶ Watch the 50-second demo](docs/media/explainer-studio-demo.mp4)** (a Reel, a verified walkthrough video and a GIF)
 
 </div>
 
@@ -23,8 +25,8 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 ## Contents
 
-1. [What it makes](#what-it-makes)
-2. [How it works](#how-it-works)
+1. [What it makes](#what-it-makes) · [Gallery](#gallery): [architecture diagrams](#architecture-diagrams) · [charts](#charts) · [thumbnails](#thumbnails-and-blog-covers) · [Reel covers and walkthroughs](#reel-covers-and-walkthrough-videos)
+2. [How it works](#how-it-works) · [plugin architecture](#plugin-architecture)
 3. [Requirements](#requirements)
 4. [Quick start](#quick-start) (macOS and Windows)
 5. [Install](#install): [Claude Code](#claude-code-step-by-step) · [Codex](#codex-step-by-step) · [Antigravity](#antigravity-step-by-step)
@@ -53,6 +55,43 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 Every frame and slide carries **your brand CTA** (photo, name, tagline) at the bottom. Every word and every number comes from the source: the validator refuses text it cannot find there and data charts refuse invented figures.
 
+## Gallery
+
+Every image below was made by explainer-studio from a fixture source, and every one is rebuilt and checked by the end-to-end suite. The full set (66 designs with IDs) is in the [design catalogue](skills/explainer-studio/studio/catalog.html) and the Design Studio gallery.
+
+### Architecture diagrams
+
+One diagram for a whole post or blog, in four styles. As a GIF the complete diagram is on screen from the first frame and only the flow moves (dots run along every connector); the same diagram is also a PNG and a carousel slide.
+
+| Sketch (Excalidraw-like) | Cloud reference architecture | Swimlane flowchart | Sequence diagram |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/img/arch/sketch.jpg" alt="Sketch-style architecture diagram: how an agent uses its tools" width="200"> | <img src="docs/img/arch/cloud.jpg" alt="Cloud architecture diagram: how a RAG app answers a question" width="200"> | <img src="docs/img/arch/flow.jpg" alt="Swimlane flowchart: how a pull request gets merged" width="200"> | <img src="docs/img/arch/sequence.jpg" alt="Sequence diagram: signing in with OAuth" width="200"> |
+| `arch-sketch` | `arch-cloud` | `arch-flow` | `arch-sequence` |
+
+### Charts
+
+21 chart slides (and an animated chart GIF for any of them). Data charts only take numbers that are in your source.
+
+| Sankey | Slope | Sunburst | Mind map |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/img/gallery/chart-sankey.jpg" alt="Sankey chart" width="200"> | <img src="docs/img/gallery/chart-slope.jpg" alt="Slope chart" width="200"> | <img src="docs/img/gallery/chart-sunburst.jpg" alt="Sunburst chart" width="200"> | <img src="docs/img/gallery/chart-mindmap.jpg" alt="Mind map" width="200"> |
+
+### Thumbnails and blog covers
+
+Five layouts at YouTube, Open Graph, LinkedIn newsletter, dev.to and Hashnode sizes, each with your photo, name and tagline.
+
+| Face | Versus |
+|:---:|:---:|
+| <img src="docs/img/gallery/thumb-face.jpg" alt="Face thumbnail" width="380"> | <img src="docs/img/gallery/thumb-versus.jpg" alt="Versus thumbnail" width="380"> |
+| **Diagram** | **Number** |
+| <img src="docs/img/gallery/thumb-diagram.jpg" alt="Diagram thumbnail" width="380"> | <img src="docs/img/gallery/thumb-number.jpg" alt="Number thumbnail" width="380"> |
+
+### Reel covers and walkthrough videos
+
+| Number cover | Hero cover | Face cover | Walkthrough video |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/img/gallery/reelcover-number.jpg" alt="Number Reel cover" width="160"> | <img src="docs/img/gallery/reelcover-hero.jpg" alt="Hero Reel cover" width="160"> | <img src="docs/img/gallery/reelcover-face.jpg" alt="Face Reel cover" width="160"> | <img src="docs/img/gallery/walkthrough.jpg" alt="Walkthrough video poster" width="160"> |
+
 ## How it works
 
 ```mermaid
@@ -72,6 +111,30 @@ flowchart LR
 3. **You choose.** The agent shows the ranked options and the [design catalogue](skills/explainer-studio/studio/catalog.html), a page with every design, its ID and a real sample. It asks which design IDs to use and does not build until you answer.
 4. **The agent writes one compact `story.json`** from the source. That is the only step that uses the model. Everything else is deterministic code.
 5. **Check, render, review.** Text grounding, length limits and number grounding run first. The engine then renders in headless Chromium. Finally, the review gates check layout (overflow, overlap, empty cards), reading time, file size and speech-to-text.
+
+### Plugin architecture
+
+```mermaid
+flowchart TB
+  subgraph Agents["Your agent"]
+    CC[Claude Code]
+    CX[Codex]
+    AG[Antigravity]
+  end
+  subgraph Plugin["explainer-studio plugin"]
+    CMD["/explainer commands<br/>commands/*.md"] --> SK["SKILL.md<br/>workflow and rules"]
+    SK --> PY["scripts/studio.py<br/>ingest · pick · check · build · review"]
+    PY --> MX["data/matrix.json<br/>decision matrix"]
+    PY --> EN["engine/*.js<br/>GIF · carousel · charts · arch · thumbs · Reel · walkthrough"]
+    EN --> CH["headless Chromium<br/>and Playwright"]
+    APP["Design Studio web app<br/>studio/ · 127.0.0.1 only"] --> PY
+  end
+  CC & CX & AG --> CMD
+  CH --> OUT["outputs/slug/<br/>GIF · PNG · PDF · MP4 · post"]
+  BR[(your brand<br/>photo · name · tagline)] --> EN
+```
+
+The agent only writes `story.json`; everything else runs locally as deterministic code. Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Requirements
 
