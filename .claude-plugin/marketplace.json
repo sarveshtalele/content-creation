@@ -8,7 +8,7 @@
    "name": "explainer-studio",
    "source": "./",
    "description": "Turn any article, docs page, repo or notes into a ranked choice of GIFs, chart carousels, narrated Reels with designed covers, verified Playwright walkthrough videos and LinkedIn posts, grounded in the source, in the Claude light theme with your brand CTA.",
-   "version": "3.3.0"
+   "version": "3.3.1"
   }
  ]
 }

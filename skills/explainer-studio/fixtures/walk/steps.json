@@ -1,4 +1,4 @@
-{"title": "Add and finish your first task in Taskly", "sub": "A four-step guide, checked in a real browser",
+{"title": "Add and finish your first task in Taskly", "sub": "A five-step guide, checked in a real browser",
  "steps": [
   {"say": "Open Taskly", "action": "goto", "url": "./app.html", "expect": {"text": "No tasks yet"}},
   {"say": "Tap New task", "action": "click", "target": "#new", "expect": {"visible": "#t"}},

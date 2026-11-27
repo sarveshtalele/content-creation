@@ -34,6 +34,6 @@ def items():
     out.append({'id': 'walkthrough', 'media': 'walkthrough', 'category': 'Walkthrough videos', 'name': 'Verified walkthrough', 'tag': 'A real guide run by Playwright, every step checked', 'best': 'Showing how to use a website or app',
                 'img': 'walkthrough.jpg' if _has('walkthrough.jpg') else 'reelcover-hero.jpg', 'motion': 'walkthrough.mp4' if _has('walkthrough.mp4') else None, 'aspect': '9/16', 'action': 'walk'})
     for k, v in THUMBS.items():
-        out.append({'id': 'thumb-' + k, 'layout': k, 'media': 'thumbnail', 'category': 'Thumbnails and blog covers', 'name': k.title() + ' thumbnail', 'tag': v, 'best': 'YouTube, link previews, dev.to and Hashnode covers',
+        out.append({'id': 'thumb-' + k, 'layout': k, 'media': 'thumbnail', 'category': 'Thumbnails and blog covers', 'name': k.title() + ' thumbnail', 'tag': v, 'best': 'YouTube, link previews, LinkedIn newsletters, dev.to and Hashnode covers',
                     'img': f'thumb-{k}.jpg', 'motion': None, 'aspect': '16/9', 'action': 'thumb'})
     return [i for i in out if _has(i['img'])]

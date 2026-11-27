@@ -17,9 +17,7 @@ def render(jobs_root, items, closing=None, theme='sky', mode='single', fmt='imag
     single = mode == 'single'
     if single and len(items) != 1: raise ValueError('single mode takes exactly one design')
     story, src = DS.assemble(items, closing, theme, single, _brand_name())
-    base = os.path.join(jobs_root, time.strftime('%Y%m%d-%H%M%S') + '-' + story['meta']['slug']); job = base; n_ = 1
-    while os.path.exists(job): n_ += 1; job = f'{base}-{n_}'
-    os.makedirs(job)
+    job = _jobdir(jobs_root, story['meta']['slug'])
     json.dump(story, open(os.path.join(job, 'story.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     for n in ('source_full.txt', 'source.md'): open(os.path.join(job, n), 'w', encoding='utf-8', newline='\n').write(src)
     json.dump([{'id': 'c01', 'h': '', 'text': src, 's': 1.0}], open(os.path.join(job, 'source.chunks.json'), 'w', encoding='utf-8'))
@@ -52,9 +50,11 @@ def _project(job, story, src):
     json.dump({'title': story['meta']['title'], 'url': '', 'chunks': 1, 'chars': len(src), 'approx_tokens': len(src) // 4, 'salient': ['c01'], 'dropped_chunks': 0, 'dropped_headings': []}, open(os.path.join(job, 'source.meta.json'), 'w', encoding='utf-8'))
 
 def _jobdir(root, slug):
+    """create and return a new job folder; claimed atomically because parallel jobs (samples, the app) can share a slug and second"""
     base = os.path.join(root, time.strftime('%Y%m%d-%H%M%S') + '-' + slug); job = base; n_ = 1
-    while os.path.exists(job): n_ += 1; job = f'{base}-{n_}'
-    return job
+    while True:
+        try: os.makedirs(job); return job
+        except FileExistsError: n_ += 1; job = f'{base}-{n_}'
 
 def cover_job(root, v):
     """Designed Reel covers from the studio form: hook, sub, chips, steps (3-4), optional layout. Returns {'ok','log','files','job'}"""
@@ -99,7 +99,7 @@ def walk_job(root, spec, device='mobile'):
         if s_.get('action') not in ('goto', 'click', 'fill', 'press', 'hover', 'scroll', 'wait'): raise ValueError('Unknown action: ' + str(s_.get('action')))
         if s_.get('action') == 'goto' and not re.match(r'^https?://', s_.get('url') or ''): raise ValueError('Each "open" step needs an http(s) address.')
     slug = re.sub(r'[^a-z0-9]+', '-', spec['title'].lower()).strip('-')[:40] or 'walkthrough'
-    job = _jobdir(root, slug + '-walk'); os.makedirs(job); json.dump(spec, open(os.path.join(job, 'steps.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+    job = _jobdir(root, slug + '-walk'); json.dump(spec, open(os.path.join(job, 'steps.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     return job, [sys.executable, os.path.join(HERE, 'studio.py'), 'walkthrough', job, '--steps', os.path.join(job, 'steps.json'), '--device', 'desktop' if device == 'desktop' else 'mobile']
 
 def make_samples(dest, only=None):
@@ -120,4 +120,37 @@ def make_samples(dest, only=None):
     for i, log in bad: print('FAILED', i, '\n', log)
     return not bad
 
-if __name__ == '__main__': sys.exit(0 if make_samples(os.path.join(SKILL, 'studio', 'samples'), sys.argv[1:] or None) else 1)   # usage: studio_jobs.py [design-id ...]
+COVER_SAMPLE = {'hook': 'Only 72 of 1,000 trial users still pay', 'sub': 'Where the other 928 drop out', 'chips': ['Pricing', 'Trial', 'Data', 'Paid'],
+                'flow_title': 'The trial funnel', 'steps': ['Visit pricing', 'Start a trial', 'Connect data', 'Pay']}
+
+def brand_samples(dest, which=('reelcovers', 'thumbs')):
+    """Reel cover (reelcover-<layout>.jpg) and thumbnail (thumb-<layout>.jpg) samples, built by the same jobs the app runs. Returns the failures."""
+    from PIL import Image
+    import tempfile; root = tempfile.mkdtemp(prefix='samples-'); bad = []
+    def save(f, name, size):
+        Image.open(f).convert('RGB').resize(size, Image.LANCZOS).save(os.path.join(dest, name), quality=88, optimize=True); print('sample', name[:-4], flush=True)
+    if 'reelcovers' in which:
+        r = cover_job(root, COVER_SAMPLE)
+        if not r['ok']: bad.append(('reelcovers', r['log'][-900:]))
+        for f in r['files']:
+            m = re.search(r'-cover-(\w+)\.png$', f)
+            if m: save(f, f'reelcover-{m.group(1)}.jpg', (540, 960))
+    if 'thumbs' in which:   # the thumbs fixture has the two lists the versus layout needs
+        job = os.path.join(root, 'thumbs'); os.makedirs(job); fx = os.path.join(SKILL, 'fixtures')
+        subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'ingest', os.path.join(fx, 'thumbs.md'), '--out', job], capture_output=True)
+        shutil.copy(os.path.join(fx, 'thumbs.story.json'), os.path.join(job, 'story.json'))
+        r = subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'thumbs', job, '--sizes', 'youtube'], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900, cwd=job)
+        fs = sorted(os.path.join(job, 'out', 'thumbs', f) for f in os.listdir(os.path.join(job, 'out', 'thumbs'))) if r.returncode == 0 else []
+        if not fs: bad.append(('thumbs', (r.stdout + r.stderr)[-900:]))
+        for f in fs:
+            m = re.search(r'-youtube-(\w+)\.png$', f)
+            if m: save(f, f'thumb-{m.group(1)}.jpg', (640, 360))
+    shutil.rmtree(root, ignore_errors=True)
+    for i, log in bad: print('FAILED', i, '\n', log)
+    return bad
+
+if __name__ == '__main__':   # usage: studio_jobs.py [design-id | reelcovers | thumbs ...]   (no arguments: every sample)
+    args, dest = sys.argv[1:], os.path.join(SKILL, 'studio', 'samples'); extra = [a for a in args if a in ('reelcovers', 'thumbs')]; ids = [a for a in args if a not in extra]
+    ok = make_samples(dest, ids) if ids or not args else True
+    bad = brand_samples(dest, extra or ('reelcovers', 'thumbs')) if extra or not args else []
+    sys.exit(0 if ok and not bad else 1)

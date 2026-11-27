@@ -50,7 +50,9 @@ export function charts(K) {
     slope(root, s) { return this._pair(root, s, true); },
     _pair(root, s, slope) {
       let y = top(root, s, slope ? 'sl-h' : 'db-h'); const A = C.blue, B = C.clay, svg = svgLayer(root, W, 1350), n = s.rows.length;
-      y = legendRow(root, [{ label: s.legend.a, color: A }, { label: s.legend.b, color: B }], y, X0, XW) + 24;
+      if (slope) {   // the lines are coloured by row, so the two moments are named over their own axes, not in a colour legend
+        [[360, s.legend.a, 'sl-la'], [720, s.legend.b, 'sl-lb']].forEach(([x, t, id]) => tx(root, id, t, { x: x - 150, y: y + 4, w: 300, h: 44, size: 30, weight: 700, color: C.ink, align: 'center' })); y += 70;
+      } else y = legendRow(root, [{ label: s.legend.a, color: A }, { label: s.legend.b, color: B }], y, X0, XW) + 24;
       if (!slope) {
         const pitch = Math.min(190, Math.floor((BODY1 - y) / n)), LW = 280, TX = X0 + LW + 30, TW = W - X0 - 30 - TX;
         s.rows.forEach((r, k) => { const cy = y + k * pitch + pitch / 2, xa = TX + TW * pc(r.a.pct), xb = TX + TW * pc(r.b.pct);
@@ -62,7 +64,8 @@ export function charts(K) {
           tx(root, `db${k}-b`, r.b.value, { x: Math.min(W - X0 - 140, (aLeft ? hi : lo) - 70), y: cy + 30, w: 140, h: 40, size: 26, weight: 700, color: C.clayD, align: 'center' }); });
         return;
       }
-      const ax = 360, bx = 720, t0 = y + 30, t1 = BODY1 - 40, Y = p => t1 - (t1 - t0) * pc(p);
+      const vs = s.rows.flatMap(r => [pc(r.a.pct), pc(r.b.pct)]), lo = Math.max(0, Math.min(...vs) - .08), hi = Math.min(1, Math.max(...vs) + .08);   // fit the scale to the data so the lines use the whole slide
+      const ax = 360, bx = 720, t0 = y + 30, t1 = BODY1 - 40, Y = p => t1 - (t1 - t0) * (pc(p) - lo) / Math.max(.05, hi - lo);
       [ax, bx].forEach(x => path(svg, `M${x} ${t0 - 20}V${t1 + 20}`, { stroke: C.line, w: 6 }));
       const spread = ys => { const o = ys.map((v, i) => ({ v, i })).sort((p, q) => p.v - q.v); for (let i = 1; i < o.length; i++) if (o[i].v - o[i - 1].v < 66) o[i].v = o[i - 1].v + 66; const r = []; o.forEach(q => { r[q.i] = q.v; }); return r; };
       const la = spread(s.rows.map(r => Y(r.a.pct))), lb = spread(s.rows.map(r => Y(r.b.pct)));
@@ -140,7 +143,7 @@ export function charts(K) {
       s.steps.forEach((st, k) => { const P = grp(k), yy = y + k * (h + gap), dec = st.kind === 'decision', end = k === 0 || k === n - 1;
         if (dec) { const cx = x + w / 2, cy = yy + h / 2, hw = w / 2, hh = h / 2 + 6; path(svg, roundPts([[cx, cy - hh], [cx + hw, cy], [cx, cy + hh], [cx - hw, cy]], 18, true), { stroke: P.bd, w: 4, fill: P.soft });
           lab(root, `fc${k}`, st.title, { x: cx - hw / 2 - 30, y: cy - hh / 2, w: hw + 60, h: hh, max: 30, weight: 700, align: 'center', color: P.ink });
-          if (k > 0) { const ry = y + (k - 1) * (h + gap) + h / 2; path(svg, `M${cx + hw} ${cy}H${x + w + 110}V${ry}H${x + w + 14}`, { stroke: C.clay, w: 5, dash: '2 11' }); tx(root, `fc${k}-n`, st.no || 'No', { x: x + w + 40, y: cy - 50, w: 130, h: 40, size: 24, weight: 700, color: C.clayD });
+          if (k > 0) { const ry = y + (k - 1) * (h + gap) + h / 2; path(svg, `M${cx + hw} ${cy}H${x + w + 110}V${ry}H${x + w + 14}`, { stroke: C.clay, w: 5, dash: '2 11' }); tx(root, `fc${k}-n`, st.no || 'No', { x: x + w + 124, y: cy - 20, w: W - X0 - x - w - 124, h: 40, size: 24, weight: 700, color: C.clayD });
             path(svg, `M${x + w + 30} ${ry - 12}L${x + w + 14} ${ry}L${x + w + 30} ${ry + 12}`, { stroke: C.clay, w: 5 }); }
           if (k < n - 1) tx(root, `fc${k}-y`, st.yes || 'Yes', { x: cx + 20, y: yy + h + 6, w: 130, h: 40, size: 24, weight: 700, color: C.greenD });
         } else { const b = box(root, { x, y: yy, w, h, r: end ? h / 2 : 28, fill: end ? P.soft : C.card, bd: P.bd, bw: 3 }); lab(b, `fc${k}`, st.title, { x: 30, y: 6, w: w - 60, h: h - 18, max: 34, weight: 700, align: 'center' }); }
@@ -150,11 +153,12 @@ export function charts(K) {
     donut(root, s) {
       const y = top(root, s, 'dn-h'), svg = svgLayer(root, W, 1350), n = s.parts.length, R = 250, T = 96, cx = W / 2, cy = y + R + 20; let a = 0;
       const tot = s.parts.reduce((q, p) => q + pc(p.pct), 0) || 1;
-      s.parts.forEach((p, k) => { const sw = 360 * pc(p.pct) / tot, gp = n > 1 ? 1.6 : 0; path(svg, sector(cx, cy, R - T, R, a + gp, a + sw - gp), { stroke: 'none', fill: mid(k), sharp: true }); a += sw; });
+      const col = k => k < 3 ? mid(k) : grp(k).ink;   // three palette groups; a 4th+ slice takes the darker shade so no two slices share a colour
+      s.parts.forEach((p, k) => { const sw = 360 * pc(p.pct) / tot, gp = n > 1 ? 1.6 : 0; path(svg, sector(cx, cy, R - T, R, a + gp, a + sw - gp), { stroke: 'none', fill: col(k), sharp: true }); a += sw; });
       if (s.center) { tx(root, 'dn-cv', s.center.value, { x: cx - 140, y: cy - 76, w: 280, h: 106, size: 76, weight: 700, font: 'serif', align: 'center', color: C.clayD }); lab(root, 'dn-cl', s.center.label, { x: cx - 120, y: cy + 26, w: 240, h: 56, max: 24, align: 'center', color: C.mid }); }
       const ly = cy + R + 50, cols = n > 3 ? 2 : 1, cw = cols === 2 ? (XW - 24) / 2 : XW, rh = Math.min(96, Math.floor((BODY1 - ly) / Math.ceil(n / cols)));
       s.parts.forEach((p, k) => { const P = grp(k), bx = X0 + (k % cols) * (cw + 24), by = ly + Math.floor(k / cols) * rh, b = box(root, { x: bx, y: by, w: cw, h: rh - 14, r: 22, bd: P.bd, bw: 2.5, shadow: false });
-        E(b, 'abs', `left:18px;top:${(rh - 14 - 28) / 2 - 2}px;width:28px;height:28px;border-radius:9px;background:${P.bd}`);
+        E(b, 'abs', `left:18px;top:${(rh - 14 - 28) / 2 - 2}px;width:28px;height:28px;border-radius:9px;background:${col(k)}`);
         lab(b, `dn${k}-l`, p.label, { x: 60, y: 4, w: cw - 200, h: rh - 26, max: 28, weight: 700 }); tx(b, `dn${k}-v`, p.value, { x: cw - 140, y: 4, w: 120, h: rh - 26, size: 34, weight: 700, font: 'serif', color: P.ink, align: 'right' }); });
     },
     waffle(root, s) {

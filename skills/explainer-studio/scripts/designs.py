@@ -132,7 +132,7 @@ CHARTS = [
  ('flowchart', 'Flow', 'Flowchart', 'Steps with a yes/no decision that loops', 'Agent loops, retries, approval flows',
   {'title': 'The agent loop', 'steps': [{'title': 'Read the task'}, {'title': 'Plan and edit the code'}, {'title': 'Run the tests'}, {'title': 'Do the tests pass?', 'kind': 'decision', 'yes': 'Yes', 'no': 'No, retry'}, {'title': 'Open a pull request'}]}),
  ('donut', 'Composition', 'Donut', 'Shares of one whole', 'Parts of a total (2-5)',
-  {'title': 'Where the tokens go', 'center': {'value': '100%', 'label': 'of a session'}, 'parts': [{'label': 'Reading files', 'value': '48%', 'pct': 48}, {'label': 'Tool output', 'value': '27%', 'pct': 27}, {'label': 'Your messages', 'value': '15%', 'pct': 15}, {'label': 'Answers', 'value': '10%', 'pct': 10}]}),
+  {'title': 'Where the tokens go', 'center': {'value': '48%', 'label': 'reading files'}, 'parts': [{'label': 'Reading files', 'value': '48%', 'pct': 48}, {'label': 'Tool output', 'value': '27%', 'pct': 27}, {'label': 'Your messages', 'value': '15%', 'pct': 15}, {'label': 'Answers', 'value': '10%', 'pct': 10}]}),
  ('waffle', 'Composition', 'Waffle / pictogram', '100 squares or icons, one per percent', 'A share people can count',
   {'title': 'How many teams ship with AI review', 'icon': 'users', 'parts': [{'label': 'Use AI review on every PR', 'value': '38%', 'pct': 38}, {'label': 'Use it sometimes', 'value': '41%', 'pct': 41}]}),
  ('treemap', 'Composition', 'Treemap', 'Rectangles sized by share', 'Many parts of a whole, largest first',

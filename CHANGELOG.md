@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.3.1
+
+Full review of the app and every sample asset; fixes for what it found.
+
+- **Slope chart**: the fill-the-slide step ignored straight SVG lines (a 0px-wide box), scaled the chart 1.28x and pushed its axes through the brand pill. Lines now count; the scale fits the data range, and the two moments are named over their axes instead of in a colour legend that did not match the row colours.
+- **Flowchart**: the loop label ("No, retry") sits beside the dotted return line, not on it.
+- **Donut**: a fourth slice no longer repeats the first slice's colour; the sample centre shows the largest share.
+- **Reel cover (number)**: the headline is never printed again under the ring (case and punctuation ignored when comparing).
+- **Thumbnail (versus)**: both halves have the same height, and neither column's bullets run under the VS seal.
+- **Samples**: parallel sample builds could claim the same job folder and abort; job folders are now claimed atomically. `studio_jobs.py reelcovers thumbs` rebuilds the Reel cover and thumbnail samples; the walkthrough sample is the real poster frame.
+- **App on phones**: the navigation is one sticky, scrollable row instead of five stacked rows, media tabs scroll instead of wrapping, and no page scrolls sideways at 375px.
+
 ## 3.3.0
 
 - **Gallery-first Design Studio**: the home page is one filterable gallery of all 66 designs across GIF, carousel, Reel, thumbnails and walkthroughs, with media tabs, categories, search and best-fit ranking for your source. Cards play the real motion on hover (19 small MP4 previews, 1 MB in total). A side panel gives the ID, why it fits, and an action: prepare a request, edit and render, render covers or thumbnails, or open the walkthrough builder.

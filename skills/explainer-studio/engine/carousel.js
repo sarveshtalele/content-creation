@@ -397,7 +397,7 @@ TYPES.arch = (root, s) => { const y = heading(root, 'ar-h', s.title) + 24; rende
 function paintedRects(wrap) {
   const rs = [], rg = document.createRange();
   for (const e of wrap.querySelectorAll('*')) {
-    const cs = getComputedStyle(e), r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2 || (r.width >= W - 8 && r.height >= H - 8)) continue;
+    const cs = getComputedStyle(e), r = e.getBoundingClientRect(); if ((r.width < 2 && r.height < 2) || (r.width >= W - 8 && r.height >= H - 8)) continue;
     const painted = e instanceof SVGElement ? /^(circle|path|rect|ellipse|line|polygon|polyline|image)$/.test(e.tagName) : (e.tagName === 'IMG' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') || parseFloat(cs.borderTopWidth) > 0 || cs.backgroundImage !== 'none');
     if (painted) rs.push(r);
     for (const n of e.childNodes) if (n.nodeType === 3 && n.textContent.trim()) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width > 2) rs.push(q); }
