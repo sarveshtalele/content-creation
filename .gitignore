@@ -10,3 +10,4 @@ node_modules
 skills/explainer-studio/tests/_studio_home/
 /out/
 dist/
+outputs/

@@ -50,4 +50,11 @@ subprocess.run([sys.executable, os.path.join(SK, '..', '..', 'install.py'), 'zip
 zp = os.path.join(SK, '..', '..', 'dist', 'explainer-studio-plugin.zip'); names = zipfile.ZipFile(zp).namelist()
 assert '.claude-plugin/plugin.json' in names and '.codex-plugin/plugin.json' in names and 'skills/explainer-studio/SKILL.md' in names and 'commands/explainer.md' in names
 assert not any('node_modules' in n or '__pycache__' in n or '.film-' in n for n in names)
+# --- finished files are copied to the outputs folder
+import studio as ST
+W = tempfile.mkdtemp(); os.makedirs(os.path.join(W, 'out', 'carousel')); os.makedirs(os.path.join(W, 'out', 'review'))
+for f in ('out/a.gif', 'out/a.mp4', 'out/a.pdf', 'out/carousel/a-01.png', 'out/eval.json', 'out/review/x.png'): open(os.path.join(W, f), 'wb').write(b'x')
+os.environ['EXPLAINER_OUTPUTS'] = os.path.join(W, 'outputs'); od = ST.publish_outputs(W, 'demo')
+got = sorted(os.path.relpath(os.path.join(r, f), od).replace(os.sep, '/') for r, _, fs in os.walk(od) for f in fs)
+assert got == ['a.gif', 'a.mp4', 'a.pdf', 'carousel/a-01.png'], got
 print('CONTENT TESTS OK')

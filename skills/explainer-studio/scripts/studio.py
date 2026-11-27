@@ -175,6 +175,20 @@ def write_srt(chunks, path):
 
 def has_claude(work):
     return bool(re.search(r'\bclaude\b', open(os.path.join(work, 'source_full.txt'), encoding='utf-8').read(), re.I))
+OUT_EXT = ('.png', '.jpg', '.gif', '.mp4', '.pdf', '.txt', '.srt')
+def outputs_root(): return os.path.abspath(os.environ.get('EXPLAINER_OUTPUTS') or os.path.join(os.getcwd(), 'outputs'))
+def publish_outputs(work, slug):
+    """Copy every finished deliverable (GIF, Reel, PDF, PNG slides, covers, post text, subtitles) into outputs/<slug>/ so the person finds all results in one folder.
+    The folder is ./outputs in the directory the command ran from (set EXPLAINER_OUTPUTS to use another). Returns the folder, or '' when nothing was built."""
+    src = os.path.join(work, 'out')
+    if not os.path.isdir(src): return ''
+    dst = os.path.join(outputs_root(), slug); n = 0
+    for root, dirs, files in os.walk(src):
+        dirs[:] = [d for d in dirs if d not in ('review',)]
+        for f in files:
+            if not f.lower().endswith(OUT_EXT) or f in ('asr.json',): continue
+            rel = os.path.relpath(os.path.join(root, f), src); to = os.path.join(dst, rel); os.makedirs(os.path.dirname(to), exist_ok=True); shutil.copy2(os.path.join(root, f), to); n += 1
+    return dst if n else ''
 def build_reel(work, story, lib, env, out, slug):
     b = brand(); t0 = time.time(); print('[reel] voice...'); spoken, dur, wavs = tts(story, work, lib, env)
     tails, end_hold = {}, 2.8
@@ -359,7 +373,8 @@ def build(a):
         if 'reel' in arts: res['reel'] = build_reel(work, story, lib, env, out, slug)
     bj = os.path.join(out, 'build.json'); prev = load(bj) if os.path.exists(bj) else {'artifacts': {}}
     prev['artifacts'].update({k: v for k, v in res.items() if v}); prev['eval'] = {k: rep[k] for k in ('claim_support', 'overlap_mean', 'recall@3', 'precision@3', 'mrr', 'coverage', 'gif_text_support', 'gif_coverage', 'pass')}; dump(prev, bj)
-    print('BUILD COMPLETE' if all(res.values()) else 'BUILD INCOMPLETE (see errors above)'); [print(' ', k, '->', (v or {}).get('file', v) if isinstance(v, dict) else v) for k, v in res.items()]; print('  accuracy report -> out/eval.md'); return 0 if all(res.values()) else 1
+    od = publish_outputs(work, slug) if any(res.values()) else ''
+    print('BUILD COMPLETE' if all(res.values()) else 'BUILD INCOMPLETE (see errors above)'); [print(' ', k, '->', (v or {}).get('file', v) if isinstance(v, dict) else v) for k, v in res.items()]; print('  accuracy report -> out/eval.md'); od and print('  ALL OUTPUTS -> ' + od); return 0 if all(res.values()) else 1
 
 
 # ───────────────────────── review gate ─────────────────────────

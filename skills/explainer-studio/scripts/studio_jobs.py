@@ -37,6 +37,10 @@ def render(jobs_root, items, closing=None, theme='sky', mode='single', fmt='imag
             if fmt in ('images', 'both'): files += [os.path.join(out, 'carousel', f) for f in pngs]
             if fmt in ('pdf', 'both'): files += [os.path.join(out, f) for f in os.listdir(out) if f.endswith('.pdf')]
             files += [os.path.join(out, f) for f in os.listdir(out) if f.endswith('comment.txt')]
+    if ok and files:                                    # the finished files also go to the shared outputs folder (see studio.outputs_root)
+        import studio as _ST
+        od = os.path.join(_ST.outputs_root(), story['meta']['slug']); os.makedirs(od, exist_ok=True)
+        for f in files: shutil.copy2(f, os.path.join(od, os.path.basename(f)))
     return {'ok': ok, 'log': log, 'files': files, 'job': job}
 
 
