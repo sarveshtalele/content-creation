@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0
+
+- **GIFs show the whole diagram from the first frame**; the only motion is flow (dots on connectors, pulses, belts, spins). Every repeating motion snaps to a period that divides the loop, so GIFs loop seamlessly with no fade. New end-to-end checks: frame 0 matches the finished still, and the loop seam differs by less than 4% of pixels.
+- **Animated chart GIF motion**: marching dashes on lines, a travelling brightness wave on ribbons and wedges, pulsing dots.
+- Merged the outputs-folder change from `main`: every build is also copied to `./outputs/<slug>/`.
+
 ## 3.0.0
 
 - **Animated chart GIF** (`gif.template: chart`): any of the 21 charts as a GIF, with blocks revealed in reading order, lines tracing in and shapes fading in. Sankey layout: end nodes share the last column, columns are ordered by their inputs, ribbons are filled bands that do not cross, and labels have a halo.

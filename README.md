@@ -7,7 +7,7 @@
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.0.0-D97757)
+![Version](https://img.shields.io/badge/version-3.1.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
@@ -42,7 +42,7 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 | Media | Output | Highlights |
 |---|---|---|
-| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 16 diagram templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid…) plus an **animated chart** template that turns any of the 21 charts into a GIF, all **ranked for your content**; you choose |
+| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 16 templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid… and an **animated chart** template for any of the 21 charts), **ranked for your content**; you choose. The complete diagram is on screen from the first frame; only the flow moves (dots on connectors, pulses, belts), in a seamless loop |
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |

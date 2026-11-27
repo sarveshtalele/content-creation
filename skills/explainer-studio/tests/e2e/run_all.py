@@ -20,6 +20,18 @@ def project(work, fixture, story=None):
     if story is not None: json.dump(story, open(os.path.join(work, 'story.json'), 'w', encoding='utf-8'), indent=1)
     else: shutil.copy(os.path.join(FX, fixture + '.story.json'), os.path.join(work, 'story.json'))
 
+def gif_motion(work):
+    """v3.1 GIF rules: the whole diagram is on screen at frame 0 (it matches the still PNG), and the last frame flows into the first."""
+    from PIL import Image, ImageChops
+    g = next(iter(glob.glob(os.path.join(work, 'out', '*.gif'))), None); png = next(iter(glob.glob(os.path.join(work, 'out', '*-linkedin.png'))), None)
+    if not g or not png: return {'complete_at_frame_0': False, 'seamless_loop': False}
+    im = Image.open(g); n = getattr(im, 'n_frames', 1); im.seek(0); f0 = im.convert('RGB'); im.seek(n - 1); fl = im.convert('RGB')
+    still = Image.open(png).convert('RGB').resize(f0.size)
+    def diff(a, b):
+        d = ImageChops.difference(a, b).convert('L').point(lambda p: 255 if p > 48 else 0); return 100 * sum(d.histogram()[255:]) / (d.width * d.height)
+    a, b = diff(f0, still), diff(f0, fl)
+    return {'frames': n, 'frame0_vs_still_pct': round(a, 2), 'first_vs_last_pct': round(b, 2), 'complete_at_frame_0': a < 6, 'seamless_loop': b < 4}
+
 def gates(work):
     rc, log, _ = sh([PY, ST, 'review', work], 600)
     m = re.search(r'(\d+)%', log); fails = [l.strip() for l in log.splitlines() if re.search(r'FAIL|false', l)][:8]
@@ -43,7 +55,8 @@ def run(out, only):
     if 'gif' in only:
         for fx in ('funnel', 'https', 'chart'):
             w = os.path.join(wk, 'gif-' + fx); project(w, fx); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'gif'])
-            g = gates(w); rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100, s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', 'review/*.png']), **g)
+            g = gates(w); m = gif_motion(w)
+            rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100 and m['complete_at_frame_0'] and m['seamless_loop'], s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', 'review/*.png']), motion=m, **g)
     if 'carousel' in only:
         w = os.path.join(wk, 'carousel'); project(w, 'carousel'); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'carousel', '--format', 'both'])
         rc2, e2e, _ = sh([PY, ST, 'e2e', w], 900); g = gates(w)
@@ -76,7 +89,8 @@ def report(out, R):
     L = ['# explainer-studio: end-to-end showcase', '', f"Run {time.strftime('%Y-%m-%d %H:%M')} on this computer. Every file below was produced by the real engine; every check is automatic.", '',
          '| Media | Result | Time | Review gates | Notes |', '|---|---|---|---|---|']
     for r in R:
-        note = '; '.join(x for x in [r.get('speech', ''), r.get('verified', ''), ' / '.join(r.get('e2e') or [])[:160]] if x)
+        mo = r.get('motion'); mtxt = f"frame 0 vs still {mo['frame0_vs_still_pct']}%, loop seam {mo['first_vs_last_pct']}%" if mo and 'frames' in mo else ''
+        note = '; '.join(x for x in [mtxt, r.get('speech', ''), r.get('verified', ''), ' / '.join(r.get('e2e') or [])[:160]] if x)
         L.append(f"| {r['media']} | {'PASS' if r['ok'] else '**FAIL**'} | {r['seconds']} s | {'' if r.get('review_pct') is None else str(r['review_pct']) + '%'} | {note} |")
     for r in R:
         L += ['', f"## {r['media']}", ''] + [f"- [{os.path.basename(f)}]({f})" for f in r['files']]

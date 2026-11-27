@@ -2,7 +2,7 @@
 // Glowing beads fall through from the opening; at every stage some peel away and drop out in proportion to the loss, so the narrowing is felt as motion.
 // Text stays in flat cards on the right, tied to the drum by a leader line (the 3D is decoration, as in the other 3D templates).
 import { C, E, box, tx, enter, seg, eo, icon, fitSize, measure, svgNS, circ } from './kit.js';
-import { PAL, scene, header, footer, finish, reveal, TOP, BOTTOM } from './gif_common.js';
+import { PAL, scene, header, footer, finish, reveal, TOP, BOTTOM, per } from './gif_common.js';
 import { mix } from './gif_3d.js';
 
 const el = (p, n, a) => { const e = document.createElementNS(svgNS, n); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
@@ -62,7 +62,7 @@ export function buildFunnel(stage, D) {
     const f = hash(j, 7) * 100; let fate = n - 1; for (let i = 0; i < n; i++) if (f > cum[i]) { fate = Math.max(0, i - 1); break; }
     beads.push({ c: circ(S.svg, -50, -50, 9, { fill: '#fffbe6', stroke: C.clay, w: 3 }), fate, ph: j / NB, sx: (hash(j, 3) - .5) * .8, dir: hash(j, 11) > .5 ? 1 : -1 });
   }
-  const yTop = Y0 - 20, yBot = YEND + 28, CYCLE = 3.6;
+  const yTop = Y0 - 20, yBot = YEND + 28, CYCLE = per(S, 3.6);
   S.A.push(u => {
     const run = u - startT;
     beads.forEach(b => {

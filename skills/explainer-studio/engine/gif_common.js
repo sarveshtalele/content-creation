@@ -9,7 +9,7 @@ export const PAL = {
 };
 export function scene(stage, D) {
   const root = E(stage, 'scene'); root.style.display = 'block';
-  const S = { D, g: D.gif, root, A: [], B: [], T: 0 };
+  const S = { D, g: D.gif, root, A: [], B: [], T: 0, LOOP: Math.max(6, Math.ceil(D.gif.hold ?? 6)) };   // one seamless loop; every repeating motion divides it
   // (the drifting grid and orbs were removed: they made the GIF 640px and 6 MB, against 900px and 4.6 MB without them)
   S.svg = svgLayer(root, W, H);
   S.at = t => { S.T = Math.max(S.T, t); return t; };
@@ -38,13 +38,14 @@ export function footer(S) {
   const bar = cta(S.root, 'gif-cta', S.D.brand, { x: 90, y: 1240, w: 900, h: 78, size: 26, bw: 4 });
   S.A.push(u => { bar.style.opacity = String(eo(seg(u, .25, .8))); });
 }
-export function finish(S, hold = 5.4) {
-  const DUR = Math.round((S.T + (S.g.hold ?? hold)) * 10) / 10;
-  const t0 = S.T;   // floating starts once the last reveal has finished
-  return { DUR, render(u) { S.A.forEach(f => f(u));
-      const k = clamp((u - t0) / 1.2);
-      S.B.forEach((b, i) => { b.style.translate = `0px ${Math.sin(u * 1.5 + i * 1.3) * 3.2 * k}px`; });
-      S.root.style.opacity = String(Math.min(1, 1 - seg(u, DUR - FADE, DUR))); } };
+// v3.1: the GIF shows the complete diagram from the first frame; the only motion is flow (dots on connectors, pulses, belts, spins).
+// Every template still builds its reveal timeline, but rendering starts where that timeline ends (t0), and lasts exactly one loop.
+export const per = (S, p) => S.LOOP / Math.max(1, Math.round(S.LOOP / p));   // the nearest period that divides the loop, so frame N meets frame 0
+export function finish(S) {
+  const t0 = Math.max(S.T, 1.2) + .05, DUR = S.LOOP, fp = per(S, 4.2);   // header and CTA finish entering by 1 s
+  return { DUR, render(u) { const v = t0 + u; S.A.forEach(f => f(v));
+      S.B.forEach((b, i) => { b.style.translate = `0px ${(Math.sin(2 * Math.PI * u / fp + i * 1.3) * 3.2).toFixed(2)}px`; });
+      S.root.style.opacity = '1'; } };
 }
 export const layer = S => svgLayer(S.root, W, H);
 export function reveal(S, el, t0, o = {}) { S.at(t0 + (o.d ?? .45)); S.A.push(u => enter(el, u, t0, { dy: 14, sc: .95, pop: true, d: .45, ...o })); }
@@ -54,7 +55,7 @@ export function flow(S, d, color, { t0, dur = .55, w = 4.5, head = 15, svg, dot 
   svg = svg || S.svg;   // pass a layer created after a filled band so the arrow shows above the band but below the nodes
   const p = path(svg, d, { stroke: color, w }), th = tri(svg, color), L = p.getTotalLength();
   p.style.opacity = '0';
-  const n = Math.max(1, Math.round(L / 230)), speed = clamp(L * .6, 55, 240);
+  const n = Math.max(1, Math.round(L / 230)), speed = L / per(S, L / clamp(L * .6, 55, 240));   // one lap divides the loop
   const dots = Array.from({ length: n }, () => { const c = circ(svg, -50, -50, dot, { fill: color, stroke: C.bg, w: dot > 5 ? 2.5 : 2 }); c.style.opacity = '0'; return c; });
   S.at(t0 + dur);
   S.A.push(u => {

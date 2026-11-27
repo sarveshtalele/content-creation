@@ -2,6 +2,9 @@
 
 All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (below the title) and y=1216 (above the footer). Run `python3 scripts/studio.py pick DIR` to get the best fit and a fill-in skeleton, or `studio.py spec` for every limit.
 
+
+**Motion rule (v3.1):** every GIF shows the complete diagram from the first frame. The only motion is flow (dots travelling along connectors, pulses, belts, spins), and each GIF is exactly one seamless loop of at least 6 seconds. `tests/e2e/run_all.py` checks both: frame 0 matches the finished still, and the last frame flows into the first.
+
 | Template | Shape of the source | Block in story.json |
 |---|---|---|
 | `pipeline` | ordered steps, workflow | `gif.pipeline{start, stages[2-4]{label, group, nodes[2-4]}, result}` |
@@ -18,7 +21,7 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `tower` | a building of floors, each room a small scene | `gif.tower{hub{title}, floors[3-5]{title, sub, icon, group, scene}}` (top floor first) |
 | `skyline` | a ranking or size comparison | `gif.skyline{buildings[3-5]{title, sub, value, size 1-10, icon, group}}` (value is shown on the roof, e.g. `82%`) |
 | `conveyor` | items passing through gates | `gif.conveyor{tally, gates[3-4]{title, sub, icon, group, stat{value, pct}}}` (first gate first; `stat` is the share that passes the gate, taken from the source, e.g. `88%` / `88`) |
-| `chart` | any chart from the carousel library, animated (blocks rise in order, lines draw, shapes fade) | `gif.chart{type, ...the fields of that chart slide (docs/CAROUSEL.md)}`; data charts need the source's figures |
+| `chart` | any chart from the carousel library, animated (marching dashes on lines, a travelling brightness wave on ribbons and wedges, pulsing dots) | `gif.chart{type, ...the fields of that chart slide (docs/CAROUSEL.md)}`; data charts need the source's figures |
 | `funnel` | stages that narrow (conversion, filtering) | `gif.funnel{stages[3-5]{title, sub, value, pct, icon, group}}`; pct is the share of the first stage |
 
 `group` is a colour: `blue`, `green`, `clay` or `sand`. Icons come from `studio.py spec --icons`. Every text must reuse the source's words (checked).

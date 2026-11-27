@@ -2,7 +2,7 @@
 // boxes ride the belt, turn the gate's colour when they pass, and the share that fails drops off the belt at that gate. Everything is a pure function of time.
 // Dataviz choices (animated-infographic practice): staged reveal, count-up numbers, progress ring + bar for the same value, motion that encodes data (who drops off), one accent per gate.
 import { C, E, box, tx, enter, seg, eo, icon, measure } from './kit.js';
-import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP } from './gif_common.js';
+import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP, per } from './gif_common.js';
 import { mix, uniformSub } from './gif_3d.js';
 import { svgNS, roundPts } from './kit.js';
 
@@ -32,7 +32,7 @@ export function buildConveyor(stage, D) {
   poly(belt, [sa, ea, eb, sb], '#F5923E', '#C8651F');
   const rollers = []; for (let i = 0; i < 34; i++) rollers.push(el(belt, 'line', { stroke: '#FFC48A', 'stroke-width': 3, 'stroke-linecap': 'round' }));
   const ROLL = 26;
-  S.A.push(u => { belt.style.opacity = String(seg(u, .2, .7)); rollers.forEach((r, i) => { const s = ((i * ROLL + u * 34) % (34 * ROLL)) / (34 * ROLL), p = at(s); r.setAttribute('x1', p[0] + O[0] * .94); r.setAttribute('y1', p[1] + O[1] * .94); r.setAttribute('x2', p[0] - O[0] * .94); r.setAttribute('y2', p[1] - O[1] * .94); }); });
+  S.A.push(u => { belt.style.opacity = String(seg(u, .2, .7)); rollers.forEach((r, i) => { const s = ((i * ROLL + u * 34 * ROLL / per(S, ROLL)) % (34 * ROLL)) / (34 * ROLL), p = at(s); r.setAttribute('x1', p[0] + O[0] * .94); r.setAttribute('y1', p[1] + O[1] * .94); r.setAttribute('x2', p[0] - O[0] * .94); r.setAttribute('y2', p[1] - O[1] * .94); }); });
   S.at(.7);
   // light curtains at the gates (pulse when a box passes), drawn under the boxes
   const curtains = G.map((gt, i) => { const p = at(fr(i)), bt = [p[0] + O[0] + 4, p[1] + O[1] + 6], ft = [p[0] - O[0] - 4, p[1] - O[1] + 10], cu = poly(S.svg, [bt, ft, [ft[0], ft[1] - POST], [bt[0], bt[1] - POST]], PAL[gt.group].bd, null); cu.style.opacity = '0'; return cu; });
@@ -44,12 +44,12 @@ export function buildConveyor(stage, D) {
   S.A.push(u => {
     pulse.fill(0);
     bx.forEach((g, j) => {
-      const f = (((u * SPD) + j / NCUBE) % 1), pos = .04 + f * .92, rk = RANK[j], bad = failAt(rk), rej = bad >= 0 && pos > fr(bad);
+      const f = (((u / per(S, 1 / SPD)) + j / NCUBE) % 1), pos = .04 + f * .92, rk = RANK[j], bad = failAt(rk), rej = bad >= 0 && pos > fr(bad);
       const ps = G.filter((_, i) => pos > fr(i) && (bad < 0 || i < bad)).length;                       // gates passed (a failed box never passes its failing gate)
       G.forEach((_, i) => { pulse[i] = Math.max(pulse[i], Math.exp(-Math.pow((pos - fr(i)) / .035, 2))); });
       const edge = Math.min(1, f * 14) * Math.min(1, (1 - f) * 14) * seg(u, .9, 1.3);
       const m = marks[j]; m.replaceChildren(); m.style.opacity = '0';
-      if (!rej) { const p = at(pos); cube(g, [p[0], p[1] - 20 - Math.sin((u * 2 + j) * 3) * 1.2], ps ? colors[ps - 1] : start, 24, edge); return; }
+      if (!rej) { const p = at(pos); cube(g, [p[0], p[1] - 20 - Math.sin(2 * Math.PI * u / per(S, 1.05) + j * 6) * 1.2], ps ? colors[ps - 1] : start, 24, edge); return; }
       const k = seg(pos, fr(bad), fr(bad) + .075), q = at(fr(bad) + k * .075), fall = k * k;                // falls off the front edge: slides out, drops, fades
       cube(g, [q[0] - 54 * k, q[1] - 20 + 34 * k + 120 * fall], BAD, 24 * (1 - .25 * k), edge * (1 - seg(k, .55, 1)));
       const kk = seg(k, 0, .35) * (1 - seg(k, .6, 1)); if (kk > 0) { const c = at(fr(bad)); m.style.opacity = String(kk); el(m, 'circle', { cx: c[0], cy: c[1] - 44, r: 15, fill: '#fff', stroke: BAD, 'stroke-width': 3.5 }); el(m, 'path', { d: `M${c[0] - 6} ${c[1] - 50} l12 12 M${c[0] + 6} ${c[1] - 50} l-12 12`, stroke: BAD, 'stroke-width': 3.5, 'stroke-linecap': 'round', fill: 'none' }); }

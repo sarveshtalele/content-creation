@@ -1,8 +1,8 @@
 // Template "chart": any of the 21 chart slides (engine/charts.js) as an animated GIF. The chart is drawn once in the GIF frame, then revealed:
 // every block fades and rises in reading order (staggering), stroked lines draw themselves (path tracing), filled shapes fade in, and the
-// finished chart holds before the loop. gif.chart = { type, ...the same fields as the carousel slide } (validated by the same limits).
+// finished chart loops: since v3.1 the whole chart is visible from frame 0 and only the flow moves. gif.chart = { type, ...the same fields as the carousel slide } (validated by the same limits).
 import { C, E, enter, draw, seg, eo, fitSize, measure } from './kit.js';
-import { PAL, scene, header, footer, finish, TOP, BOTTOM } from './gif_common.js';
+import { PAL, scene, header, footer, finish, per, TOP, BOTTOM } from './gif_common.js';
 import { charts } from './charts.js';
 
 const GROUPS = ['blue', 'clay', 'green'];
@@ -18,14 +18,16 @@ export function buildChart(stage, D) {
   const marks = svgs.flatMap(s => [...s.querySelectorAll('path,circle,ellipse')]);
   const pos = e => { const r = e.getBoundingClientRect(); return r.top * 2 + r.left * .4; };
   const all = [...parts.map(e => ({ e, k: 'div', p: pos(e) })), ...marks.map(e => ({ e, k: e.tagName === 'path' && e.getAttribute('fill') === 'none' && !e.getAttribute('stroke-dasharray') ? 'line' : 'shape', p: pos(e) }))].sort((a, b) => a.p - b.p);
-  const t0 = .7, step = Math.min(.09, 3.2 / Math.max(1, all.length));
+  // flow-only motion on the finished chart: marching dashes on lines, a travelling brightness wave on ribbons and wedges, pulses on dots
+  const P1 = per(S, 1.5), P2 = per(S, 3);
   all.forEach((it, i) => {
-    const t = t0 + i * step;
-    if (it.k === 'div') S.A.push(u => enter(it.e, u, t, { dy: 18, sc: .96, d: .45 }));
-    else if (it.k === 'line') { it.e.style.opacity = '0'; S.A.push(u => draw(it.e, eo(seg(u, t, t + .6)))); }
-    else { it.e.style.opacity = '0'; S.A.push(u => { it.e.style.opacity = String(eo(seg(u, t, t + .4))); }); }
+    const e = it.e, ph = i / Math.max(1, all.length);
+    if (it.k === 'line') { const L = e.getTotalLength ? e.getTotalLength() : 0; if (L < 40) return; const o = e.cloneNode(); o.setAttribute('stroke', '#fff'); o.setAttribute('stroke-width', Math.max(2, (+e.getAttribute('stroke-width') || 3) * .45)); o.setAttribute('stroke-dasharray', '6 22'); o.setAttribute('opacity', '.75'); e.after(o);
+      S.A.push(u => o.setAttribute('stroke-dashoffset', String((-(u / P1) * 28) % 28))); }
+    else if (it.k === 'shape' && e.tagName === 'path') { const base = +(e.getAttribute('fill-opacity') || 1); if (base >= 1) return;
+      S.A.push(u => { const w = .5 + .5 * Math.sin(2 * Math.PI * (u / P2 - ph)); e.setAttribute('fill-opacity', (base + .2 * w).toFixed(3)); }); }
+    else if (e.tagName === 'circle') { e.style.transformBox = 'fill-box'; e.style.transformOrigin = 'center'; S.A.push(u => { e.style.transform = `scale(${(1 + .12 * Math.max(0, Math.sin(2 * Math.PI * (u / P2 - ph)))).toFixed(3)})`; }); }
   });
-  S.at(t0 + all.length * step + .8);
   footer(S);
   return finish(S);
 }

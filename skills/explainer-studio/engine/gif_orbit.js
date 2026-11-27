@@ -1,6 +1,6 @@
 // Template "orbit": a glossy core with three tilted rings (CSS 3D) and 4-6 flat cards around it; flowing-dot arrows run from the core to every card.
 import { C, E, box, tx, enter, seg, eo, fitSize, measure } from './kit.js';
-import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP, BOTTOM } from './gif_common.js';
+import { PAL, scene, header, footer, finish, reveal, flow, node, layer, TOP, BOTTOM, per } from './gif_common.js';
 import { rayRect, mix, uniformSub } from './gif_3d.js';
 
 export function buildOrbit(stage, D) {
@@ -24,7 +24,7 @@ export function buildOrbit(stage, D) {
   if (sh) tx(core, 'hub-s', O.hub.sub, { x: 32, y: y0 + th + 5, w: tw, h: sh + 6, size: ss, weight: 600, color: '#FFF3EA', align: 'center', wrap: true, lh: 1.1 });
   S.A.push(u => {
     enter(core, u, .4, { sc: .7, dy: 0, pop: true, d: .7 });
-    rings.forEach(({ w, spin, k }) => { w.style.opacity = String(seg(u, .9 + k * .15, 1.4 + k * .15)); spin.style.transform = `rotate(${(u * 70 + k * 120) % 360}deg)`; });
+    rings.forEach(({ w, spin, k }) => { w.style.opacity = String(seg(u, .9 + k * .15, 1.4 + k * .15)); spin.style.transform = `rotate(${(u * 360 / per(S, 5.1) + k * 120) % 360}deg)`; });
   });
   S.at(1.8);
   const cs = uniformSub(N, { w: CW - 28, h: CH - 62 - 10, max: 20, min: 15 }); let t = 1.9;
