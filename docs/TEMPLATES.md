@@ -21,6 +21,7 @@ All templates draw on a fixed 1080x1350 canvas. Content lives between y=150 (bel
 | `tower` | a building of floors, each room a small scene | `gif.tower{hub{title}, floors[3-5]{title, sub, icon, group, scene}}` (top floor first) |
 | `skyline` | a ranking or size comparison | `gif.skyline{buildings[3-5]{title, sub, value, size 1-10, icon, group}}` (value is shown on the roof, e.g. `82%`) |
 | `conveyor` | items passing through gates | `gif.conveyor{tally, gates[3-4]{title, sub, icon, group, stat{value, pct}}}` (first gate first; `stat` is the share that passes the gate, taken from the source, e.g. `88%` / `88`) |
+| `arch` | an architecture diagram of the whole post in one of four styles (`sketch` Excalidraw-like, `cloud` reference architecture, `flow` swimlane flowchart, `sequence` diagram); dots flow along every connector | `gif.arch{style, ...}` (see below) |
 | `chart` | any chart from the carousel library, animated (marching dashes on lines, a travelling brightness wave on ribbons and wedges, pulsing dots) | `gif.chart{type, ...the fields of that chart slide (docs/CAROUSEL.md)}`; data charts need the source's figures |
 | `funnel` | stages that narrow (conversion, filtering) | `gif.funnel{stages[3-5]{title, sub, value, pct, icon, group}}`; pct is the share of the first stage |
 
@@ -58,3 +59,15 @@ The picker favours the 2D templates unless the source clearly describes anatomy 
 Design rules that keep output consistent: fixed canvas, text sized from content length with a floor of 14px, boxes sized to content (no large empty areas), one arrow per relationship, dots only on arrows.
 
 To change the CTA, avatar or hook on an existing diagram, see [CUSTOMIZE.md](CUSTOMIZE.md).
+
+
+## Architecture diagrams (`arch`, GIF template and carousel slide)
+
+| Style | Fields | Best for |
+|---|---|---|
+| `sketch` | `zones[1-5]{title}`, `nodes[2-14]{id, title, sub?, icon?, zone}`, `edges[1-18]{from, to, label?, dashed?}` | a whiteboard-style explanation (Excalifont, hand-drawn strokes, hachure fills) |
+| `cloud` | same as sketch | application and system architecture: zone bands, service cards, legend |
+| `flow` | `lanes[1-4]{title}`, `steps[3-10]{id, title, lane, kind step\|decision\|start\|end}`, `edges?[{from, to, label?}]` | processes and agent loops; a link back to an earlier step loops on the right, dashed |
+| `sequence` | `actors[2-5]{title, icon?}`, `messages[2-10]{from, to (actor index), text, reply?}` | protocols and request journeys; replies are dashed |
+
+Zones read top to bottom (client → edge → services → data); at most 6 nodes per zone. Links between zones run vertically, links inside a zone run under the cards, and labels sit on the longest segment, so text never covers a card. Samples: `studio/samples/arch-*.jpg`.

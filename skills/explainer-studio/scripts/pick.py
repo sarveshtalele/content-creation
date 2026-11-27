@@ -13,6 +13,7 @@ def pick(full, meta=None):
     numbered = _c(r'^\s*\d+[.)]\s', full)
     lists3 = _c(r',\s+and\s', t)                      # "X, Y, and Z" enumerations: what a catalogue looks like
     s = {
+      'arch': (7 * _c(r'\b(architecture|system design|microservices?|services|database|gateway|frontend|backend|load balancer|retriever|vector (?:index|store|db)|message queue|document store|components?)\b', t) + 1 * _c(r'\b(api|cache|queue|server|client)\b', t)) * k * .4,
       'pipeline': (4 * strong + weak + 6 * numbered) * k,
       'lanes': 5 * _c(r'\b(layer|layers|stack|tier|tiers|architecture|ecosystem|platform|infrastructure|foundation|runtime)\b', t) * k,
       'exploded': (7 * _c(r'\b(anatomy|teardown|exploded|under the hood|inside|breakdown|components? of|made of|peel|layers? of)\b', t) + 3 * _c(r'\b(layer|layers|stack|stacked)\b', t)) * k * .6,
@@ -33,13 +34,14 @@ def pick(full, meta=None):
     best = max(s, key=lambda a: (s[a], a == 'hub'))
     if s[best] < 12: best = 'hub'
     return {'template': best, 'scores': s, 'why': WHY[best]}
-WHY = {'chart': 'one chart (sankey, donut, line, radar, treemap...) drawn and revealed as a GIF', 'grid': 'a card grid poster for a list of 4, 6 or 9 ideas', 'funnel': 'the source describes stages that narrow, with shares or counts', 'pipeline': 'the source describes ordered steps or a flow', 'lanes': 'the source describes layers or a stack', 'columns': 'the source lists things grouped by category', 'hub': 'one central thing made of named parts (files, settings, components)', 'ecosystem': 'one core that fans out into several sections, each with parts', 'exploded': 'a thing made of layers or parts, shown pulled apart in 3D', 'isoflow': 'an ordered flow that reads well across 3D slabs', 'orbit': 'a core with 4-6 things around it (integrations, partners, parts)', 'stairs': 'levels, stages or a progression that climbs', 'tower': 'a building of floors or layers, each room showing a small scene', 'skyline': 'a ranking or size comparison shown as city towers', 'conveyor': 'items passing through checks, gates or hand-offs on a belt', 'framework': 'a framework of 6-9 parts, each easy to show as a small diagram, plus takeaways'}
+WHY = {'arch': 'how the whole system fits together: a sketch, cloud architecture, swimlane flowchart or sequence diagram', 'chart': 'one chart (sankey, donut, line, radar, treemap...) drawn and revealed as a GIF', 'grid': 'a card grid poster for a list of 4, 6 or 9 ideas', 'funnel': 'the source describes stages that narrow, with shares or counts', 'pipeline': 'the source describes ordered steps or a flow', 'lanes': 'the source describes layers or a stack', 'columns': 'the source lists things grouped by category', 'hub': 'one central thing made of named parts (files, settings, components)', 'ecosystem': 'one core that fans out into several sections, each with parts', 'exploded': 'a thing made of layers or parts, shown pulled apart in 3D', 'isoflow': 'an ordered flow that reads well across 3D slabs', 'orbit': 'a core with 4-6 things around it (integrations, partners, parts)', 'stairs': 'levels, stages or a progression that climbs', 'tower': 'a building of floors or layers, each room showing a small scene', 'skyline': 'a ranking or size comparison shown as city towers', 'conveyor': 'items passing through checks, gates or hand-offs on a belt', 'framework': 'a framework of 6-9 parts, each easy to show as a small diagram, plus takeaways'}
 
 
 # Minimal fill-in skeletons, printed by `studio.py pick` so the agent writes only the content (no schema reading). "…" = your words from the source.
 _G = '"meta":{"title":"…","slug":"kebab-case"},"gif":{"template":"%s","title":"…","subtitle":"…",'
 _I = '{"title":"…","sub":"…"}'
 SKELETON = {
+ 'arch': _G % 'arch' + '"arch":{"style":"sketch|cloud|flow|sequence", sketch/cloud: "zones":[{"title":"…"} x1-5],"nodes":[{"id":"…","title":"…","sub":"…","icon":"icon","zone":0} x2-14],"edges":[{"from":"id","to":"id","label":"…"} x1-18]; flow: lanes+steps; sequence: actors+messages (docs/TEMPLATES.md)}}',
  'chart': _G % 'chart' + '"chart":{"type":"sankey|donut|line|radar|… (21 types)", …the fields of that chart slide in docs/CAROUSEL.md}}',
  'hub': _G % 'hub' + '"groups":{"blue":"…","green":"…","clay":"…"},"hub":{"title":"…","steps":["…","…"],"tagline":"…"},"cards":[{"title":"…","icon":"icon","group":"blue","body":"…"} x9]}',
  'columns': _G % 'columns' + '"hub":{"title":"…","tagline":"…"},"columns":[{"label":"…","icon":"icon","group":"blue","items":[{"title":"…","sub":"…","icon":"icon"} x2-3]} x3-4]}',

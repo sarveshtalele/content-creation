@@ -158,6 +158,33 @@ for _ty, _fam, _nm, _tag, _best, _smp in CHARTS:
     DESIGNS.append({'id': 'chart-' + _ty, 'group': 'chart', 'family': _fam, 'name': _nm, 'tag': _tag, 'blurb': _tag + '. Best for: ' + _best.lower() + '.', 'best_for': _best, 'theme': 'paper',
                     'fields': [T('title', 'Slide title', 60, 6), J()], 'sample': {'title': _smp['title'], 'data': {k: x for k, x in _smp.items() if k != 'title'}},
                     'build': (lambda ty: lambda v: ('slide', {'type': ty, 'title': v['title'], **v['data']}))(_ty)})
+# v3.1 architecture diagrams (engine/arch.js): one diagram for a whole post, in four styles
+ARCH = [
+ ('sketch', 'Whiteboard sketch', 'Excalidraw-style hand-drawn diagram', 'Explaining a system casually, blog posts, talks',
+  {'title': 'How an agent uses its tools', 'style': 'sketch', 'zones': [{'title': 'You'}, {'title': 'Agent'}, {'title': 'Tools'}],
+   'nodes': [{'id': 'user', 'title': 'Your request', 'icon': 'chat', 'zone': 0}, {'id': 'plan', 'title': 'Planner', 'sub': 'breaks the task down', 'icon': 'list', 'zone': 1}, {'id': 'mem', 'title': 'Memory', 'sub': 'notes and context', 'icon': 'book', 'zone': 1},
+             {'id': 'search', 'title': 'Search', 'icon': 'search', 'zone': 2}, {'id': 'code', 'title': 'Run code', 'icon': 'terminal', 'zone': 2}, {'id': 'files', 'title': 'Files', 'icon': 'folder', 'zone': 2}],
+   'edges': [{'from': 'user', 'to': 'plan', 'label': 'task'}, {'from': 'plan', 'to': 'mem'}, {'from': 'plan', 'to': 'search'}, {'from': 'plan', 'to': 'code'}, {'from': 'plan', 'to': 'files', 'dashed': True}]}),
+ ('cloud', 'Cloud architecture', 'Zones, service cards, labelled connectors and a legend', 'Application and system architecture',
+  {'title': 'How a RAG app answers a question', 'style': 'cloud', 'zones': [{'title': 'Client'}, {'title': 'Edge'}, {'title': 'Services'}, {'title': 'Data'}],
+   'nodes': [{'id': 'ui', 'title': 'Web app', 'icon': 'laptop', 'zone': 0}, {'id': 'gw', 'title': 'API gateway', 'sub': 'auth and rate limits', 'icon': 'shield', 'zone': 1},
+             {'id': 'ret', 'title': 'Retriever', 'sub': 'finds passages', 'icon': 'search', 'zone': 2}, {'id': 'llm', 'title': 'Language model', 'sub': 'writes the answer', 'icon': 'chip', 'zone': 2},
+             {'id': 'vec', 'title': 'Vector index', 'icon': 'database', 'zone': 3}, {'id': 'docs', 'title': 'Document store', 'icon': 'folder', 'zone': 3}],
+   'edges': [{'from': 'ui', 'to': 'gw', 'label': 'question'}, {'from': 'gw', 'to': 'ret'}, {'from': 'ret', 'to': 'vec', 'label': 'embed + search'}, {'from': 'ret', 'to': 'llm', 'label': 'top passages'}, {'from': 'vec', 'to': 'docs', 'dashed': True}]}),
+ ('flow', 'Swimlane flowchart', 'Actors as lanes, decisions as diamonds, loops on the side', 'Processes, approvals, agent loops',
+  {'title': 'How a pull request gets merged', 'style': 'flow', 'lanes': [{'title': 'Developer'}, {'title': 'CI'}, {'title': 'Reviewer'}],
+   'steps': [{'id': 'open', 'title': 'Open a pull request', 'lane': 0, 'kind': 'start'}, {'id': 'test', 'title': 'Run the tests', 'lane': 1}, {'id': 'ok', 'title': 'Tests pass?', 'lane': 1, 'kind': 'decision'},
+             {'id': 'review', 'title': 'Review the code', 'lane': 2}, {'id': 'appr', 'title': 'Approved?', 'lane': 2, 'kind': 'decision'}, {'id': 'merge', 'title': 'Merge', 'lane': 0, 'kind': 'end'}],
+   'edges': [{'from': 'open', 'to': 'test'}, {'from': 'test', 'to': 'ok'}, {'from': 'ok', 'to': 'review', 'label': 'yes'}, {'from': 'ok', 'to': 'open', 'label': 'no'}, {'from': 'review', 'to': 'appr'}, {'from': 'appr', 'to': 'merge', 'label': 'yes'}]}),
+ ('sequence', 'Sequence diagram', 'Who calls whom, in order, with replies', 'Protocols, API calls, request journeys',
+  {'title': 'Signing in with OAuth', 'style': 'sequence', 'actors': [{'title': 'You', 'icon': 'users'}, {'title': 'App', 'icon': 'laptop'}, {'title': 'Auth server', 'icon': 'key'}, {'title': 'API', 'icon': 'database'}],
+   'messages': [{'from': 0, 'to': 1, 'text': 'Click sign in'}, {'from': 1, 'to': 2, 'text': 'Redirect with client id'}, {'from': 0, 'to': 2, 'text': 'Approve access'}, {'from': 2, 'to': 1, 'text': 'Authorization code', 'reply': True},
+                {'from': 1, 'to': 2, 'text': 'Exchange code for token'}, {'from': 2, 'to': 1, 'text': 'Access token', 'reply': True}, {'from': 1, 'to': 3, 'text': 'Call with the token'}, {'from': 3, 'to': 1, 'text': 'Your data', 'reply': True}]}),
+]
+for _st, _nm, _tag, _best, _smp in ARCH:
+    DESIGNS.append({'id': 'arch-' + _st, 'group': 'architecture', 'family': 'Architecture', 'name': _nm, 'tag': _tag, 'blurb': _tag + '. Best for: ' + _best.lower() + '.', 'best_for': _best, 'theme': 'paper',
+                    'fields': [T('title', 'Slide title', 60, 6), J()], 'sample': {'title': _smp['title'], 'data': {k: x for k, x in _smp.items() if k != 'title'}},
+                    'build': lambda v: ('slide', {'type': 'arch', 'title': v['title'], **v['data']})})
 BY_ID = {d['id']: d for d in DESIGNS}
 
 def public():
@@ -196,6 +223,7 @@ def assemble(items, closing, theme, single, brand_name):
 
 # GIF styles shown on the studio's GIF page (preview stills are studio/samples/gif-<id>.jpg, made by gif_samples.py)
 GIF_STYLES = [
+    {'id': 'arch', 'name': 'Architecture diagram', 'tag': 'Whiteboard sketch, cloud architecture, swimlanes or sequence; flow runs on every connector', 'best': 'How a system or a whole post fits together'},
     {'id': 'chart', 'name': 'Animated chart', 'tag': 'Any of the 21 charts, drawn and revealed', 'best': 'Flows, shares, trends and comparisons with real figures'},
     {'id': 'grid', 'name': 'Card grid poster', 'tag': 'Numbered cards, each with a small moving diagram', 'best': 'Lists of 4, 6 or 9 ideas, tools or algorithms'},
     {'id': 'hub', 'name': 'Hub and cards', 'tag': 'One idea in the middle, nine parts around it', 'best': 'A concept with many parts'},

@@ -24,7 +24,8 @@ SPEC = {
           'slots': {'top': {'text': 62}, 'side': {'text': 118, 'keys': 62}, 'wide': {'text': 150, 'chips': 0}, 'narrow': {'text': 100, 'dialog': 0}},
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
-    'template': 'chart | grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'template': 'arch | chart | grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
+    'arch': 'architecture diagram of the whole post, flow animated on every connector: gif.arch{style sketch|cloud|flow|sequence; sketch/cloud: zones[1-5]{title} nodes[2-14]{id,title<=22,sub?<=36,icon?,zone} edges[1-18]{from,to,label?<=18,dashed?}; flow: lanes[1-4]{title} steps[3-10]{id,title<=26,lane,kind step|decision|start|end} edges?; sequence: actors[2-5]{title<=16,icon?} messages[2-10]{from,to (actor index),text<=34,reply?}}',
     'chart': 'any of the 21 chart slides animated: gif.chart{type lollipop|dumbbell|slope|bullet|radar|sankey|alluvial|network|arc|flowchart|donut|waffle|treemap|sunburst|mindmap|decision|timeline|gantt|waterfall|line|heatmap, ...the same fields as the carousel slide (docs/CAROUSEL.md)}; data charts take only figures from the source',
     'grid': 'poster of 4, 6 or 9 numbered cards, each with a mini diagram: gif.grid{kicker?,legend[0-4]{label<=20,group},cards[4|6|9]{motif bars|curve|tree|flow|cluster|network|loop|steps|split|pixels,caption<=30,title<=24,sub 10-70,group}}  (also carousel slide type grid)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
@@ -97,7 +98,7 @@ def validate(story, chunks, full_text):
     v = V(); icons = set(icon_names()); N = SPEC['narration']
     byid = {c['id']: c for c in chunks}; srcn, srcw = source_index(full_text)
     if 'meta' not in story: v.e('story.json: missing "meta"')
-    if not any(k in story for k in ('beats', 'gif', 'post', 'carousel')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post, carousel')
+    if not any(k in story for k in ('beats', 'gif', 'post', 'carousel', 'thumb')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post, carousel, thumb')
     if ('beats' in story) != ('scenes' in story): v.e('story.json: "beats" and "scenes" go together (Reel)')
     if v.err: return v.err, v.warn
     beats, scenes, meta = story.get('beats', []), story.get('scenes', []), story['meta']
@@ -167,6 +168,18 @@ def validate(story, chunks, full_text):
         for w, t in gif_texts(story['gif']):   # every GIF text must come from the source (>=75% of its content words appear there)
             cw = content_words(t)
             if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'gif text not grounded in source ({w}): "{t[:60]}". Reword using the source\'s own words')
+    th = story.get('thumb')
+    for w_, t_ in (carousel_texts({'thumb': th}) if isinstance(th, dict) else []):   # every thumbnail word comes from the source
+        cw_ = content_words(t_)
+        if len(cw_) >= 3 and sum(x in srcw for x in cw_) / len(cw_) < .75: v.e(f'{w_.replace("carousel.", "")} not grounded in source: reuse the source\'s words')
+    if th is not None:   # thumbnail / blog cover words (studio.py thumbs): short, and from the source like every text
+        if not isinstance(th, dict): v.e('thumb must be an object')
+        else:
+            check_spec(v, 'thumb', {k: th[k] for k in ('sub', 'chips', 'steps', 'lists') if k in th}, cD(sub=cS(0, 90, True), chips=('L?', 1, 4, cS(2, 16)), steps=('L?', 2, 4, cS(2, 28)), lists=('L?', 2, 2, cD(head=cS(2, 28), items=cL(2, 3, cS(2, 28))))), set())
+            for k, lo, mx in (('text', 6, 40), ('kicker', 0, 26)):
+                if th.get(k) is not None:
+                    _S(v, f'thumb.{k}', th[k], lo, mx); cw = content_words(th[k])
+                    if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'thumb.{k} not grounded in source: reuse the source\'s words')
     cv = (story.get('reel') or {}).get('cover') if isinstance(story.get('reel'), dict) else None
     if cv is not None:   # optional Reel cover overrides: hook (grounded like every text), layout, kicker, sub
         if not isinstance(cv, dict): v.e('reel.cover must be an object')
@@ -203,7 +216,7 @@ def validate(story, chunks, full_text):
     return v.err, v.warn
 
 
-CAR_TYPES = ('points', 'stat', 'bars', 'funnel', 'cone', 'ring', 'tower', 'lollipop', 'dumbbell', 'slope', 'bullet', 'radar', 'sankey', 'alluvial', 'network', 'arc', 'flowchart', 'donut', 'waffle', 'treemap', 'sunburst', 'mindmap', 'decision', 'timeline', 'gantt', 'waterfall', 'line', 'heatmap', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot', 'grid')
+CAR_TYPES = ('arch', 'points', 'stat', 'bars', 'funnel', 'cone', 'ring', 'tower', 'lollipop', 'dumbbell', 'slope', 'bullet', 'radar', 'sankey', 'alluvial', 'network', 'arc', 'flowchart', 'donut', 'waffle', 'treemap', 'sunburst', 'mindmap', 'decision', 'timeline', 'gantt', 'waterfall', 'line', 'heatmap', 'compare', 'flow', 'big', 'loop', 'stack', 'terminal', 'shot', 'grid')
 CAR_THEMES = ('paper', 'midnight', 'sunrise', 'mint', 'sky')
 CAR_LAYOUTS = ('classic', 'poster', 'terminal', 'bold', 'stage', 'editorial')
 def _pct(v, w, val):
@@ -240,6 +253,35 @@ CHART_SPEC = {
  'line': cD(x=cL(3, 8, cS(1, 10)), series=cL(1, 3, cD(name=cS(1, 18), values=cL(3, 8, cN))), kind=cE('line', 'area', opt=True), unit=cS(0, 4, True)),
  'heatmap': cD(rows=cL(3, 6, cS(2, 24)), cols=cL(3, 6, cS(1, 16)), cells=cL(3, 6, cL(3, 6, cN)), unit=cS(0, 3, True), legend=cD(True, lo=cS(1, 20), hi=cS(1, 20))),
 }
+
+ARCH_STYLES = ('sketch', 'cloud', 'flow', 'sequence')
+def check_arch(v, w, A, icons):
+    """architecture diagram (engine/arch.js): sketch|cloud = zones + nodes + edges; flow = lanes + steps (+ edges); sequence = actors + messages"""
+    if not isinstance(A, dict): v.e(f'{w}: object required'); return
+    st = A.get('style')
+    if st not in ARCH_STYLES: v.e(f'{w}.style must be ' + '|'.join(ARCH_STYLES)); return
+    if st in ('sketch', 'cloud'):
+        check_spec(v, w, A, cD(zones=('L?', 1, 5, cD(title=cS(2, 22), group=cPo)), nodes=cL(2, 14, cD(id=cS(1, 16), title=cS(2, 22), sub=cS(0, 36, True), icon=cIo)), edges=cL(1, 18, cD(**{'from': cS(1, 16), 'to': cS(1, 16), 'label': cS(0, 18, True)}))), icons)
+        nz = len(A.get('zones') or []) or 1; ids = [n.get('id') for n in (A.get('nodes') or []) if isinstance(n, dict)]
+        if len(ids) != len(set(ids)): v.e(f'{w}.nodes: every id must be unique')
+        for i, n in enumerate(A.get('nodes') or []):
+            if isinstance(n, dict) and not (isinstance(n.get('zone', 0), int) and 0 <= n.get('zone', 0) < nz): v.e(f'{w}.nodes[{i}].zone must be a zone index 0-{nz - 1}')
+        for k in range(nz):
+            if sum(1 for n in (A.get('nodes') or []) if isinstance(n, dict) and n.get('zone', 0) == k) > 6: v.e(f'{w}: zone {k} has more than 6 nodes; split it into two zones')
+        for i, e in enumerate(A.get('edges') or []):
+            if isinstance(e, dict) and (e.get('from') not in ids or e.get('to') not in ids or e.get('from') == e.get('to')): v.e(f'{w}.edges[{i}]: from/to must be two different node ids')
+    elif st == 'flow':
+        check_spec(v, w, A, cD(lanes=cL(1, 4, cD(title=cS(0, 18, True))), steps=cL(3, 10, cD(id=cS(1, 16, True), title=cS(2, 26), kind=cE('step', 'decision', 'start', 'end', opt=True))), edges=('L?', 1, 16, cD(**{'from': cS(1, 16), 'to': cS(1, 16), 'label': cS(0, 12, True)}))), icons)
+        nl = len(A.get('lanes') or []); ids = [s_.get('id', str(i)) for i, s_ in enumerate(A.get('steps') or []) if isinstance(s_, dict)]
+        for i, s_ in enumerate(A.get('steps') or []):
+            if isinstance(s_, dict) and not (isinstance(s_.get('lane', 0), int) and 0 <= s_.get('lane', 0) < max(1, nl)): v.e(f'{w}.steps[{i}].lane must be a lane index')
+        for i, e in enumerate(A.get('edges') or []):
+            if isinstance(e, dict) and (e.get('from') not in ids or e.get('to') not in ids): v.e(f'{w}.edges[{i}]: from/to must be step ids')
+    else:
+        check_spec(v, w, A, cD(actors=cL(2, 5, cD(title=cS(2, 16), icon=cIo)), messages=cL(2, 10, cD(text=cS(2, 34)))), icons)
+        na = len(A.get('actors') or [])
+        for i, m in enumerate(A.get('messages') or []):
+            if isinstance(m, dict) and not all(isinstance(m.get(q), int) and 0 <= m[q] < na for q in ('from', 'to')): v.e(f'{w}.messages[{i}]: from/to must be actor indexes 0-{na - 1}')
 NUMERIC_CHARTS = {'lollipop', 'dumbbell', 'slope', 'bullet', 'radar', 'sankey', 'alluvial', 'donut', 'waffle', 'treemap', 'waterfall', 'line', 'heatmap'}
 def _num(x): return isinstance(x, (int, float)) and not isinstance(x, bool)
 def check_spec(v, w, val, sp, icons):
@@ -345,6 +387,7 @@ def v_carousel(v, c, icons):
             for j, r in enumerate(_list(v, w + '.rows', s_.get('rows'), 3, 5)):
                 _S(v, f'{w}.rows[{j}].label', r.get('label'), 2, 24); _S(v, f'{w}.rows[{j}].value', r.get('value'), 1, 8); _pct(v, f'{w}.rows[{j}].pct', r.get('pct'))
         elif ty == 'grid': _grid(v, w, s_)
+        elif ty == 'arch': check_arch(v, w, s_, icons)
         elif ty in CHART_SPEC: check_spec(v, w, s_, CHART_SPEC[ty], icons); chart_extra(v, w, s_)
         elif ty == 'cone':
             for j, st_ in enumerate(_list(v, w + '.steps', s_.get('steps'), 3, 5)):
@@ -426,7 +469,7 @@ def _ic(v, w, val, icons, req=True):
     if val not in icons: v.e(f'{w}: unknown icon "{val}" (studio.py spec --icons)')
 def _grp(v, w, val):
     if val not in ('blue', 'green', 'clay', 'sand'): v.e(f'{w}: must be blue|green|clay|sand')
-TEMPLATES = ('chart', 'grid', 'hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
+TEMPLATES = ('arch', 'chart', 'grid', 'hub', 'columns', 'pipeline', 'lanes', 'ecosystem', 'framework', 'exploded', 'isoflow', 'orbit', 'stairs', 'tower', 'skyline', 'conveyor', 'funnel')
 VIZ = {'steps': (2, 4, 14, False), 'stack': (2, 3, 16, False), 'tree': (2, 3, 14, True), 'fan': (2, 3, 16, True), 'table': (2, 4, 30, False)}   # (min items, max items, max chars, needs root)
 def v_framework(v, g, icons):
     F = g.get('framework', {})
@@ -516,6 +559,7 @@ def v_gif(v, g, icons):
     if tpl == 'framework': return v_framework(v, g, icons)
     if tpl == 'ecosystem': return v_ecosystem(v, g, icons)
     if tpl == 'grid': return v_grid(v, g, icons)
+    if tpl == 'arch': return check_arch(v, 'gif.arch', g.get('arch'), icons)
     if tpl == 'chart':
         c = g.get('chart') if isinstance(g.get('chart'), dict) else {}
         if c.get('type') not in CHART_SPEC: v.e('gif.chart.type must be one of ' + '|'.join(CHART_SPEC)); return

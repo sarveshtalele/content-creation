@@ -6,6 +6,7 @@ import { cta } from './cta.js';
 import { buildCarousel } from './carousel.js';
 import { buildCover } from './cover.js';
 import { buildWalk } from './walk.js';
+import { buildThumb } from './thumb.js';
 
 const Q = new URLSearchParams(location.search);
 const MODE = Q.get('mode') || 'reel';
@@ -55,7 +56,7 @@ window.BOXES = () => [...stage.querySelectorAll('[data-box]')].filter(el => !el.
 });
 window.TEXTS = () => collectTexts();
 async function loadFonts() {
-  const fam = ['500 40px Lora', '600 40px Lora', '700 40px Lora', 'italic 500 40px Lora', '400 30px Inter', '500 30px Inter', '600 30px Inter', '700 30px Inter', '800 30px Inter', '400 30px "JetBrains Mono"', '500 30px "JetBrains Mono"', '700 30px "JetBrains Mono"'];
+  const fam = ['500 40px Lora', '600 40px Lora', '700 40px Lora', 'italic 500 40px Lora', '400 30px Inter', '500 30px Inter', '600 30px Inter', '700 30px Inter', '800 30px Inter', '400 30px "JetBrains Mono"', '500 30px "JetBrains Mono"', '700 30px "JetBrains Mono"', '400 30px Excalifont'];
   await Promise.all(fam.map(f => document.fonts.load(f, 'AaBb0123 ~$>')));
   await document.fonts.ready;
 }
@@ -85,6 +86,10 @@ async function setupCarousel(D) {
   const g = buildCarousel(stage, D);
   window.DUR = g.DUR; window.N = g.N; window.EV = []; window.render = g.render;
 }
+async function setupThumb(D) {
+  const g = buildThumb(stage, D);
+  window.DUR = g.DUR; window.N = g.N; window.EV = []; window.render = g.render;
+}
 async function setupWalk(D) {
   const g = buildWalk(stage, D);
   window.DUR = g.DUR; window.EV = []; window.render = g.render;
@@ -97,6 +102,6 @@ async function setupCover(D) {
   const D = await (await fetch('data.json')).json();
   FLAGS.logo = D.logo === true;
   await loadFonts();                                   // before building: templates measure text to fit it
-  await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : MODE === 'cover' ? setupCover(D) : MODE === 'walk' ? setupWalk(D) : setupReel(D));
+  await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : MODE === 'cover' ? setupCover(D) : MODE === 'walk' ? setupWalk(D) : MODE === 'thumb' ? setupThumb(D) : setupReel(D));
   window.READY = true;
 })().catch(e => { console.error(e); throw e; });

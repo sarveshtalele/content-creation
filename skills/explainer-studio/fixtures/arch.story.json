@@ -1,0 +1,95 @@
+{
+ "meta": {
+  "title": "How a RAG app answers a question",
+  "slug": "rag-architecture"
+ },
+ "gif": {
+  "template": "arch",
+  "title": "How a RAG app answers a question",
+  "subtitle": "From the question in the web app to a cited answer",
+  "arch": {
+   "style": "cloud",
+   "zones": [
+    {
+     "title": "Client"
+    },
+    {
+     "title": "Edge"
+    },
+    {
+     "title": "Services"
+    },
+    {
+     "title": "Data"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "ui",
+     "title": "Web app",
+     "icon": "laptop",
+     "zone": 0
+    },
+    {
+     "id": "gw",
+     "title": "API gateway",
+     "sub": "auth and rate limits",
+     "icon": "shield",
+     "zone": 1
+    },
+    {
+     "id": "ret",
+     "title": "Retriever",
+     "sub": "finds passages",
+     "icon": "search",
+     "zone": 2
+    },
+    {
+     "id": "llm",
+     "title": "Language model",
+     "sub": "writes the answer",
+     "icon": "chip",
+     "zone": 2
+    },
+    {
+     "id": "vec",
+     "title": "Vector index",
+     "icon": "database",
+     "zone": 3
+    },
+    {
+     "id": "docs",
+     "title": "Document store",
+     "icon": "folder",
+     "zone": 3
+    }
+   ],
+   "edges": [
+    {
+     "from": "ui",
+     "to": "gw",
+     "label": "question"
+    },
+    {
+     "from": "gw",
+     "to": "ret"
+    },
+    {
+     "from": "ret",
+     "to": "vec",
+     "label": "embed + search"
+    },
+    {
+     "from": "ret",
+     "to": "llm",
+     "label": "top passages"
+    },
+    {
+     "from": "vec",
+     "to": "docs",
+     "dashed": true
+    }
+   ]
+  }
+ }
+}

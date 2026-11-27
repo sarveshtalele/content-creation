@@ -20,7 +20,7 @@ ok(not any(s['needs_numbers'] and s['score'] > 0 for s in nonum['shapes']), 'dat
 
 # every chart design sample passes the validator when its own words are the source
 for d in DS.DESIGNS:
-    if d['group'] != 'chart': continue
+    if d['group'] not in ('chart', 'architecture'): continue
     story, text = DS.assemble([{'design': d['id'], 'values': d['sample']}], None, 'paper', True, 'Test')
     err, _ = VS.validate(story, [{'id': 'c01', 'h': '', 'text': text, 's': 1.0}], text)
     ok(not err, f"{d['id']} sample fails validation: {err[:3]}")
@@ -48,5 +48,21 @@ st = {'meta': {'title': 't', 'slug': 't'}, 'scenes': [{'p': {'q': 'Can an agent 
 ok('number' not in CV.data(st)['layouts'], 'no number cover without a figure')
 st['scenes'][0]['p']['sub'] = 'Fixes 73% of bugs'
 ok('number' in CV.data(st)['layouts'] and CV.data(st)['number']['value'] == '73%', 'number cover uses the real figure')
+
+# architecture: unknown edge targets and crowded zones are refused
+A = {'style': 'cloud', 'zones': [{'title': 'Services'}], 'nodes': [{'id': f'n{i}', 'title': f'Node {i}', 'zone': 0} for i in range(7)], 'edges': [{'from': 'n0', 'to': 'nope'}]}
+v = VS.V(); VS.check_arch(v, 'a', A, set(VS.icon_names()))
+ok(any('more than 6 nodes' in e for e in v.err) and any('edges[0]' in e for e in v.err), 'arch must refuse crowded zones and unknown edge targets: ' + str(v.err[:3]))
+v = VS.V(); VS.check_arch(v, 'a', {'style': 'sequence', 'actors': [{'title': 'You'}, {'title': 'App'}], 'messages': [{'from': 0, 'to': 5, 'text': 'Hello there'}, {'from': 1, 'to': 0, 'text': 'Hi back'}]}, set(VS.icon_names()))
+ok(any('actor indexes' in e for e in v.err), 'sequence must refuse unknown actors')
+
+# thumbnails: layouts only when the story supports them; the thumbnail's own figure wins
+import json
+ts = json.load(open(os.path.join(SK, 'fixtures', 'thumbs.story.json'), encoding='utf-8'))
+td = CV.thumb_data(ts, 'youtube'); ok(set(td['layouts']) == {'face', 'number', 'diagram', 'versus', 'editorial'}, 'all five thumb layouts for the rich fixture: ' + str(td['layouts']))
+ok(td['number']['value'] == '72%', 'thumb number comes from thumb.text: ' + str(td.get('number')))
+ok([s['head'] for s in td['split']] == ['What blocks people', 'What gets them through'], 'versus compares the two lists, not the flow')
+plain = {'meta': {'title': 't', 'slug': 't'}, 'scenes': [{'p': {'q': 'Is TLS 1.3 faster?', 'sub': ''}}]}
+ok(set(CV.thumb_data(plain, 'og')['layouts']) == {'face', 'editorial'}, 'no number layout for a version number like 1.3')
 
 print('MATRIX TESTS OK' if not fails else 'MATRIX TESTS FAILED:\n  ' + '\n  '.join(fails)); sys.exit(1 if fails else 0)

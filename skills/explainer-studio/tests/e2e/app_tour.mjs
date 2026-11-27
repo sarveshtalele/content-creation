@@ -72,7 +72,7 @@ try {
   const cat = await page.evaluate(async () => { const im = [...document.images]; im.forEach(i => i.loading = 'eager'); await Promise.all(im.map(i => i.decode().catch(() => null))); return { n: im.length, broken: im.filter(i => !i.naturalWidth).length }; });
   check(cat.n >= 50 && cat.broken === 0, `Design catalogue shows every design (${cat.n} samples, ${cat.broken} broken)`); await page.mouse.wheel(0, 1400); await pause(1200);
   check(errors.length === 0, 'No JavaScript errors in the app' + (errors.length ? ': ' + errors.slice(0, 3).join(' | ') : ''));
-} catch (e) { check(false, 'Tour stopped: ' + String(e.message || e).split('\n')[0]); }
+} catch (e) { check(false, 'Tour stopped: ' + String(e.message || e).split('\n')[0] + ' at ' + page.url().replace(/t=[^#&]+/, 't=…')); await page.screenshot({ path: path.join(VID, 'failure.png') }).catch(() => {}); if (errors.length) console.log('page errors:', errors.slice(0, 5).join(' | ')); }
 
 const v = page.video(); await ctx.close(); await browser.close(); app.kill(); fx.kill();
 const webm = path.join(VID, 'app-tour.webm'); if (v) fs.renameSync(await v.path(), webm);

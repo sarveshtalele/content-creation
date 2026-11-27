@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0
+
+- **Architecture diagrams** (`engine/arch.js`): one diagram for a whole post in four styles: `sketch` (Excalidraw-like hand-drawn strokes, hachure fills, Excalifont), `cloud` (zone bands, service cards, labelled connectors, legend), `flow` (swimlanes, decisions, loops) and `sequence`. Available as a carousel slide (`type: arch`) and a flow-only GIF (`gif.template: arch`, dots on every connector). Validation refuses unknown edge targets, bad indexes and zones with more than 6 nodes.
+- **Thumbnails and blog covers** (`studio.py thumbs`, `engine/thumb.js`): YouTube 1280×720, Open Graph 1200×630, dev.to 1000×420 and Hashnode 1600×840, in five layouts (face, number, diagram, versus, editorial) built on current thumbnail research (docs/THUMBNAILS.md). Every image goes through the layout gates; YouTube layouts keep the duration-badge corner clear.
+- **Carousel recommendations** in the decision matrix (printed by `studio.py plan`) and a new quality check: one idea per slide (60 words at most).
+- The decision matrix and picker rank `arch` for architecture, agent-loop and process content; the catalogue has Architecture and Thumbnails sections.
+- `studio_jobs.py [design-id ...]` re-renders only the named samples, four at a time.
+
 ## 3.1.0
 
 - **GIFs show the whole diagram from the first frame**; the only motion is flow (dots on connectors, pulses, belts, spins). Every repeating motion snaps to a period that divides the loop, so GIFs loop seamlessly with no fade. New end-to-end checks: frame 0 matches the finished still, and the loop seam differs by less than 4% of pixels.

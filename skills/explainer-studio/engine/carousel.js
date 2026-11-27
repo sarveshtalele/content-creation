@@ -6,6 +6,7 @@ import { iso, mix } from './gif_3d.js';
 import { cta } from './cta.js';
 import { banner, legend, cards } from './motifs.js';
 import { charts } from './charts.js';
+import { renderArch } from './arch.js';
 
 const THEMES = {
   paper: { sub: C.sub, onAcc: '#FFFFFF', dots: '#E4E1D4' },
@@ -389,6 +390,7 @@ const TYPES = {
 };
 
 Object.assign(TYPES, charts({ heading, grp, H_, X0, XW, W, BODY1 }));
+TYPES.arch = (root, s) => { const y = heading(root, 'ar-h', s.title) + 24; renderArch(root, s, { x: X0, y, w: XW, h: BODY1 - y - 6 }); };   // architecture slide (engine/arch.js)
 // Underfit guard. The slide heading stays pinned at the top so every slide looks the same; everything below it is scaled up (never down, up to 1.3x,
 // from its top-left corner) when it fills less than ~88% of the space under the heading, then centred there. Painted extents only (text glyphs, svg/img,
 // filled or bordered boxes), measured while the slide is briefly shown, before anything is rendered.

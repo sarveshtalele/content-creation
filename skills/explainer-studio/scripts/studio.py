@@ -577,7 +577,7 @@ def e2e_cmd(a):
     """studio.py e2e DIR: Playwright end-to-end evaluation of the built carousel (run after build)."""
     import e2e as E2E
     work = os.path.abspath(a.dir); ok0, story, *_ = do_check(work, quiet=True)
-    deck = CAR.compile_deck(story); ok, lines = E2E.run(work, [d['type'] for d in deck], story['carousel'].get('theme', 'paper'), story['carousel']['title']['hook'])
+    deck = CAR.compile_deck(story); ok, lines = E2E.run(work, [d['type'] + ('-' + d.get('style', '') if d['type'] == 'arch' else '') for d in deck], story['carousel'].get('theme', 'paper'), story['carousel']['title']['hook'])
     print('\n'.join(lines)); print('E2E', 'PASS' if ok else 'FAIL'); return 0 if ok else 1
 
 def plan_cmd(a):
@@ -591,9 +591,36 @@ def plan_cmd(a):
     L = ['# Plan (approve before building)', '', '## Ask the person first', '0. Which infographic type should each content slide use? Ranked for this source: ' + ', '.join(c['type'] for c in R['carousel']) + '. Every content slide uses a different chart family. Output is always the PDF and the separate PNG images.',
          '1. Who is this for, and what should they do after the last slide (save, comment, follow, click)?', '2. Which hook style: ' + ', '.join(R['hooks']['carousel']) + ' (from the matrix), or another (`studio.py hooks DIR`)?', '3. Tone: plain and practical, bold and opinionated, or warm and personal?', '4. Anything that must be on a slide, or must not be?',
          '', '## What the source looks like', '', *[f"- **{r['label']}** (score {r['score']}): {', '.join(r['signals'])}" for r in R['shapes']], f"- Figures in the source: {R['figures_in_source']}" + ('' if R['figures_in_source'] >= 2 else ' (no data charts: they need numbers from the source)'),
-         '', f"Structure: {R['carousel_structure']} (see data/hooks.json structures). Decision matrix: data/matrix.json, docs/DESIGN_MATRIX.md."]
+         '', f"Structure: {R['carousel_structure']} (see data/hooks.json structures). Decision matrix: data/matrix.json, docs/DESIGN_MATRIX.md.", '', '## Carousel rules (checked by studio.py e2e where measurable)', '', *['- ' + r for r in MX.load()['formats']['carousel']['rules']]]
     L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
     open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
+
+def build_thumbs(work, story, lib, env, out, slug, sizes=None, layouts=None, text=None):
+    """Thumbnails and blog covers: every size x every supported layout, through the layout gates, as out/thumbs/<slug>-<size>-<layout>.png."""
+    import cover as CV
+    od = os.path.join(out, 'thumbs'); os.makedirs(od, exist_ok=True); files, problems = [], []
+    for old in glob.glob(os.path.join(od, f'{slug}-*.png')): os.remove(old)
+    for size in (sizes or list(CV.THUMB_SIZES)):
+        W, H = CV.THUMB_SIZES[size]; td = CV.thumb_data(story, size, text, layouts); m = round(min(W, H) * .07)
+        if td['words'] > 7: print(f'[thumbs] note: "{td["text"]}" has {td["words"]} words; 3-6 read best at thumbnail size (set thumb.text in story.json)')
+        film = stage(work, '.film-thumb', {'brand': brand_for_film(brand()), 'thumb': td})
+        ok, issues = validate_layout(lib, env, film, f'{W}x{H}', 'mode=thumb', m - 4, H - m + 4, m - 4)
+        if not ok: problems += [f'{size}: {l}' for l in issues[:8]]; continue
+        r = run(['node', os.path.join(SKILL, 'engine', 'shots.mjs'), film, '--size', f'{W}x{H}', '--q', 'mode=thumb', '--out', od, '--prefix', f'{slug}-{size}'], cwd=lib, env=env, quiet=True)
+        if r.returncode: problems.append(f'{size}: render failed'); continue
+        for k, l in enumerate(td['layouts'], 1):
+            src = os.path.join(od, f'{slug}-{size}-{k:02d}.png'); dst = os.path.join(od, f'{slug}-{size}-{l}.png'); os.replace(src, dst); files.append(dst)
+    for p in problems: print('[thumbs] LAYOUT', p)
+    print(f'[thumbs] {len(files)} images in {od}')
+    return {'files': files, 'problems': problems}
+
+def thumbs_cmd(a):
+    """studio.py thumbs DIR [--sizes youtube,og,devto,hashnode] [--layouts face,number,diagram,versus,editorial] [--text "3-6 WORDS"]"""
+    work = os.path.abspath(a.dir); story = load_project(work)[0]; lib = find_lib(); env = env_for(lib)
+    r = build_thumbs(work, story, lib, env, os.path.join(work, 'out'), story['meta']['slug'], a.sizes.split(',') if a.sizes else None, a.layouts.split(',') if a.layouts else None, a.text)
+    od = publish_outputs(work, story['meta']['slug']) if r['files'] else ''
+    if od: print('  ALL OUTPUTS -> ' + od)
+    return 0 if r['files'] and not r['problems'] else 1
 
 def walkthrough_cmd(a):
     """studio.py walkthrough DIR --steps steps.json [--device mobile|desktop] [--strict]: run a step-by-step guide in a real browser with Playwright,
@@ -649,10 +676,12 @@ def main():
     cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--layout', choices=['hero', 'question', 'number', 'split', 'face']); cv.add_argument('--hook')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     sp.add_parser('catalog', help='regenerate studio/catalog.html (every design with its ID and sample) and print its path')
+    th = sp.add_parser('thumbs', help='thumbnails and blog covers: YouTube 1280x720, Open Graph 1200x630, dev.to 1000x420, Hashnode 1600x840'); th.add_argument('dir'); th.add_argument('--sizes'); th.add_argument('--layouts'); th.add_argument('--text')
     wk = sp.add_parser('walkthrough', help='run a step-by-step guide with Playwright, verify each step, render a walkthrough Reel'); wk.add_argument('dir'); wk.add_argument('--steps', required=True); wk.add_argument('--device', choices=['mobile', 'desktop'], default='mobile'); wk.add_argument('--strict', action='store_true')
     a = ap.parse_args()
     if a.cmd == 'cover': return cover_cmd(a)
     if a.cmd == 'walkthrough': return walkthrough_cmd(a)
+    if a.cmd == 'thumbs': return thumbs_cmd(a)
     if a.cmd == 'catalog':
         import catalog as CT; p = CT.build(); print(p); print('Show this page to the person and ask which design IDs to use before building.'); return 0
     if a.cmd == 'plan': return plan_cmd(a)

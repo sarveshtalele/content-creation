@@ -71,4 +71,5 @@ Every slide below takes `type`, `title` (6-60 chars) and the fields shown. Data 
 | `waterfall`* | time | `start{label,value,num}`, `steps[2-5]{label,value,num}`, `end{label,value}` |
 | `line`* | time | `x[3-8]`, `series[1-3]{name, values}`, `kind?: line|area`, `unit?` |
 | `heatmap`* | time | `rows[3-6]`, `cols[3-6]`, `cells[rows][cols]`, `unit?`, `legend?{lo,hi}` |
+| `arch` | architecture | `style` sketch\|cloud\|flow\|sequence plus its fields (docs/TEMPLATES.md, Architecture diagrams) |
 | `cone` | funnel | `steps[3-5]{title, sub?, value?, icon?}` (`ring`, `tower`, `funnel` draw as the cone) |

@@ -1,6 +1,6 @@
 ---
 description: Turn an article, URL, repo or notes into a GIF, carousel, Reel, Reel cover or post with explainer-studio
-argument-hint: <url | file | pasted text> [gif|carousel|reel|cover|post]
+argument-hint: <url | file | pasted text> [gif|carousel|reel|cover|thumbnail|architecture|post]
 ---
 Use the **explainer-studio** skill on: $ARGUMENTS
 

@@ -25,6 +25,7 @@ for (let k = 0; k < N; k++) {
     }
     let top = 1e9, bot = 0; for (const e of vis.querySelectorAll('*')) { const b = e.getBoundingClientRect(); if (b.width < 8 || b.height < 8 || b.height > 1000 || b.top < 120 || b.top > 1190) continue; top = Math.min(top, b.top); bot = Math.max(bot, b.bottom); }
     res.span = bot ? [Math.round(top), Math.round(bot)] : [0, 0]; res.fill = bot ? +((bot - top) / 1042).toFixed(2) : 0;
+    res.words = [...vis.querySelectorAll('.tx')].filter(t => !/^(fr-|ti-|cl-)/.test(t.dataset.id || '')).reduce((a, t) => a + (t.dataset.text || '').split(/\s+/).filter(Boolean).length, 0);   // body words, without the frame, cover and closing
     res.theme = getComputedStyle(document.getElementById('stage')).backgroundColor; return res;
   });
   out.per.push(r);
@@ -33,5 +34,6 @@ for (let k = 0; k < N; k++) {
   r.images.forEach(i => { if (!i.loaded) out.problems.push(`slide ${k + 1}: image failed to load ${i.src}`); else if (i.scale > 1.3) out.problems.push(`slide ${k + 1}: ${i.src} is shown ${i.scale}x its pixel size (will look blurry)`); });
   r.lowContrast.forEach(c => out.problems.push(`slide ${k + 1}: low contrast ${c.ratio} on "${c.text}"`));
   r.small.forEach(c => out.problems.push(`slide ${k + 1}: text under 20px "${c.text}"`));
+  if (k > 0 && k < N - 1 && r.words > 60) out.problems.push(`slide ${k + 1}: too much text, ${r.words} words (one idea per slide, about 40 words)`);
 }
 console.log(JSON.stringify(out)); await browser.close(); closeServer();

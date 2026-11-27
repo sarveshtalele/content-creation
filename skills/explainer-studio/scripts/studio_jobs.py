@@ -82,16 +82,22 @@ def walk_job(root, spec, device='mobile'):
     job = _jobdir(root, slug + '-walk'); os.makedirs(job); json.dump(spec, open(os.path.join(job, 'steps.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     return job, [sys.executable, os.path.join(HERE, 'studio.py'), 'walkthrough', job, '--steps', os.path.join(job, 'steps.json'), '--device', 'desktop' if device == 'desktop' else 'mobile']
 
-def make_samples(dest):
-    """Render every design's sample through the real engine into small JPG thumbnails (the studio's preloaded samples)."""
+def make_samples(dest, only=None):
+    """Render design samples through the real engine into small JPG thumbnails (the studio's preloaded samples and the catalogue).
+    only: list of design ids (default: every design). Runs four builds at a time; prints FAILED with the layout log for any design that does not pass."""
     from PIL import Image
+    from concurrent.futures import ThreadPoolExecutor
     import tempfile; os.makedirs(dest, exist_ok=True); root = tempfile.mkdtemp(prefix='samples-'); bad = []
-    for d in DS.DESIGNS:
+    def one(d):
         r = render(root, [{'design': d['id'], 'values': d['sample']}], theme=d['theme'], mode='single')
-        if not r['ok']: bad.append((d['id'], r['log'][-600:])); continue
-        Image.open(r['files'][0]).convert('RGB').resize((540, 675), Image.LANCZOS).save(os.path.join(dest, d['id'] + '.jpg'), quality=88, optimize=True); print('sample', d['id'])
+        if not r['ok']: return d['id'], r['log'][-900:]
+        Image.open(r['files'][0]).convert('RGB').resize((540, 675), Image.LANCZOS).save(os.path.join(dest, d['id'] + '.jpg'), quality=88, optimize=True); return d['id'], None
+    with ThreadPoolExecutor(4) as ex:
+        for i, log in ex.map(one, [d for d in DS.DESIGNS if not only or d['id'] in only]):
+            if log: bad.append((i, log))
+            else: print('sample', i, flush=True)
     shutil.rmtree(root, ignore_errors=True)
     for i, log in bad: print('FAILED', i, '\n', log)
     return not bad
 
-if __name__ == '__main__': sys.exit(0 if make_samples(os.path.join(SKILL, 'studio', 'samples')) else 1)
+if __name__ == '__main__': sys.exit(0 if make_samples(os.path.join(SKILL, 'studio', 'samples'), sys.argv[1:] or None) else 1)   # usage: studio_jobs.py [design-id ...]

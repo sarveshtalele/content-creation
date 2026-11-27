@@ -23,6 +23,7 @@ def run(work, deck_types, theme, hook, expect_pdf_pages=None):
     gate('no text under 20px', not [p for p in res['problems'] if 'under 20px' in p], '; '.join(p for p in res['problems'] if 'under 20px' in p)[:200])
     gate('no slide is underfilled (content uses >= 50% of the body)', not [p for p in res['problems'] if 'underfilled' in p], '; '.join(p for p in res['problems'] if 'underfilled' in p)[:200])
     gate('no slide is oversized (content stays above the brand CTA)', not [p for p in res['problems'] if 'oversized' in p], '; '.join(p for p in res['problems'] if 'oversized' in p)[:200])
+    gate('one idea per slide (body text <= 60 words)', not [p for p in res['problems'] if 'too much text' in p], '; '.join(p for p in res['problems'] if 'too much text' in p)[:200])
     gate('hook is short enough to read at a glance (<= 60 characters)', len(hook) <= 60, f'{len(hook)} chars')
     kinds = {t for t in deck_types if t not in ('title', 'closing')}; gate('at least two different infographic slide types', len(kinds) >= 2, ', '.join(sorted(kinds)))
     gate('first slide is a poster/terminal title, last slide is the CTA', deck_types[0] == 'title' and deck_types[-1] == 'closing')

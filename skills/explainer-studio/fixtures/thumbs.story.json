@@ -1,0 +1,40 @@
+{
+ "meta": {
+  "title": "Why most free trials end before data",
+  "slug": "trial-thumbs"
+ },
+ "thumb": {
+  "text": "72% never connect data",
+  "kicker": "Product teardown",
+  "sub": "Of 1,000 visitors, 72% never connect a data source",
+  "chips": [
+   "Trials",
+   "Onboarding",
+   "Retention"
+  ],
+  "steps": [
+   "Visit pricing",
+   "Start a trial",
+   "Connect data",
+   "Pay"
+  ],
+  "lists": [
+   {
+    "head": "What blocks people",
+    "items": [
+     "Empty dashboard",
+     "No sample data",
+     "Long setup"
+    ]
+   },
+   {
+    "head": "What gets them through",
+    "items": [
+     "Sample workspace",
+     "One-click import",
+     "Guided setup"
+    ]
+   }
+  ]
+ }
+}

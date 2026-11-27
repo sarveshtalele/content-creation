@@ -68,7 +68,8 @@
    "gif": [
     "chart",
     "pipeline",
-    "conveyor"
+    "conveyor",
+    "arch"
    ],
    "reel_motion": "particles flow along ribbons; ribbons draw in with easing",
    "line_hooks": [
@@ -103,12 +104,14 @@
    "carousel": [
     "flow",
     "timeline",
+    "arch",
     "terminal"
    ],
    "gif": [
     "pipeline",
     "isoflow",
-    "stairs"
+    "stairs",
+    "arch"
    ],
    "reel_motion": "path tracing with staggered cards",
    "line_hooks": [
@@ -138,11 +141,13 @@
    ],
    "needs_numbers": false,
    "carousel": [
+    "arch",
     "flowchart",
     "loop",
     "network"
    ],
    "gif": [
+    "arch",
     "pipeline",
     "conveyor",
     "hub",
@@ -175,15 +180,28 @@
     "protocol",
     "gateway",
     "host",
-    "architecture"
+    "architecture",
+    "system design",
+    "service",
+    "services",
+    "database",
+    "frontend",
+    "backend",
+    "microservice",
+    "queue",
+    "cache",
+    "retriever",
+    "vector"
    ],
    "needs_numbers": false,
    "carousel": [
+    "arch",
     "network",
     "arc",
     "stack"
    ],
    "gif": [
+    "arch",
     "orbit",
     "hub",
     "ecosystem",
@@ -219,11 +237,13 @@
    "needs_numbers": false,
    "carousel": [
     "stack",
+    "arch",
     "sunburst"
    ],
    "gif": [
     "lanes",
     "exploded",
+    "arch",
     "tower"
    ],
    "reel_motion": "exploded parallax: layers pull apart",
@@ -443,10 +463,12 @@
    "needs_numbers": false,
    "carousel": [
     "decision",
+    "arch",
     "compare"
    ],
    "gif": [
     "framework",
+    "arch",
     "columns",
     "chart"
    ],
@@ -725,7 +747,17 @@
   "carousel": {
    "structure": "Pick a structure from hooks.json structures; every content slide gets a different chart family",
    "motion": [],
-   "hook_rule": "First slide hook <= 60 chars from a carousel hook template; slide 2 re-hooks; last slide = save/share CTA"
+   "hook_rule": "First slide hook <= 60 chars from a carousel hook template; slide 2 re-hooks; last slide = save/share CTA",
+   "rules": [
+    "Cover: one promise in 60 characters or less, one focal visual, the hook on the first slide only",
+    "5 to 7 slides for a how-to or framework; up to 10 only for resource lists",
+    "One idea per slide, at most about 40 words of body text; split anything longer",
+    "Every content slide uses a different chart family so the swipe never feels repetitive",
+    "Slide 2 re-hooks (the problem or the stakes) before the first step",
+    "Numbers and charts only with figures from the source; label the unit",
+    "Contrast at least 4.5:1 for body text; text never smaller than 22 px at 1080 wide",
+    "Last slide: the takeaway and one action (save, share, comment or follow), with the brand CTA"
+   ]
   },
   "gif": {
    "structure": "One diagram, title hook",
@@ -759,6 +791,17 @@
    "structure": "Hook question, bullets, CTA",
    "motion": [],
    "hook_rule": "Question or contrarian line; save/share CTA when the post has reference value"
+  },
+  "thumbnail": {
+   "structure": "One focal point: a face, a figure, a mini diagram, or a before/after split",
+   "motion": [],
+   "hook_rule": "3-6 words, outlined, large; saturated mid-tone background; the face fills about a third of the frame; nothing in YouTube's bottom-right badge corner",
+   "sizes": {
+    "youtube": "1280x720",
+    "og": "1200x630",
+    "devto": "1000x420",
+    "hashnode": "1600x840"
+   }
   }
  }
 }

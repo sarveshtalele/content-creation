@@ -56,6 +56,12 @@ Comparison: `lollipop`, `dumbbell`, `slope`, `bullet`, `radar`. Flow: `sankey`, 
 The Reel build also renders the designed cover: every layout the story supports (`hero` mini flow, `question`, `number` only with a real figure, `split`, `face`) as `out/covers/<slug>-cover-<layout>.png`, the chosen one as `<slug>-poster.jpg`. Show the person the layouts and let them pick; `studio.py cover W --layout X [--hook TEXT]` re-renders without rebuilding the Reel. Optional `reel.cover{hook,layout,kicker,sub}` in story.json (grounded).
 Arc: hook (question from the source) -> stakes -> answer -> how -> proof -> takeaway -> engage (question or one-step challenge). Speak to "you", sentences <= 22 words, 90-170 words total so it stays <= 90 s. Every claim beat cites `[[chunkId, "verbatim quote"]]`.
 
+## Architecture diagrams (a whole post as one diagram)
+`gif.template: arch` (flow-only animated GIF) or carousel slide `type: arch`, style `sketch` (Excalidraw-like) | `cloud` (zones + services) | `flow` (swimlanes) | `sequence`. Fields in docs/TEMPLATES.md. Node titles come from the source; at most 6 nodes per zone.
+
+## Thumbnails and blog covers (only if asked)
+`studio.py thumbs W [--sizes youtube,og,devto,hashnode] [--layouts face,number,diagram,versus,editorial] [--text "3-6 words"]`. Set `thumb{text,kicker}` in story.json (from the source, 3-6 words read best). Show the person the layouts (catalogue section "Thumbnails and blog covers") and ask which to use. Rules: docs/THUMBNAILS.md.
+
 ## Walkthrough video (only if asked: "show how to ...", "record a guide", "demo this site")
 Real step-by-step guide of a website or web app, run and verified with Playwright, rendered as a Claude-light Reel (cursor, highlight on the target, Expected vs Actual, Verified/Failed badge, summary checklist, brand CTA on every frame). Write `steps.json` {title, sub, steps[2-12]{say, action goto|click|fill|press|hover|scroll|wait, url|target|value|key, secret?, expect?{text|url|visible|title}}}, show it to the person and wait for OK, then `studio.py walkthrough W --steps steps.json [--device mobile|desktop] [--strict]` in the background. Never type real passwords or personal data: test accounts only, `secret: true` blurs typed values. Failed steps stay visible; report the verified count and `out/<slug>-walkthrough-report.md`.
 

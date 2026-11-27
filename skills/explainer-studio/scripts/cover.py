@@ -31,12 +31,37 @@ def data(story, hook=None, layout=None):
     num = None
     for t in [hook, sub] + ([big['big'], big.get('sub', '')] if big else []):
         m = NUM.search(t or '')
-        if m and (len(re.sub(r'\D', '', m.group(1))) >= 2 or m.group(1).strip()[-1:] in '%xkmbKMB'): num = {'value': m.group(1).strip(), 'label': t}; break   # a lone digit is not a headline figure
+        v = m.group(1).strip() if m else ''
+        if m and (v[-1:] in '%xkmbKMB' or float(re.sub(r'[^\d.]', '', v) or 0) >= 10): num = {'value': v, 'label': t}; break   # small bare numbers (1, 1.3) are versions or counts, not headline figures
     out = {'hook': hook, 'sub': sub, 'kicker': cv.get('kicker', ''), 'chips': chips, 'icons': [i['icon'] for p in lists for i in _items(p) if i['icon']][:4]}
     if flow: out['flow'] = {'title': flow['title'], 'steps': _items(flow)[:4]}
     if num: out['number'] = num
-    if len(lists) >= 2: out['split'] = [{'head': p['title'], 'items': [i['title'] for i in _items(p)][:3]} for p in lists[:2]]
+    pair = [p for p in lists if p.get('items')] if len([p for p in lists if p.get('items')]) >= 2 else lists   # compare two lists, not the step flow, when the story has them
+    if len(pair) >= 2: out['split'] = [{'head': p['title'], 'items': [i['title'] for i in _items(p)][:3]} for p in pair[:2]]
     avail = [l for l in LAYOUTS if l in ('question', 'face') or (l == 'hero' and 'flow' in out) or (l in out)]
     pick = layout or cv.get('layout') or 'hero'
     out['layouts'] = avail; out['chosen'] = pick if pick in avail else avail[0]
+    return out
+
+
+# —— thumbnails and blog covers (engine/thumb.js) ——
+THUMB_SIZES = {'youtube': (1280, 720), 'og': (1200, 630), 'devto': (1000, 420), 'hashnode': (1600, 840)}
+THUMB_LAYOUTS = ('face', 'number', 'diagram', 'versus', 'editorial')
+def thumb_data(story, size, text=None, layouts=None):
+    """Words for a thumbnail or blog cover, from the story (thumb.text, else the hook). Layouts offered only when the story has what they need."""
+    th = story.get('thumb') or {}
+    if not story.get('scenes') and th:   # a stand-alone thumb section: its own words, steps and two lists
+        story = {**story, 'scenes': [{'p': {'q': th.get('text') or story['meta']['title'], 'sub': th.get('sub', ''), 'chips': th.get('chips', [])}}]
+                 + ([{'p': {'title': th.get('kicker') or 'How it works', 'steps': [{'label': x} for x in th['steps']]}}] if th.get('steps') else [])
+                 + [{'p': {'title': l['head'], 'items': [{'label': x} for x in l['items']]}} for l in th.get('lists', [])]}
+    cd = data(story)
+    out = {'platform': size, 'chips': cd.get('chips', []), 'text': text or th.get('text') or cd['hook'], 'kicker': th.get('kicker', cd.get('kicker') or (cd.get('flow') or {}).get('title', '')), 'sub': cd.get('sub', '')}
+    if cd.get('flow') and len(cd['flow']['steps']) >= 2: out['flow'] = cd['flow']
+    m = NUM.search(out['text']); v = m.group(1).strip() if m else ''
+    if m and (v[-1:] in '%xkmbKMB' or float(re.sub(r'[^\d.]', '', v) or 0) >= 10): out['number'] = {'value': v, 'label': out['text']}   # the thumbnail's own figure first
+    elif cd.get('number'): out['number'] = cd['number']
+    if cd.get('split'): out['split'] = cd['split']
+    ok = [l for l in THUMB_LAYOUTS if l in ('face', 'editorial') or (l == 'diagram' and 'flow' in out) or (l == 'number' and 'number' in out) or (l == 'versus' and 'split' in out)]
+    out['layouts'] = [l for l in ok if not layouts or l in layouts] or ok
+    out['words'] = len(out['text'].split())
     return out
