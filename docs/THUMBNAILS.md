@@ -8,6 +8,7 @@ Renders every requested size × every layout the story supports into `out/thumbs
 |---|---|---|
 | `youtube` | 1280×720 | YouTube video thumbnail |
 | `og` | 1200×630 | Open Graph link preview (LinkedIn, X, Slack) and the default blog header |
+| `newsletter` | 1920×1080 | LinkedIn newsletter and article cover image |
 | `devto` | 1000×420 | dev.to cover image |
 | `hashnode` | 1600×840 | Hashnode cover image |
 
@@ -18,6 +19,8 @@ Renders every requested size × every layout the story supports into `out/thumbs
 | `diagram` | the hook and a mini flow of 3–4 steps | the story has a flow or list scene |
 | `versus` | two lists side by side with a VS seal | the story has two list scenes |
 | `editorial` | a calm blog header: serif headline, one line, topic tags | always |
+
+Every layout carries your personal branding: your profile photo (cropped onto the face for small circles, head and shoulders for the large face layout), your name and your tagline. If the crop misses your face, set `face_x` / `face_y` (percent of the photo) in your brand file.
 
 Words: `thumb.text` (6–40 characters, from the source) and `thumb.kicker` in story.json; without them the hook is used. The command warns above 7 words.
 

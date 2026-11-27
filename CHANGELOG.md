@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0
+
+- **Gallery-first Design Studio**: the home page is one filterable gallery of all 66 designs across GIF, carousel, Reel, thumbnails and walkthroughs, with media tabs, categories, search and best-fit ranking for your source. Cards play the real motion on hover (19 small MP4 previews, 1 MB in total). A side panel gives the ID, why it fits, and an action: prepare a request, edit and render, render covers or thumbnails, or open the walkthrough builder.
+- **LinkedIn newsletter cover** size (1920×1080) for thumbnails and blog covers.
+- **Personal branding on every thumbnail**: your profile photo (face crop for small circles, head and shoulders for the face layout), name and tagline; `face_x` / `face_y` in the brand file tune the crop.
+- Fixes: the gallery panel no longer leaks into other pages; `gif_samples.py` reports fixtures without a GIF as skipped.
+- App tour covers the gallery: motion on hover, ranking, panel request, five-size thumbnail render (21 checks).
+
 ## 3.2.0
 
 - **Architecture diagrams** (`engine/arch.js`): one diagram for a whole post in four styles: `sketch` (Excalidraw-like hand-drawn strokes, hachure fills, Excalifont), `cloud` (zone bands, service cards, labelled connectors, legend), `flow` (swimlanes, decisions, loops) and `sequence`. Available as a carousel slide (`type: arch`) and a flow-only GIF (`gif.template: arch`, dots on every connector). Validation refuses unknown edge targets, bad indexes and zones with more than 6 nodes.

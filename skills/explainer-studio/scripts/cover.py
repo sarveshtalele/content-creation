@@ -45,7 +45,7 @@ def data(story, hook=None, layout=None):
 
 
 # —— thumbnails and blog covers (engine/thumb.js) ——
-THUMB_SIZES = {'youtube': (1280, 720), 'og': (1200, 630), 'devto': (1000, 420), 'hashnode': (1600, 840)}
+THUMB_SIZES = {'youtube': (1280, 720), 'og': (1200, 630), 'newsletter': (1920, 1080), 'devto': (1000, 420), 'hashnode': (1600, 840)}   # newsletter = LinkedIn newsletter / article cover
 THUMB_LAYOUTS = ('face', 'number', 'diagram', 'versus', 'editorial')
 def thumb_data(story, size, text=None, layouts=None):
     """Words for a thumbnail or blog cover, from the story (thumb.text, else the hook). Layouts offered only when the story has what they need."""

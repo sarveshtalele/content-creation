@@ -104,7 +104,7 @@ def brand():
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': ''}   # no photo on covers; the profile photo appears only in the CTA / header avatar
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': '', **{k: b[k] for k in ('face_x', 'face_y') if k in b}}   # face_x/face_y (percent) tune the face crop; no photo on covers; the profile photo appears only in the CTA / header avatar
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -676,7 +676,7 @@ def main():
     cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--layout', choices=['hero', 'question', 'number', 'split', 'face']); cv.add_argument('--hook')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     sp.add_parser('catalog', help='regenerate studio/catalog.html (every design with its ID and sample) and print its path')
-    th = sp.add_parser('thumbs', help='thumbnails and blog covers: YouTube 1280x720, Open Graph 1200x630, dev.to 1000x420, Hashnode 1600x840'); th.add_argument('dir'); th.add_argument('--sizes'); th.add_argument('--layouts'); th.add_argument('--text')
+    th = sp.add_parser('thumbs', help='thumbnails and blog covers: YouTube 1280x720, Open Graph 1200x630, LinkedIn newsletter 1920x1080, dev.to 1000x420, Hashnode 1600x840'); th.add_argument('dir'); th.add_argument('--sizes'); th.add_argument('--layouts'); th.add_argument('--text')
     wk = sp.add_parser('walkthrough', help='run a step-by-step guide with Playwright, verify each step, render a walkthrough Reel'); wk.add_argument('dir'); wk.add_argument('--steps', required=True); wk.add_argument('--device', choices=['mobile', 'desktop'], default='mobile'); wk.add_argument('--strict', action='store_true')
     a = ap.parse_args()
     if a.cmd == 'cover': return cover_cmd(a)

@@ -1,9 +1,10 @@
 // Router + Home + Library. Each media has its own workspace in media.js.
 import { $, $$, el, api, u, ic, S, analyze, head, card, ready } from './core.js';
 import { gifPage, carouselPage, reelPage, coverPage, walkPage, postPage } from './media.js';
+import { galleryPage } from './gallery.js';
 
-const PAGES = { home, library, gif: gifPage, carousel: carouselPage, reel: reelPage, cover: coverPage, walkthrough: walkPage, post: postPage };
-const TITLES = { home: 'Home', library: 'Library', gif: 'GIF', carousel: 'Carousel', reel: 'Reel', cover: 'Reel cover', walkthrough: 'Walkthrough video', post: 'Post' };
+const PAGES = { home: galleryPage, start: home, library, gif: gifPage, carousel: carouselPage, reel: reelPage, cover: coverPage, walkthrough: walkPage, post: postPage };
+const TITLES = { home: 'Gallery', start: 'Start', library: 'Library', gif: 'GIF', carousel: 'Carousel', reel: 'Reel', cover: 'Reel cover', walkthrough: 'Walkthrough video', post: 'Post' };
 
 async function boot() {
   S.D = await api('/api/designs'); $('#who').textContent = S.D.brand.name; $('#catLink').href = u('/catalog');
@@ -13,6 +14,7 @@ async function boot() {
 function route() {
   const h = ((location.hash || '#/home').slice(2) || 'home').split('?')[0], page = PAGES[h] ? h : 'home';
   $$('.rail a').forEach(a => a.toggleAttribute('aria-current', false) || (a.dataset.r === page && a.setAttribute('aria-current', 'page')));
+  $('#gpanel')?.remove();   // the gallery's side panel belongs to the gallery only
   const m = $('#view'); m.innerHTML = ''; scrollTo(0, 0); PAGES[page](m); document.title = TITLES[page] + ' · Explainer Studio'; m.focus({ preventScroll: true });
 }
 

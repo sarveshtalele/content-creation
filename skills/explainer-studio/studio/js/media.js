@@ -37,6 +37,7 @@ export function carouselPage(m) {
   const all = S.D.designs.filter(d => d.group === 'infographic' || d.group === 'chart'), order = S.analysis ? S.analysis.carousel.map(c => TYPE2DESIGN(c.type)).filter(id => byId(id)) : [];
   const slides = [...order.map(id => byId(id)), ...all.filter(d => !order.includes(d.id))].map((d, k) => ({ id: d.id, name: d.name, tag: (d.family ? d.family + ' · ' : '') + d.best_for, img: '/samples/' + d.id + '.jpg', score: S.analysis ? (k < order.length ? order.length - k : 0) : null, why: k < order.length ? 'Fits ' + S.analysis.carousel[k].for.toLowerCase() : (d.family ? d.family + ' · ' : '') + d.best_for }));
   seed(st.cover);
+  if (S.pending && byId(S.pending)) { const d = byId(S.pending); if (d.group === 'cover') st.cover = d.id; else st.slides.push(d.id); seed(d.id); S.pending = null; }   // picked in the gallery
   const deck = el('div', { class: 'deck' }), forms = el('div', { class: 'stack' }), out = el('div');
   const mode = el('div', { class: 'tabs', role: 'tablist' }); [['carousel', 'Carousel (PDF + images)'], ['single', 'One infographic image']].forEach(([k, n]) => mode.append(el('button', { role: 'tab', type: 'button', 'aria-selected': String(k === st.mode), text: n, onclick: e => { st.mode = k; $$('button', mode).forEach(b => b.setAttribute('aria-selected', String(b === e.target))); if (k === 'single') st.slides = st.slides.slice(0, 1); draw(); } })));
   function draw() {

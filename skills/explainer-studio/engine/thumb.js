@@ -15,10 +15,16 @@ function big(root, id, text, { x, y, w, h, color, stroke, font = 'sans', weight 
   tx(root, id, text, { x, y, w, h: hh, size: z, weight, font, color, align, wrap: true, lh, ls: font === 'sans' ? -.02 : 0, css: stroke ? OUT(`${Math.max(3, Math.round(z * .07))}px ${stroke}`) + `text-shadow:0 ${Math.round(z * .06)}px 0 ${stroke}55;` : '' });
   return hh;
 }
-function brand(root, D, F, dark) {
-  const s = Math.round(54 * F.u), b = E(root, 'abs', `left:${F.x0}px;top:${F.y1 - s}px;height:${s}px;display:flex;align-items:center;gap:${Math.round(12 * F.u)}px`);
-  E(b, '', `width:${s}px;height:${s}px;border-radius:${Math.round(s * .3)}px;background:url(${D.brand.avatar || 'assets/avatar.png'}) center/cover;border:3px solid ${dark ? '#fff' : C.card};flex:none`);
-  const t = E(b, 'tx sans', `font-size:${Math.round(26 * F.u)}px;font-weight:700;color:${dark ? '#fff' : C.ink};white-space:nowrap`); const sp = E(t, '', 'display:block', '', 'span'); sp.textContent = D.brand.name; t.dataset.id = 'th-brand'; t.dataset.text = D.brand.name;
+// the author's photo, cropped for its use: 'face' zooms onto the face so a small circle reads as a person; 'bust' keeps head and shoulders
+const AV = D => D.brand.avatar || 'assets/avatar.png';
+const photo = (D, mode) => mode === 'face' ? `background:url(${AV(D)}) ${D.brand.face_x ?? 59}% ${D.brand.face_y ?? 36}%/185% no-repeat` : `background:url(${AV(D)}) ${D.brand.face_x ?? 58}% 30%/cover no-repeat`;
+function brand(root, D, F, dark) {   // personal branding on every layout: photo (face crop), name, tagline
+  const s = Math.round(66 * F.u), b = E(root, 'abs', `left:${F.x0}px;top:${F.y1 - s}px;height:${s}px;display:flex;align-items:center;gap:${Math.round(14 * F.u)}px;max-width:${Math.round((F.badge ? .62 : .8) * (F.x1 - F.x0))}px`);
+  E(b, '', `width:${s}px;height:${s}px;border-radius:50%;${photo(D, 'face')};border:${Math.max(2, Math.round(3 * F.u))}px solid ${dark ? '#fff' : C.clay};box-shadow:0 0 0 ${Math.max(2, Math.round(3 * F.u))}px ${dark ? 'rgba(255,255,255,.25)' : C.claySoft};flex:none`);
+  const col = E(b, '', 'display:flex;flex-direction:column;min-width:0');
+  const mk = (id, text, size, weight, color) => { const t = E(col, 'tx sans', `font-size:${size}px;font-weight:${weight};color:${color};white-space:nowrap;line-height:1.15`); const sp = E(t, '', 'display:block', '', 'span'); sp.textContent = text; t.dataset.id = id; t.dataset.text = text; };
+  mk('th-brand', D.brand.name, Math.round(27 * F.u), 800, dark ? '#fff' : C.ink);
+  if (D.brand.tagline && F.u >= .9) mk('th-tag', D.brand.tagline, Math.round(20 * F.u), 500, dark ? 'rgba(255,255,255,.82)' : C.mid);
 }
 function chip(root, id, text, x, y, F, bg, fg) {
   const t = E(root, 'tx sans', `position:absolute;left:${x}px;top:${y}px;display:inline-flex;align-items:center;white-space:nowrap;font-size:${Math.round(24 * F.u)}px;font-weight:800;letter-spacing:.08em;color:${fg};background:${bg};border-radius:999px;padding:${Math.round(8 * F.u)}px ${Math.round(20 * F.u)}px`);
@@ -32,7 +38,7 @@ const L = {
     blob(root, W * .86, H * .1, H * .45, '#ffffff', .10); blob(root, W * .06, H * 1.02, H * .4, '#000000', .08);
     const S = Math.round(H * .62), px = W - F.m - S - (F.badge ? W * .02 : 0), py = Math.round((H - S) / 2) - (F.badge ? H * .06 : 0);
     E(root, 'abs', `left:${px - 10}px;top:${py - 10}px;width:${S + 20}px;height:${S + 20}px;border-radius:50%;background:#FFF3E8`);
-    E(root, 'abs', `left:${px}px;top:${py}px;width:${S}px;height:${S}px;border-radius:50%;background:url(${D.brand.avatar || 'assets/avatar.png'}) center/cover;box-shadow:0 ${Math.round(18 * F.u)}px ${Math.round(40 * F.u)}px rgba(0,0,0,.28)`);
+    E(root, 'abs', `left:${px}px;top:${py}px;width:${S}px;height:${S}px;border-radius:50%;${photo(D, 'bust')};box-shadow:0 ${Math.round(18 * F.u)}px ${Math.round(40 * F.u)}px rgba(0,0,0,.28)`);
     let y = F.y0; if (t.kicker) { chip(root, 'th-k', t.kicker, F.x0, y, F, '#141413', '#FFFFFF'); y += Math.round(64 * F.u); }
     big(root, 'th-hook', t.text, { x: F.x0, y, w: px - F.x0 - 24 * F.u, h: F.y1 - y - 80 * F.u, color: '#FFFFFF', stroke: '#141413', max: Math.round(150 * F.u), min: Math.round(44 * F.u) });
     brand(root, D, F, true);
@@ -61,7 +67,7 @@ const L = {
   },
   versus(root, D, W, H) {   // two halves that contrast, a VS seal, the hook across the top
     const F = frame(W, H, D), t = D.thumb, [A, B] = t.split; root.style.background = C.bg;
-    const top = F.y0 + Math.round(120 * F.u), half = (W - 2 * F.m - 24 * F.u) / 2, ph = H - top - F.m - (F.badge ? 0 : 0);
+    const top = F.y0 + Math.round(120 * F.u), half = (W - 2 * F.m - 24 * F.u) / 2, ph = H - top - F.m - Math.round(86 * F.u);   // room for the author block
     big(root, 'th-hook', t.text, { x: F.x0, y: F.y0, w: W - 2 * F.m, h: 104 * F.u, color: C.ink, font: 'serif', weight: 700, max: Math.round(84 * F.u), min: 28, align: 'center', lh: 1.02 });
     [[A, C.blue, C.blueSoft, C.blueD], [B, C.clay, C.claySoft, C.clayD]].forEach(([sd, bd, soft, ink], k) => {
       const x = F.x0 + k * (half + 24 * F.u), b = E(root, 'abs', `left:${x}px;top:${top}px;width:${f1(half)}px;height:${f1(ph - (k && F.badge ? H * .16 : 0))}px;border-radius:${Math.round(28 * F.u)}px;background:${soft};border:${Math.max(2, Math.round(4 * F.u))}px solid ${bd};box-sizing:border-box`); b.dataset.box = '1';
@@ -70,6 +76,7 @@ const L = {
       items.forEach((it, j) => tx(b, `th-v${k}-${j}`, '• ' + it, { x: 24 * F.u, y: 96 * F.u + j * pitch, w: half - 56 * F.u, h: pitch - 4, size: iz, weight: 600, color: C.ink }));
     });
     E(root, 'abs', `left:${f1(W / 2 - 40 * F.u)}px;top:${f1(top + (ph - (F.badge ? H * .16 : 0)) / 2 - 40 * F.u)}px;width:${Math.round(80 * F.u)}px;height:${Math.round(80 * F.u)}px;border-radius:50%;background:${C.ink};color:#fff;font:900 ${Math.round(30 * F.u)}px Inter,sans-serif;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 ${Math.round(8 * F.u)}px ${C.bg}`, 'VS');
+    brand(root, D, F, false);
   },
   editorial(root, D, W, H) {   // a calm blog header: paper, a serif headline, one line, tags, the author
     const F = frame(W, H, D), t = D.thumb; root.style.background = C.bg;

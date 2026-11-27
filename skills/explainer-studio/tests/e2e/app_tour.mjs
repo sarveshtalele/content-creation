@@ -20,13 +20,26 @@ const go = async h => { await page.goto(URL + '#/' + h); await page.waitForSelec
 const SRC = 'Most free trials end before data. Of 1,000 visitors who see the pricing page, 400 start a free trial. Only 240 connect a data source, the step that predicts everything. 96 reach a paid plan and 72 are still paying after three months. The biggest drop-off happens between trial and first data.';
 
 try {
-  // Home: analyse a source
-  await go('home'); check(await page.locator('h1').innerText() !== '', 'Home loads');
-  await page.fill('#src', SRC); await pause(); await page.getByRole('button', { name: 'Analyse my content' }).click();
-  await page.waitForSelector('.reco', { timeout: 90000 });   // the first analysis can wait on the app's startup health check await pause(1500);
+  // Gallery (home): every design, motion on hover, ranking, the side panel
+  await go('home'); check(await page.locator('h1').innerText() === 'Gallery', 'Gallery is the home page');
+  check(await page.locator('.gcard').count() >= 60, `Gallery lists every design (${await page.locator('.gcard').count()})`);
+  await page.getByRole('tab', { name: /^GIF/ }).click(); await pause(600);
+  const g0 = page.locator('.gcard').first(); await g0.hover(); await pause(1800);
+  check(await g0.locator('video').evaluate(v => v.readyState >= 2 && !v.paused).catch(() => false), 'Hovering a GIF card plays its motion');
+  await page.mouse.move(5, 5); await pause(300);
+  await page.evaluate(() => { const d = document.querySelector('details'); if (d) d.open = true; }); await page.fill('#src', SRC); await pause(); await page.getByRole('button', { name: /Rank for my content|Re-rank/ }).click();
+  await page.waitForSelector('.shapes .chip', { timeout: 90000 }); await pause(1500);   // the first analysis can wait on the app's startup health check
   check((await page.locator('.shapes').innerText()).includes('Narrowing numbers'), 'Decision matrix finds "Narrowing numbers"');
-  check((await page.locator('.reco').innerText()).toLowerCase().includes('funnel'), 'Funnel recommended for the GIF');
-  await page.mouse.wheel(0, 600); await pause(1200);
+  check(await page.locator('.gcard').first().getAttribute('data-id') === 'funnel', 'Ranked gallery puts the funnel GIF first');
+  await page.locator('.gcard').first().click(); await page.waitForSelector('.gpanel.open'); await pause(900);
+  await page.fill('#gp-t', 'Why most free trials end before data'); await page.getByRole('button', { name: 'Prepare the request for my agent' }).click();
+  await page.waitForSelector('.gpanel pre'); check((await page.locator('.gpanel pre').innerText()).includes('gif.template = "funnel"'), 'Panel request carries the chosen GIF template'); await pause(1200);
+  await page.getByRole('button', { name: 'Close' }).click(); await page.getByRole('tab', { name: /^Thumbnails/ }).click(); await pause(600);
+  await page.locator('.gcard[data-id="thumb-face"]').click(); await page.waitForSelector('.gpanel.open #gp-h');
+  await page.fill('#gp-h', '72% never connect data'); await page.fill('#gp-u', 'Of 1,000 visitors, 72% never connect a data source'); await pause(500);
+  await page.getByRole('button', { name: 'Render at every size' }).click(); await page.waitForSelector('.gpanel .results img', { timeout: 300000 }); await page.locator('.gpanel .results').scrollIntoViewIfNeeded(); await pause(2200);
+  check(await page.locator('.gpanel .results img').count() >= 5, 'Panel renders a thumbnail at all five sizes with your branding');
+  await page.getByRole('button', { name: 'Close' }).click(); await pause(400);
 
   // GIF: ranked gallery, pick, hook, request
   await go('gif'); const first = await page.locator('.pick').first().innerText(); check(/funnel/i.test(first), 'GIF gallery ranks the funnel template #1');

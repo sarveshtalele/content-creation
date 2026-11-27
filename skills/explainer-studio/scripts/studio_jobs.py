@@ -70,6 +70,26 @@ def cover_job(root, v):
     cd = os.path.join(job, 'out', 'covers'); files = sorted(os.path.join(cd, f) for f in os.listdir(cd)) if os.path.isdir(cd) else []
     return {'ok': r.returncode == 0 and bool(files), 'log': (r.stdout + r.stderr)[-3000:], 'files': files, 'job': job}
 
+def thumb_job(root, v):
+    """Thumbnails / blog covers from the gallery panel: text (6-40), kicker, sub, chips, steps, two lists; layouts and sizes. Returns {'ok','log','files','job'}"""
+    text = (v.get('text') or '').strip()[:40]
+    if len(text) < 6: raise ValueError('Write the thumbnail text: 3 to 6 words.')
+    th = {'text': text}
+    if (v.get('kicker') or '').strip(): th['kicker'] = v['kicker'].strip()[:26]
+    if (v.get('sub') or '').strip(): th['sub'] = v['sub'].strip()[:90]
+    ch = [str(x).strip()[:16] for x in (v.get('chips') or []) if str(x).strip()][:4]
+    st = [str(x).strip()[:28] for x in (v.get('steps') or []) if str(x).strip()][:4]
+    if ch: th['chips'] = ch
+    if len(st) >= 2: th['steps'] = st
+    slug = re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')[:40] or 'thumb'
+    story = {'meta': {'title': text, 'slug': slug}, 'thumb': th}
+    job = _jobdir(root, slug + '-thumbs'); _project(job, story, ' '.join([text, th.get('kicker', ''), th.get('sub', '')] + ch + st) + ' ' + _brand_name())
+    sizes = [s_ for s_ in (v.get('sizes') or []) if s_ in ('youtube', 'og', 'newsletter', 'devto', 'hashnode')]; lays = [l for l in (v.get('layouts') or []) if l in ('face', 'number', 'diagram', 'versus', 'editorial')]
+    cmd = [sys.executable, os.path.join(HERE, 'studio.py'), 'thumbs', job] + (['--sizes', ','.join(sizes)] if sizes else []) + (['--layouts', ','.join(lays)] if lays else [])
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900, cwd=job)
+    td = os.path.join(job, 'out', 'thumbs'); files = sorted(os.path.join(td, f) for f in os.listdir(td)) if os.path.isdir(td) else []
+    return {'ok': r.returncode == 0 and bool(files), 'log': (r.stdout + r.stderr)[-3000:], 'files': files, 'job': job}
+
 def walk_job(root, spec, device='mobile'):
     """Prepare a walkthrough job folder; the caller runs studio.py walkthrough on it in the background."""
     if not isinstance(spec, dict) or not (spec.get('title') or '').strip(): raise ValueError('Give the guide a title.')

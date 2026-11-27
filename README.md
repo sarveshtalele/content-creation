@@ -7,7 +7,7 @@
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.2.0-D97757)
+![Version](https://img.shields.io/badge/version-3.3.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
@@ -46,7 +46,7 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
 | **Architecture diagram** | GIF (flow-only), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
-| **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, dev.to 1000×420, Hashnode 1600×840; five layouts (face, number, diagram, versus, editorial) following current thumbnail research |
+| **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, LinkedIn newsletter 1920×1080, dev.to 1000×420, Hashnode 1600×840; five layouts, each with your photo, name and tagline (face, number, diagram, versus, editorial) following current thumbnail research |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
 | **Walkthrough video** | 1080x1920 MP4 + E2E report | A real guide run in a browser by **Playwright**: every step is performed, checked (expected vs actual) and shown with a cursor, a highlight and a Verified/Failed badge |
 | **Post** | LinkedIn post text | Hook, short points with their sources, your exact closing CTA |
@@ -238,7 +238,7 @@ python3 skills/explainer-studio/scripts/studio.py studio    # prints a private 1
 
 | Workspace | What you do there |
 |---|---|
-| **Home** | Paste a source. The decision matrix shows its shapes and the top picks for each media |
+| **Gallery** (home) | Every design in every media, filterable, with motion previews on hover and "Best fit" ranking for your source; open a card to copy its ID, render it here or prepare a request |
 | **GIF** | Pick from all 16 templates, ranked with a fit bar and a reason. Choose a hook, then hand the request to your agent |
 | **Carousel** | Pick a cover and up to five chart slides (ranked) and edit the content. Builds the PDF and PNGs directly |
 | **Reel** | Pick a spoken hook, an opening visual, a format and a look. The matrix shows the motion it chose |

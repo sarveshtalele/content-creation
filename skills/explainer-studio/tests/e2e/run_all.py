@@ -79,7 +79,7 @@ def run(out, only):
         rec('Architecture slides (sketch, cloud, flow, sequence)', r['ok'] and rc2 == 0, round(time.time() - t0, 1), files, e2e=e2e.strip().splitlines()[-3:], log=None if r['ok'] else r['log'][-800:])
     if 'thumbs' in only:   # every size x every layout
         w = os.path.join(wk, 'thumbs'); project(w, 'thumbs'); rc, log, s = sh([PY, ST, 'thumbs', w], 900)
-        rec('Thumbnails and blog covers (4 sizes x 5 layouts)', rc == 0 and '20 images' in log, s, collect(w, os.path.join(out, 'thumbs'), ['thumbs/*.png']), notes=[l for l in log.splitlines() if 'LAYOUT' in l][:5])
+        rec('Thumbnails and blog covers (5 sizes x 5 layouts)', rc == 0 and '25 images' in log, s, collect(w, os.path.join(out, 'thumbs'), ['thumbs/*.png']), notes=[l for l in log.splitlines() if 'LAYOUT' in l][:5])
     if 'reel' in only:
         w = os.path.join(wk, 'reel'); project(w, 'https'); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'reel,post'], 2400)
         g = gates(w); rec('Reel + designed covers + post', rc == 0 and 'BUILD COMPLETE' in log, s, collect(w, os.path.join(out, 'reel'), ['*.mp4', '*.srt', '*poster.jpg', 'covers/*.png', '*post.txt', 'review/*.png']),

@@ -34,7 +34,7 @@ def build():
     sec.append(('reelcover', 'Reel covers', '1080x1920 designed covers, safe for the profile-grid crop. Quote the layout name.',
                 ''.join(card(f'reelcover-{k}.jpg', k, k.title(), v, tall=True) for k, v in rc.items())))
     tl = {'face': 'Your photo with 3-6 outlined words on a saturated background', 'number': 'One real figure in a ring, words beside it', 'diagram': 'The hook with a mini flow of 3-4 steps', 'versus': 'Two lists side by side with a VS seal', 'editorial': 'A calm blog header: serif headline, one line, tags'}
-    sec.append(('thumbs', 'Thumbnails and blog covers', 'Sizes: youtube 1280x720, og 1200x630 (link previews and blog headers), devto 1000x420, hashnode 1600x840. Quote the layout; studio.py thumbs renders every size.',
+    sec.append(('thumbs', 'Thumbnails and blog covers', 'Sizes: youtube 1280x720, og 1200x630 (link previews and blog headers), newsletter 1920x1080 (LinkedIn newsletter and article cover), devto 1000x420, hashnode 1600x840. Every layout carries your photo, name and tagline. Quote the layout; studio.py thumbs renders every size.',
                 ''.join(card(f'thumb-{k}.jpg', k, k.title(), v, wide=True) for k, v in tl.items())))
     motion = sorted({s['reel_motion'] for s in M['shapes']})
     sec.append(('reel', 'Reel looks and motion', 'Every Reel has a kinetic hook, masked scene reveals, a camera push, parallax, animated counters (10 and up) and particles on connectors. Choose the look:',

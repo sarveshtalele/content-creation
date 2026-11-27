@@ -62,6 +62,8 @@ def serve(port=0, open_browser=True, state_path=None):
                 import hooks as HK; qs = (q.get('text') or [''])[0][:6000]
                 return self._json(200, {'carousel': HK.suggest(qs, 'carousel', 5) if qs.strip() else [], 'line': HK.suggest(qs, 'line', 6) if qs.strip() else [], 'library': HK.load(), })
             if u.path == '/api/ready': return self._json(200, readiness())
+            if u.path == '/api/gallery':
+                import gallery as GL; return self._json(200, {'items': GL.items()})
             if u.path == '/catalog':
                 import catalog as CT; return self._send(200, open(CT.build(), 'rb').read(), 'text/html; charset=utf-8')
             if u.path == '/api/job':
@@ -96,6 +98,11 @@ def serve(port=0, open_browser=True, state_path=None):
                     R['hookSets'] = {k: HK.suggest(t, k, 6, fam[k]) for k in fam}; return self._json(200, R)
                 if u.path == '/api/cover':
                     try: r = SJ.cover_job(jobs, body)
+                    except ValueError as e: return self._json(400, {'error': str(e)})
+                    rel = lambda p: os.path.relpath(p, jobs).replace(os.sep, '/')
+                    return self._json(200, {'ok': r['ok'], 'log': r['log'], 'files': [{'name': os.path.basename(p), 'url': '/file/' + rel(p)} for p in r['files']]})
+                if u.path == '/api/thumbs':
+                    try: r = SJ.thumb_job(jobs, body)
                     except ValueError as e: return self._json(400, {'error': str(e)})
                     rel = lambda p: os.path.relpath(p, jobs).replace(os.sep, '/')
                     return self._json(200, {'ok': r['ok'], 'log': r['log'], 'files': [{'name': os.path.basename(p), 'url': '/file/' + rel(p)} for p in r['files']]})

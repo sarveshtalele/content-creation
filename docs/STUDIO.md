@@ -10,6 +10,22 @@ python3 skills/explainer-studio/scripts/studio.py studio --stop
 
 The link works only on this computer. The app listens on 127.0.0.1, checks a random token on every request, refuses other Host headers and serves only its own files.
 
+## Gallery (home)
+
+Every design in every media (GIF templates, carousel covers, infographics, 21 charts, architecture styles, Reel covers, the Reel, walkthrough videos, thumbnails) in one filterable grid: media tabs with counts, a category filter, search, and **Best fit first** once you paste your source (the decision matrix marks the top three). Cards with motion play the real GIF, Reel or walkthrough clip on hover or keyboard focus.
+
+Open a card for its side panel: a large preview, the **ID** to give your agent (with a copy button), what it is for and why it fits your content, and what you can do with it:
+
+| Design | Panel action |
+|---|---|
+| GIF templates, the Reel | prepare a ready request for your agent with this design |
+| Carousel covers, infographics, charts, architecture | edit the fields and render it here, or "Use in a carousel" |
+| Reel covers | write the hook and render every supported layout |
+| Thumbnails and blog covers | write 3-6 words and render all five sizes (YouTube, Open Graph, LinkedIn newsletter, dev.to, Hashnode), each with your photo, name and tagline |
+| Walkthrough video | open the walkthrough builder |
+
+The editors (GIF, Carousel, Reel, Reel cover, Walkthrough video, Post) stay in the sidebar for longer edits.
+
 ## Workspaces
 
 | Workspace | Flow | Builds here? |
@@ -36,6 +52,8 @@ Every output carries your brand CTA pill (photo, name, tagline) at the bottom.
 | `POST /api/walk {spec, device}` → `GET /api/job?id=` | background Playwright walkthrough, its live log and files |
 | `POST /api/request {kind, topic, source, notes, hook, design, extra}` | a ready-to-paste request for your agent |
 | `GET /api/library`, `GET /api/ready` | library items; readiness from `studio.py doctor` |
+| `GET /api/gallery` | every design with its preview, motion clip, aspect, category and panel action (scripts/gallery.py) |
+| `POST /api/thumbs {text, kicker, sub, chips, steps, layouts, sizes}` | thumbnails and blog covers |
 | `GET /catalog` | the design catalogue page (every design with its ID and sample) |
 
 ## Files
