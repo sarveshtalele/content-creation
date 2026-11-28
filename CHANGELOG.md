@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.1
+
+- **Approvals go to the right project**: the hook keeps the recent projects waiting for an approval, and the code in your message picks the project, so a later review elsewhere (a test run, a second post) can no longer take it.
+- **finalize delivers the GIF's MP4**: the video is part of the reviewed files and lands in `final/` with the GIF and PNG.
+- **Stage panels**: a stack of three outputs stays between the stage's header band and its caption.
+
 ## 4.0.0
 
 **Renamed to content-creation**, the name of the GitHub repository. Every name now matches it. Full map: [docs/MIGRATION.md](docs/MIGRATION.md).
