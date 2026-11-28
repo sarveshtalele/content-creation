@@ -36,8 +36,14 @@ def current(work, gate):
 def code(work, gate): return current(work, gate)[:4]
 
 
+def recent():
+    """Projects that asked for an approval most recently first (gate and review add them; up to 20)."""
+    d = _load(ACTIVE); return d.get('recent') or ([d['work']] if d.get('work') else [])
+
+
 def set_active(work):
-    os.makedirs(EH, exist_ok=True); json.dump({'work': os.path.abspath(work), 'at': int(time.time())}, open(ACTIVE, 'w', encoding='utf-8'))
+    w = os.path.abspath(work); r = [w] + [x for x in recent() if x != w]
+    os.makedirs(EH, exist_ok=True); json.dump({'work': w, 'recent': r[:20], 'at': int(time.time())}, open(ACTIVE, 'w', encoding='utf-8'))
 
 
 def active(): return _load(ACTIVE).get('work', '')
@@ -78,9 +84,11 @@ def from_message(text, by):
     """Approval from the person's own message. Returns a short note, or '' when the message is not an approval."""
     m = PHRASE.fullmatch(text or '')
     if not m: return ''
-    work = active()
-    if not work or not os.path.isdir(work): return 'content-creation: no active project to approve (run studio.py gate DIR first).'
-    ok, msg = approve(work, m.group(1).lower(), by, m.group(2))
+    gate, given = m.group(1).lower(), m.group(2).lower()
+    works = [w for w in recent() if os.path.isdir(w)]
+    if not works: return 'content-creation: no project is waiting for an approval (run studio.py gate DIR first).'
+    match = [w for w in works if code(w, gate) == given]   # the code picks the project, so another project or a test run cannot take the approval
+    ok, msg = approve(match[0], gate, by, given) if match else approve(works[0], gate, by, given)
     return 'content-creation: ' + msg + ('' if ok else '. Not approved.')
 
 

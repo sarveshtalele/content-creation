@@ -72,7 +72,7 @@ Because Antigravity re-sends your last message before every step, the approval c
 W/plan.md                 the plan, with its approval line
 W/.gates/plan.json        {"sha": <plan hash>, "by": "person:claude", "at": "..."}
 W/.gates/final.json       {"sha": <review token>, "by": "person:codex", "at": "..."}
-~/.cache/content-creation/active.json   the project the next "approve ..." message applies to (set by gate and review)
+~/.cache/content-creation/active.json   the projects waiting for an approval, newest first (gate and review add them); the code in your message picks the project
 ```
 
 ## Commands

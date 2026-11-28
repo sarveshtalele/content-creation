@@ -65,4 +65,10 @@ assert hook('tool', {'tool_name': 'Bash', 'tool_input': {'command': f'python3 sc
 assert hook('tool', {'tool_name': 'Bash', 'tool_input': {'command': 'cat scripts/gates.py'}}) == ''
 # a broken payload never blocks the session
 r = subprocess.run([sys.executable, os.path.join(S, 'gate_hook.py'), 'tool'], input='not json', capture_output=True, text=True, env=ENV); assert r.returncode == 0 and r.stdout == ''
+# another project reviewed later (a test run, a second post) must not take this project's approval: the code picks the project
+W2 = tempfile.mkdtemp(prefix='gates-other-'); put(os.path.join(W2, 'plan.md'), '# Other plan\n'); studio('gate', W2)
+os.makedirs(os.path.join(W2, 'out', 'review')); put(os.path.join(W2, 'out', 'review', 'gates.json'), json.dumps({'token': '9136aaaaaaaa'})); G.set_active(W2)
+put(os.path.join(W, 'out', 'review', 'gates.json'), json.dumps({'token': 'd02baaaaaaaa'})); G.set_active(W); G.set_active(W2)
+assert not G.check(W, 'final')[0]
+out = hook('prompt', {'prompt': 'approve final d02b'}); assert 'final approved' in out and W in out and G.check(W, 'final')[0] and not G.check(W2, 'final')[0], out
 print('gates: all checks passed')
