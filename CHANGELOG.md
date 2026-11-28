@@ -1,5 +1,35 @@
 # Changelog
 
+## 4.0.0
+
+**Renamed to content-creation**, the name of the GitHub repository. Every name now matches it. Full map: [docs/MIGRATION.md](docs/MIGRATION.md).
+
+- **Names:**
+  - Plugin and skill: `explainer-studio` -> `content-creation`.
+  - Marketplace: `explainer-studio-marketplace` -> `content-creation-marketplace`.
+  - Skill folder: `skills/content-creation/`.
+  - Install folders: `~/.claude/skills/content-creation`, `~/.agents/skills/content-creation`, `~/.gemini/config/skills/content-creation`.
+- **Slash commands:**
+  - `/explainer` -> `/content-creation`.
+  - `/explainer-studio` -> `/content-creation-studio`.
+  - `/explainer-setup`, `-walkthrough`, `-update`, `-clean`, `-uninstall` -> `/content-creation-…`.
+- **Data folder:** `~/.cache/explainer-studio` -> `~/.cache/content-creation`, moved automatically once. That covers your brand, photo, library, jobs and runtime; the repository's runtime link is re-pointed.
+- **Environment variables:** `EXPLAINER_*` -> `CONTENT_CREATION_*`. The old names are still read.
+- **Upgrading:** `install.py install` removes the old explainer-studio copies and commands and replaces the old hook entries. `uninstall` cleans them too.
+- **Packages:** `content-creation-plugin-<version>.zip` and `content-creation-skill-<version>.zip`, plus `SHA256SUMS.txt`. Renders (`outputs/`), broken links and the demo videos are never packaged. Packages are published on GitHub Releases.
+- **Web app:** titled "Design Studio" everywhere. The newsletter banner card prepares a request for your agent.
+- **Plugin manifests:** new description, keywords, homepage and repository.
+- **New docs:**
+  - [INSTALL](docs/INSTALL.md)
+  - [MIGRATION](docs/MIGRATION.md)
+  - [APPROVAL_GATES](docs/APPROVAL_GATES.md)
+  - [CLI](docs/CLI.md)
+  - [ARCHITECTURE_DIAGRAMS](docs/ARCHITECTURE_DIAGRAMS.md)
+  - [LOGOS](docs/LOGOS.md)
+  - [RELEASING](docs/RELEASING.md)
+  - a docs index
+- **Updated docs:** README, ARCHITECTURE, CUSTOMIZE (banner photo), STUDIO, THUMBNAILS (banner), EVALUATION (every test), SECURITY (approval gates, icon import), CONTRIBUTING.
+
 ## 3.4.0
 
 - **Approval gates on every harness**: the agent brainstorms with you and writes `plan.md` (`studio.py plan`), `studio.py gate` stamps it with a 4-character code, and nothing builds (`build`, `thumbs`, `cover`) until you type `approve plan XXXX`; `finalize` waits for `approve final XXXX` after the review. A hook records the approval from your own message (Claude Code and Codex `UserPromptSubmit`, Antigravity `PreInvocation`) and denies agent tool calls that touch the approval records (`PreToolUse`). The code is the plan's hash, so a changed plan needs a new approval. `install.py` registers the hooks in `~/.claude/settings.json`, `~/.codex/hooks.json` and `~/.gemini/config/hooks.json` (and `hooks/hooks.json` for the Claude plugin route); `uninstall` removes only them. The Design Studio and editor count your click as the approval.

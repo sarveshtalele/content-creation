@@ -1,6 +1,6 @@
-# explainer-studio audit (v3, Phase 1)
+# content-creation audit (v3, Phase 1)
 
-Date: 2026-11-22. Scope: every renderer in `skills/explainer-studio/engine`, the carousel/cover/GIF/Reel samples, the Design Studio web app and the test suites.
+Date: 2026-11-22. Scope: every renderer in `skills/content-creation/engine`, the carousel/cover/GIF/Reel samples, the Design Studio web app and the test suites.
 
 ## Fixed in Phase 1
 

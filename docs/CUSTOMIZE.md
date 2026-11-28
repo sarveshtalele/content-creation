@@ -10,12 +10,12 @@ Everything you see on a finished GIF or Reel comes from one of three places. Cha
 | The **hook** (GIF title, GIF subtitle, post opening question, Reel opening question) | `work/story.json` | edit, then `studio.py check` |
 | The **content** or the **template** | `work/story.json` | edit, then `studio.py check` |
 
-Your brand is saved in `~/.cache/explainer-studio/brand.json` (Windows: `%USERPROFILE%\.cache\explainer-studio\brand.json`), with your avatar next to it. It overrides the defaults shipped in `config/brand.json` and **survives re-installs and updates**. `studio.py brand --reset` removes it.
+Your brand is saved in `~/.cache/content-creation/brand.json` (Windows: `%USERPROFILE%\.cache\content-creation\brand.json`), with your avatar next to it. It overrides the defaults shipped in `config/brand.json` and **survives re-installs and updates**. `studio.py brand --reset` removes it.
 
 ## 1. Update the CTA and rebuild
 
 ```bash
-S=skills/explainer-studio/scripts/studio.py          # Windows: py -3 skills\explainer-studio\scripts\studio.py
+S=skills/content-creation/scripts/studio.py          # Windows: py -3 skills\content-creation\scripts\studio.py
 
 python3 $S brand --name "Your Name" \
                  --follow "Follow" \
@@ -38,6 +38,7 @@ What each option does:
 | `--follow` | the verb: Follow, Join, Subscribe, Read | 3 to 14 characters |
 | `--tagline` | the text after the arrow | 4 to 44 characters |
 | `--avatar` | the round photo inside the pill | `.png` `.jpg` `.webp`, up to 2 MB, square works best |
+| `--photo` | your cut-out photo on the LinkedIn newsletter banner | a PNG with a transparent background is used as it is; any other photo is cut out on macOS with Apple's Vision framework, offline (needs the Xcode command line tools once). Saved as `photo_cutout.png` in your data folder |
 | `--cta` (repeat per line) | the closing lines of the LinkedIn post, copied exactly | 1 to 4 lines, 5 to 220 characters each |
 | `--voice`, `--speed` | the Reel narrator (`am_michael`, `am_onyx`, `bm_george`, ...) | speed 0.8 to 1.2 |
 
@@ -46,6 +47,15 @@ Run `studio.py brand` with no options to print what is currently in effect.
 **Rebuilding is cheap.** `build` re-renders from `story.json`, so a new CTA never needs the source again. Reels reuse the cached voice for every line you did not change, so only edited lines are re-synthesised. The previous `final/` folder stays until `finalize` replaces it, and the old attestation stops matching as soon as the files change, so a stale file can never be delivered by mistake.
 
 > **Where is `work`?** It is the folder you passed to `ingest` the first time. Keep it. If it is gone, run `ingest` on the source again and restore `story.json` from your chat or version control.
+
+### Your photo on the newsletter banner
+
+```bash
+python3 $S brand --photo ~/Pictures/me.jpg     # cut out once, reused by every banner
+python3 $S thumbs work --sizes newsletter --layouts banner
+```
+
+Without a cut-out photo the banner shows your avatar in a round frame. `brand --reset` removes the photo with the rest of your brand.
 
 ## 2. Change the hook
 

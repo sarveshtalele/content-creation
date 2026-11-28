@@ -1,23 +1,23 @@
 <div align="center">
 
-# explainer-studio
+# content-creation
 
 **Turn any article, docs page, repository or notes into scroll-stopping visuals, grounded in the source.**
 
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.4.0-D97757)
+![Version](https://img.shields.io/badge/version-4.0.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
 ![License](https://img.shields.io/badge/license-MIT-788C5D)
 
-<img src="docs/img/demo.gif" alt="An animated funnel GIF made by explainer-studio" width="300">&nbsp;&nbsp;<img src="docs/img/arch/rag-architecture.gif" alt="An animated architecture diagram made by explainer-studio: only the request flow moves" width="300">
+<img src="docs/img/demo.gif" alt="An animated funnel GIF made by content-creation" width="300">&nbsp;&nbsp;<img src="docs/img/arch/rag-architecture.gif" alt="An animated architecture diagram made by content-creation: only the request flow moves" width="300">
 
 <a href="docs/media/design-studio-tour.mp4"><img src="docs/img/studio-tour.gif" alt="The Design Studio gallery: every design with motion on hover, ranked for your content" width="720"></a>
 
-**[▶ Watch the Design Studio tour (56 s)](docs/media/design-studio-tour.mp4)** · **[▶ Watch the 50-second demo](docs/media/explainer-studio-demo.mp4)** (a Reel, a verified walkthrough video and a GIF)
+**[▶ Watch the Design Studio tour (56 s)](docs/media/design-studio-tour.mp4)** · **[▶ Watch the 50-second demo](docs/media/content-creation-demo.mp4)** (a Reel, a verified walkthrough video and a GIF)
 
 </div>
 
@@ -57,7 +57,7 @@ Every frame and slide carries **your brand CTA** (photo, name, tagline) at the b
 
 ## Gallery
 
-Every image below was made by explainer-studio from a fixture source, and every one is rebuilt and checked by the end-to-end suite. The full set (66 designs with IDs) is in the [design catalogue](skills/explainer-studio/studio/catalog.html) and the Design Studio gallery.
+Every image below was made by content-creation from a fixture source, and every one is rebuilt and checked by the end-to-end suite. The full set (66 designs with IDs) is in the [design catalogue](skills/content-creation/studio/catalog.html) and the Design Studio gallery.
 
 ### Architecture diagrams
 
@@ -119,7 +119,7 @@ flowchart LR
 
 1. **Ingest** reads the source once and splits it into cited chunks.
 2. **The decision matrix** (`data/matrix.json`) scores 19 content shapes, such as narrowing numbers, agent loops, A versus B, hierarchy or trends. It then ranks the GIF templates, carousel charts, Reel motion, hook families, the opening visual and the carousel structure that fit those shapes ([docs/DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md)).
-3. **You choose.** The agent shows the ranked options and the [design catalogue](skills/explainer-studio/studio/catalog.html), a page with every design, its ID and a real sample. It asks which design IDs to use and does not build until you answer.
+3. **You choose.** The agent shows the ranked options and the [design catalogue](skills/content-creation/studio/catalog.html), a page with every design, its ID and a real sample. It asks which design IDs to use and does not build until you answer.
 4. **The agent writes one compact `story.json`** from the source. That is the only step that uses the model. Everything else is deterministic code.
 5. **Check, render, review.** Text grounding, length limits and number grounding run first. The engine then renders in headless Chromium. Finally, the review gates check layout (overflow, overlap, empty cards), reading time, file size and speech-to-text.
 
@@ -159,8 +159,8 @@ flowchart TB
     CX[Codex]
     AG[Antigravity]
   end
-  subgraph Plugin["explainer-studio plugin"]
-    CMD["/explainer commands<br/>commands/*.md"] --> SK["SKILL.md<br/>workflow and rules"]
+  subgraph Plugin["content-creation plugin"]
+    CMD["/content-creation commands<br/>commands/*.md"] --> SK["SKILL.md<br/>workflow and rules"]
     SK --> PY["scripts/studio.py<br/>ingest · pick · check · build · review"]
     PY --> MX["data/matrix.json<br/>decision matrix"]
     PY --> EN["engine/*.js<br/>GIF · carousel · charts · arch · thumbs · Reel · walkthrough"]
@@ -186,9 +186,9 @@ The agent only writes `story.json`; everything else runs locally as deterministi
 | Node.js | 20 or newer (with npm) | `brew install node` | `winget install OpenJS.NodeJS.LTS` |
 | git | any | `xcode-select --install` | `winget install Git.Git` (also provides `sh` for Reels) |
 | ffmpeg | 7 or newer | downloaded by setup | downloaded by setup |
-| Disk | about 600 MB | browser, voice model (350 MB) and runtime in `~/.cache/explainer-studio` | same, in `%USERPROFILE%\.cache\explainer-studio` |
+| Disk | about 600 MB | browser, voice model (350 MB) and runtime in `~/.cache/content-creation` | same, in `%USERPROFILE%\.cache\content-creation` |
 
-Linux works like macOS: install Python, Node.js and git with your package manager.
+Linux works like macOS: install Python, Node.js and git with your package manager. Optional on macOS: the Xcode command line tools (`xcode-select --install`) let `studio.py brand --photo` cut your photo out for the newsletter banner.
 
 ## Quick start
 
@@ -200,18 +200,18 @@ Four steps, about 5 minutes (most of it is the one-time download in step 3).
 
 ```bash
 # 1. get the plugin
-git clone https://github.com/sarveshtalele/content-creation.git explainer-studio
-cd explainer-studio
+git clone https://github.com/sarveshtalele/content-creation.git content-creation
+cd content-creation
 
 # 2. install it for your agents
 python3 install.py install
 
 # 3. one-time setup + health check
-python3 skills/explainer-studio/scripts/setup.py
-python3 skills/explainer-studio/scripts/studio.py doctor
+python3 skills/content-creation/scripts/setup.py
+python3 skills/content-creation/scripts/studio.py doctor
 
 # 4. your brand (shown on every output)
-python3 skills/explainer-studio/scripts/studio.py brand \
+python3 skills/content-creation/scripts/studio.py brand \
   --name "Your Name" --tagline "What you post about" \
   --avatar ~/Pictures/me.png
 ```
@@ -220,18 +220,18 @@ python3 skills/explainer-studio/scripts/studio.py brand \
 
 ```powershell
 # 1. get the plugin
-git clone https://github.com/sarveshtalele/content-creation.git explainer-studio
-cd explainer-studio
+git clone https://github.com/sarveshtalele/content-creation.git content-creation
+cd content-creation
 
 # 2. install it for your agents
 py -3 install.py install
 
 # 3. one-time setup + health check
-py -3 skills\explainer-studio\scripts\setup.py
-py -3 skills\explainer-studio\scripts\studio.py doctor
+py -3 skills\content-creation\scripts\setup.py
+py -3 skills\content-creation\scripts\studio.py doctor
 
 # 4. your brand (shown on every output)
-py -3 skills\explainer-studio\scripts\studio.py brand `
+py -3 skills\content-creation\scripts\studio.py brand `
   --name "Your Name" --tagline "What you post about" `
   --avatar "$HOME\Pictures\me.png"
 ```
@@ -239,13 +239,15 @@ py -3 skills\explainer-studio\scripts\studio.py brand `
 </td></tr>
 </table>
 
-`doctor` prints `READY`, or exactly what is missing. Then open your agent and type `/explainer <a link or some text>`.
+`doctor` prints `READY`, or exactly what is missing. Then open your agent and type `/content-creation <a link or some text>`.
 
-No git? Download the latest release zip (`explainer-studio-plugin.zip`), unzip it, open a terminal in that folder and continue from step 2.
+No git? Download `content-creation-plugin-<version>.zip` and `SHA256SUMS.txt` from the [latest release](https://github.com/sarveshtalele/content-creation/releases/latest), check it (`shasum -a 256 -c SHA256SUMS.txt --ignore-missing`), unzip it, open a terminal in that folder and continue from step 2.
+
+**Upgrading from explainer-studio 3.x?** `git pull` and `python3 install.py install`. The installer moves your brand, photo and library to `~/.cache/content-creation`, removes the old `explainer-studio` copies and commands, and replaces the old hooks. Commands are now `/content-creation…`. Full name map: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## Install
 
-One Python command installs the skill and the slash commands into each agent's own folders:
+One Python command installs the skill, the slash commands and the [approval hooks](docs/APPROVAL_GATES.md) into each agent's own folders (every path: [docs/INSTALL.md](docs/INSTALL.md)):
 
 | Agent | macOS / Linux | Windows |
 |---|---|---|
@@ -262,15 +264,15 @@ The installer records what it installed, so `update`, `reinstall` and `uninstall
 1. **Install.** Pick one of the two options.
    - **Plugin (recommended, updates through the marketplace):**
      ```bash
-     claude plugin marketplace add /path/to/explainer-studio
-     claude plugin install explainer-studio@explainer-studio-marketplace
+     claude plugin marketplace add sarveshtalele/content-creation     # or a local clone: /path/to/content-creation
+     claude plugin install content-creation@content-creation-marketplace
      ```
-   - **Copy:** `python3 install.py install --for claude` (Windows: `py -3 install.py install --for claude`). It writes the skill to `~/.claude/skills/explainer-studio` and the commands to `~/.claude/commands/explainer*.md`.
+   - **Copy:** `python3 install.py install --for claude` (Windows: `py -3 install.py install --for claude`). It writes the skill to `~/.claude/skills/content-creation` and the commands to `~/.claude/commands/content-creation*.md`.
 
    Use one option, not both.
-2. **Restart Claude Code**, or start a new session.
-3. **Check.** Type `/explainer-setup`. The agent runs `doctor` and fixes anything missing.
-4. **Use.** Type `/explainer https://example.com/article carousel`. The agent shows the ranked designs and the catalogue, waits for your choice, then builds.
+2. **Restart Claude Code**, or start a new session. The plugin brings its approval hooks (`hooks/hooks.json`); the copy route writes them to `~/.claude/settings.json`.
+3. **Check.** Type `/content-creation-setup`. The agent runs `doctor` and fixes anything missing.
+4. **Use.** Type `/content-creation https://example.com/article carousel`. The agent shows the ranked designs and the catalogue, waits for your choice, then builds.
 
 ### Codex, step by step
 
@@ -278,15 +280,15 @@ The installer records what it installed, so `update`, `reinstall` and `uninstall
    ```bash
    python3 install.py install --for codex          # Windows: py -3 install.py install --for codex
    ```
-   - Skill: `~/.agents/skills/explainer-studio` (Windows: `%USERPROFILE%\.agents\skills\explainer-studio`)
-   - Commands, as Codex custom prompts: `~/.codex/prompts/explainer*.md`
+   - Skill: `~/.agents/skills/content-creation` (Windows: `%USERPROFILE%\.agents\skills\content-creation`)
+   - Commands, as Codex custom prompts: `~/.codex/prompts/content-creation*.md`
 2. **Optional workspace copy:** a project-level copy in `<project>/.agents/skills` so the whole team gets the skill:
    ```bash
    python3 install.py install --for codex --project ~/work/my-app
    ```
-3. **Restart Codex** (CLI or IDE extension) so it reloads skills and prompts.
-4. **Check.** In Codex, type `/` and choose `explainer-setup` (newer versions list custom prompts as `/prompts:explainer-setup`).
-5. **Use.** Run `/explainer` (or `/prompts:explainer`) followed by a link or some text, then the media you want. You can also just ask: *"Use explainer-studio to make a GIF from this article"*.
+3. **Restart Codex** (CLI or IDE extension) so it reloads skills and prompts, then type `/hooks` and **trust the two content-creation hooks** (Codex skips new hooks until you trust them; without them your approvals are not recorded).
+4. **Check.** In Codex, type `/` and choose `content-creation-setup` (newer versions list custom prompts as `/prompts:content-creation-setup`).
+5. **Use.** Run `/content-creation` (or `/prompts:content-creation`) followed by a link or some text, then the media you want. You can also just ask: *"Use content-creation to make a GIF from this article"*.
 
 ### Antigravity, step by step
 
@@ -294,19 +296,19 @@ The installer records what it installed, so `update`, `reinstall` and `uninstall
    ```bash
    python3 install.py install --for antigravity    # Windows: py -3 install.py install --for antigravity
    ```
-   - Skill: `~/.gemini/config/skills/explainer-studio`
-   - Commands, as global workflows: `~/.gemini/antigravity/global_workflows/explainer*.md`
+   - Skill: `~/.gemini/config/skills/content-creation`
+   - Commands, as global workflows: `~/.gemini/antigravity/global_workflows/content-creation*.md`
 2. **Optional workspace copy:** a copy in `<project>/.agents/skills` that Antigravity reads for that workspace:
    ```bash
    python3 install.py install --for antigravity --project ~/work/my-app
    ```
-3. **Restart Antigravity** (or reload the window) so it picks up the skill and workflows.
-4. **Check.** In the agent panel, type `/explainer-setup` (workflows appear in the `/` menu).
-5. **Use.** Type `/explainer` followed by a link or some text, then the media you want. You can also ask in plain words: *"Use explainer-studio to make a carousel from this page"*.
+3. **Restart Antigravity** (or reload the window) so it picks up the skill, the workflows and the approval hooks in `~/.gemini/config/hooks.json`.
+4. **Check.** In the agent panel, type `/content-creation-setup` (workflows appear in the `/` menu).
+5. **Use.** Type `/content-creation` followed by a link or some text, then the media you want. You can also ask in plain words: *"Use content-creation to make a carousel from this page"*.
 
 ### ChatGPT (skill only)
 
-Run `python3 install.py zip` (Windows: `py -3 install.py zip`), then upload `dist/explainer-studio-skill.zip` under **Skills > Create > Upload**. In ChatGPT's sandbox, run `python3 scripts/setup.py light`. That mode covers GIFs and carousels; Reels need a local agent.
+Run `python3 install.py zip` (Windows: `py -3 install.py zip`), then upload `dist/content-creation-skill-<version>.zip` (also attached to every [release](https://github.com/sarveshtalele/content-creation/releases)) under **Skills > Create > Upload**. In ChatGPT's sandbox, run `python3 scripts/setup.py light`. That mode covers GIFs and carousels; Reels need a local agent.
 
 ## Use it
 
@@ -314,13 +316,13 @@ Run `python3 install.py zip` (Windows: `py -3 install.py zip`), then upload `dis
 
 | Command | What it does |
 |---|---|
-| `/explainer <url or text> [gif\|carousel\|reel\|cover\|post]` | Ingests the source, shows ranked options, asks you to choose, then builds and reviews |
-| `/explainer-walkthrough <site and steps>` | Writes `steps.json`, asks for your OK, runs and verifies the guide, then renders the walkthrough Reel |
-| `/explainer-studio` | Opens the Design Studio web app in the background |
-| `/explainer-setup` | Runs setup and the health check |
-| `/explainer-update` | Pulls the latest version and reinstalls for the same agents |
-| `/explainer-clean` | Removes render folders and caches |
-| `/explainer-uninstall` | Shows what will be removed, asks, then removes it |
+| `/content-creation <url or text> [gif\|carousel\|reel\|cover\|post]` | Ingests the source, shows ranked options, asks you to choose, then builds and reviews |
+| `/content-creation-walkthrough <site and steps>` | Writes `steps.json`, asks for your OK, runs and verifies the guide, then renders the walkthrough Reel |
+| `/content-creation-studio` | Opens the Design Studio web app in the background |
+| `/content-creation-setup` | Runs setup and the health check |
+| `/content-creation-update` | Pulls the latest version and reinstalls for the same agents |
+| `/content-creation-clean` | Removes render folders and caches |
+| `/content-creation-uninstall` | Shows what will be removed, asks, then removes it |
 
 These are the same commands in Claude Code (`/`), Codex prompts and Antigravity workflows.
 
@@ -329,7 +331,7 @@ These are the same commands in Claude Code (`/`), Codex prompts and Antigravity 
 Ask your agent with the article, docs page, repository or your own notes, and name the media:
 
 ```text
-/explainer https://example.com/how-our-rag-app-works  architecture diagram
+/content-creation https://example.com/how-our-rag-app-works  architecture diagram
 ```
 
 1. The agent reads the source and shows the ranked designs. Pick a style by its ID: `arch-sketch`, `arch-cloud`, `arch-flow`, `arch-sequence` or `arch-panels`. As a GIF, the template is `arch`.
@@ -346,7 +348,7 @@ In the Design Studio, the architecture cards in the gallery show the five styles
 ### Design catalogue
 
 ```bash
-python3 skills/explainer-studio/scripts/studio.py catalog   # regenerates studio/catalog.html and prints its path
+python3 skills/content-creation/scripts/studio.py catalog   # regenerates studio/catalog.html and prints its path
 ```
 
 The catalogue shows every GIF template, carousel cover and slide (including the 21 charts), Reel cover layout, Reel look and motion, and walkthrough option, each with the ID you give your agent. The Design Studio also serves it at `/catalog`.
@@ -357,7 +359,7 @@ Create media by chatting with your agent. Use the web app to check designs again
 
 
 ```bash
-python3 skills/explainer-studio/scripts/studio.py studio    # prints a private 127.0.0.1 link
+python3 skills/content-creation/scripts/studio.py studio    # prints a private 127.0.0.1 link
 ```
 
 | Workspace | What you do there |
@@ -376,7 +378,7 @@ The app is local only: it listens on 127.0.0.1, uses a random token for each ses
 ### Command line
 
 ```bash
-S=skills/explainer-studio/scripts
+S=skills/content-creation/scripts
 python3 $S/studio.py ingest https://example.com/article --out work
 python3 $S/studio.py pick work                       # ranked GIF templates, carousel charts, Reel motion, hooks
 python3 $S/studio.py pick work --template funnel     # limits + skeleton for your choice
@@ -409,10 +411,10 @@ A minimal `steps.json` for a walkthrough:
 | `python3 install.py update` | `git pull --ff-only`, then reinstalls for the same agents. Stops if you have local changes |
 | `python3 install.py reinstall` | Removes and installs again for the recorded agents and projects |
 | `python3 install.py clean [--jobs] [--dry-run]` | Removes render folders (`.film-*`), caches and `__pycache__`. `--jobs` also removes Design Studio jobs older than 30 days |
-| `python3 install.py uninstall [--for codex] [--dry-run]` | Removes the skill copies and commands |
+| `python3 install.py uninstall [--for codex] [--dry-run]` | Removes the skill copies, the commands and the approval hooks (only ours), and any leftovers from the old explainer-studio name |
 | `python3 install.py uninstall --purge --yes` | Also removes your brand, the library index and the Design Studio jobs |
 | `python3 install.py status` | Shows what is installed where, the version and the data folder |
-| `python3 install.py zip` | Builds `dist/explainer-studio-plugin.zip` and `dist/explainer-studio-skill.zip` |
+| `python3 install.py zip` | Builds `dist/content-creation-plugin-<version>.zip`, `dist/content-creation-skill-<version>.zip` and `dist/SHA256SUMS.txt` ([RELEASING.md](docs/RELEASING.md)) |
 
 ## Quality: checks, evaluations and end-to-end tests
 
@@ -423,11 +425,13 @@ A minimal `steps.json` for a walkthrough:
 | Review gates | 4:5 / 9:16 sizes, GIF under 5 MB, overflow, overlap, empty cards, reading time, animation present, speech-to-text match | `studio.py review` |
 | Carousel quality | underfilled, oversized, low-contrast, small-text and soft-image checks | `studio.py e2e` |
 | Walkthrough | each step performed and verified by Playwright, with a report (expected, actual, result, time) | `out/*-walkthrough-report.md` |
-| Unit tests | content, matrix, platform, security, studio server | `skills/explainer-studio/tests/test_*.py` |
+| Approval gates | approvals only from your own message and the current code; tampering denied in every agent | `tests/test_gates.py` |
+| Logos | resolution and the rule that a logo needs its technology named in the source | `scripts/logos.py`, `studio.py check` |
+| Unit tests | content (including the package contents), matrix, platform, security, studio server | `skills/content-creation/tests/test_*.py` |
 | End-to-end | builds every media, runs every gate and evaluation, drives the web app with Playwright and records a video | `tests/e2e/run_all.py` |
 
 ```bash
-python3 skills/explainer-studio/tests/e2e/run_all.py              # writes ~/Downloads/explainer-studio-showcase/REPORT.md
+python3 skills/content-creation/tests/e2e/run_all.py              # writes ~/Downloads/content-creation-showcase/REPORT.md
 ```
 
 The showcase folder holds every output (GIFs, carousels and the 21 chart slides, Reel, covers, walkthrough video, post), the review contact sheets, the evaluation reports and `app/app-tour.mp4`, a screen recording of the Playwright tour of the web app.
@@ -435,22 +439,23 @@ The showcase folder holds every output (GIFs, carousels and the 21 chart slides,
 ## Project structure
 
 ```
-explainer-studio/
+content-creation/
 ├── .claude-plugin/          plugin.json, marketplace.json (Claude Code)
 ├── .codex-plugin/           plugin.json (Codex)
-├── commands/                slash commands, shared by Claude Code, Codex prompts and Antigravity workflows
-├── skills/explainer-studio/
+├── commands/                slash commands (/content-creation…), shared by Claude Code, Codex prompts and Antigravity workflows
+├── hooks/                   hooks.json: approval hooks for the Claude Code plugin route
+├── skills/content-creation/
 │   ├── SKILL.md             what the agent follows
-│   ├── scripts/             CLI (studio.py), ingest, matrix, validator, hooks, cover, library, web app server, setup
+│   ├── scripts/             CLI (studio.py), gates + gate_hook (approvals), logos, ingest, matrix, validator, cover, library, web app server, setup
 │   ├── engine/              renderers: GIF templates, carousel + charts.js, reel.js, cover.js, walk.js, walk_run.mjs (Playwright)
 │   ├── studio/              Design Studio web app (index.html + js/ modules) and sample thumbnails
 │   ├── editor/              per-project story editor
-│   ├── data/                matrix.json (decision matrix), hooks.json (hook library)
+│   ├── data/                matrix.json (decision matrix), hooks.json (hook library), logos.json (204 official logos)
 │   ├── config/  assets/     brand defaults, pronunciation, fonts, default avatar
 │   ├── fixtures/            sources used by the tests (including a demo app for walkthroughs)
 │   ├── runtime/             Node runtime (Playwright, ffmpeg-static), installed by setup
 │   └── tests/               unit tests and tests/e2e (run_all.py, app_tour.mjs)
-├── docs/                    architecture, templates, carousel schemas, design matrix, studio, customise, evaluation
+├── docs/                    install, migration, approval gates, CLI, architecture diagrams, logos, templates, carousel, thumbnails, studio, customise, evaluation, releasing
 ├── install.py · install.sh  installer and lifecycle manager
 ├── .github/                 CI, issue templates, pull request template
 └── README.md · CHANGELOG.md · CONTRIBUTING.md · CODE_OF_CONDUCT.md · SECURITY.md · CREDITS.md · LICENSE
@@ -461,6 +466,7 @@ explainer-studio/
 - **Local by default.** Rendering, voice, checks and the web app run on your computer. The network is used only to fetch the sources you give and for the one-time setup downloads.
 - **Sources are data.** Instructions found inside an article, repo or web page are never followed.
 - **Walkthroughs** run only the steps you write, on `http(s)` pages (and local `file://` pages from the command line). Use test accounts: `"secret": true` blurs typed values in the video and keeps them out of the report.
+- **You approve, the agent builds.** Nothing is built before your `approve plan XXXX`, nothing delivered before your `approve final XXXX`, and a hook in each agent records those from your own message only ([APPROVAL_GATES.md](docs/APPROVAL_GATES.md)).
 - **The web app** binds to 127.0.0.1, checks a per-session token on every request, refuses other Host headers and serves only its own files, samples and jobs.
 
 See [SECURITY.md](SECURITY.md) to report a problem.
@@ -475,20 +481,33 @@ See [SECURITY.md](SECURITY.md) to report a problem.
 | Browser download blocked by a proxy | set `PLAYWRIGHT_CHROME` to a `chrome-headless-shell` binary |
 | A check fails with `not in the source` | use the source's own words and numbers, or a non-data chart |
 | A walkthrough step fails | read `out/*-walkthrough-report.md`: it shows the expected and actual result for each step |
-| Long Windows paths break the voice engine | keep the folder near the drive root or set `EXPLAINER_HOME` to a short path |
+| Long Windows paths break the voice engine | keep the folder near the drive root or set `CONTENT_CREATION_HOME` to a short path |
+| `GATE: ...` and the build stops | working as intended: read `plan.md` and type the `approve plan XXXX` line it shows ([APPROVAL_GATES.md](docs/APPROVAL_GATES.md)) |
+| You typed the approval but nothing happened | the whole message must be the phrase; in Codex trust the hooks in `/hooks`; check `python3 install.py status` |
+| `logo:NAME: the source never names it` | use a line icon, or a logo of a technology the source does name ([LOGOS.md](docs/LOGOS.md)) |
+| `/explainer` no longer works | it is `/content-creation` since 4.0 ([MIGRATION.md](docs/MIGRATION.md)) |
 
 ## Documentation
 
+Full index: [docs/README.md](docs/README.md).
+
 | Document | Topic |
 |---|---|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | pipeline and components |
-| [DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md) | content shapes and how each media is chosen |
+| [INSTALL.md](docs/INSTALL.md) | install for Claude Code, Codex, Antigravity and ChatGPT; every path; update, clean, uninstall |
+| [MIGRATION.md](docs/MIGRATION.md) | upgrading from explainer-studio 3.x: the name map and what moves automatically |
+| [APPROVAL_GATES.md](docs/APPROVAL_GATES.md) | brainstorm, plan, approve, build, review, approve; the hooks in each agent |
+| [CLI.md](docs/CLI.md) | every command, option, exit code and environment variable |
+| [ARCHITECTURE_DIAGRAMS.md](docs/ARCHITECTURE_DIAGRAMS.md) | the five architecture styles: fields, limits, motion |
+| [LOGOS.md](docs/LOGOS.md) | official logos: the accuracy rule, what ships, add and import, trademarks |
 | [TEMPLATES.md](docs/TEMPLATES.md) | the GIF templates and their fields |
-| [THUMBNAILS.md](docs/THUMBNAILS.md) | thumbnail and blog-cover sizes, layouts and design rules |
 | [CAROUSEL.md](docs/CAROUSEL.md) | carousel slides, the 21 chart schemas and hook styles |
+| [THUMBNAILS.md](docs/THUMBNAILS.md) | thumbnails, blog covers and the LinkedIn newsletter banner |
 | [STUDIO.md](docs/STUDIO.md) | the Design Studio web app |
-| [CUSTOMIZE.md](docs/CUSTOMIZE.md) | brand CTA, avatar, voice and hooks |
-| [EVALUATION.md](docs/EVALUATION.md) | metrics and review gates |
+| [CUSTOMIZE.md](docs/CUSTOMIZE.md) | brand CTA, avatar, banner photo, voice and hooks |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | code layout, pipeline and components |
+| [DESIGN_MATRIX.md](docs/DESIGN_MATRIX.md) | content shapes and how each media is chosen |
+| [EVALUATION.md](docs/EVALUATION.md) | metrics, review gates and every automated test |
+| [RELEASING.md](docs/RELEASING.md) | versioning, packages, checksums and GitHub releases |
 | [AUDIT.md](docs/AUDIT.md) | v3 audit: what was fixed and why |
 
 ## Contributing
@@ -496,9 +515,10 @@ See [SECURITY.md](SECURITY.md) to report a problem.
 Read [CONTRIBUTING.md](CONTRIBUTING.md). Before opening a pull request:
 
 ```bash
-for t in skills/explainer-studio/tests/test_*.py; do python3 "$t"; done
-python3 skills/explainer-studio/scripts/selftest.py
-python3 skills/explainer-studio/tests/e2e/run_all.py --only gif,carousel,app
+for t in skills/content-creation/tests/test_*.py; do python3 "$t"; done
+python3 skills/content-creation/scripts/logos.py
+python3 skills/content-creation/scripts/selftest.py
+python3 skills/content-creation/tests/e2e/run_all.py --only gif,carousel,arch,banner,app
 ```
 
 Ideas, bugs and design requests are welcome: use the [issue templates](https://github.com/sarveshtalele/content-creation/issues/new/choose). Please follow the [code of conduct](CODE_OF_CONDUCT.md), and report security problems privately ([SECURITY.md](SECURITY.md)).

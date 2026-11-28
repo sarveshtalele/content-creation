@@ -3,9 +3,9 @@
 A local web app with one workspace per media. The decision matrix ranks the options for your content, and you choose.
 
 ```
-python3 skills/explainer-studio/scripts/studio.py studio          # background; prints the link
-python3 skills/explainer-studio/scripts/studio.py studio --status # the link again
-python3 skills/explainer-studio/scripts/studio.py studio --stop
+python3 skills/content-creation/scripts/studio.py studio          # background; prints the link
+python3 skills/content-creation/scripts/studio.py studio --status # the link again
+python3 skills/content-creation/scripts/studio.py studio --stop
 ```
 
 The link works only on this computer. The app listens on 127.0.0.1, checks a random token on every request, refuses other Host headers and serves only its own files.
@@ -21,10 +21,14 @@ Open a card for its side panel: a large preview, the **ID** to give your agent (
 | GIF templates, the Reel | prepare a ready request for your agent with this design |
 | Carousel covers, infographics, charts, architecture | edit the fields and render it here, or "Use in a carousel" |
 | Reel covers | write the hook and render every supported layout |
-| Thumbnails and blog covers | write 3-6 words and render all five sizes (YouTube, Open Graph, LinkedIn newsletter, dev.to, Hashnode), each with your photo, name and tagline |
+| Thumbnails and blog covers | write 3-6 words and render all five sizes (YouTube, Open Graph, LinkedIn newsletter, dev.to, Hashnode), each with your photo, name and tagline. The **newsletter banner** card prepares a request for your agent, which writes the banner from your source |
 | Walkthrough video | open the walkthrough builder |
 
 The editors (GIF, Carousel, Reel, Reel cover, Walkthrough video, Post) stay in the sidebar for longer edits.
+
+Architecture cards include the five styles: sketch, cloud (an AWS RAG app with official logos), swimlane (with the GitHub Actions logo), sequence, and the new stage panels. Any icon field takes `logo:NAME` ([LOGOS.md](LOGOS.md)).
+
+Clicking build, render or cover in the Design Studio (or build in the editor) is your own action, so it counts as your approval of that job's plan ([APPROVAL_GATES.md](APPROVAL_GATES.md)). The approval hooks guard what your agent does, not your clicks.
 
 ## Workspaces
 
@@ -58,7 +62,7 @@ Every output carries your brand CTA pill (photo, name, tagline) at the bottom.
 
 ## Files
 
-- Jobs are written under `~/.cache/explainer-studio/studio_jobs/`.
+- Jobs are written under `~/.cache/content-creation/studio_jobs/`.
 - The app is `studio/index.html` (shell and styles) plus `studio/js/app.js` (router, Home, Library), `core.js` (shared helpers) and `media.js` (workspaces).
 - **Add a design:** append an entry to `scripts/designs.py` (fields, sample, build), then run `python3 scripts/studio_jobs.py` to render its thumbnail into `studio/samples/`.
 - **Test it:** `node tests/e2e/app_tour.mjs OUT`, run from `runtime/`, drives every workspace and records `OUT/app/app-tour.mp4`.

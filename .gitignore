@@ -7,7 +7,7 @@ __pycache__/
 node_modules
 .DS_Store
 .pytest_cache/
-skills/explainer-studio/tests/_studio_home/
+skills/content-creation/tests/_studio_home/
 /out/
 dist/
 outputs/

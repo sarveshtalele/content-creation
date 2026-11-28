@@ -46,7 +46,7 @@ Screenshots: `studio.py shot W NAME URL` needs a page that loads with its styles
 
 ## Chart slides (v3)
 
-Every slide below takes `type`, `title` (6-60 chars) and the fields shown. Data charts (marked *) show only numbers found in the source; `pct`, `start`, `end`, `target` set geometry only. Samples: `skills/explainer-studio/studio/samples/chart-<type>.jpg`.
+Every slide below takes `type`, `title` (6-60 chars) and the fields shown. Data charts (marked *) show only numbers found in the source; `pct`, `start`, `end`, `target` set geometry only. Samples: `skills/content-creation/studio/samples/chart-<type>.jpg`.
 
 | type | family | fields |
 |---|---|---|

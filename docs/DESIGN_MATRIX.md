@@ -1,6 +1,6 @@
 # Design decision matrix (v3)
 
-Source of truth: `skills/explainer-studio/data/matrix.json`. `studio.py pick DIR` scores every content shape from the source and prints ranked options for each format; `studio.py plan DIR` and `studio.py hooks DIR` use the same scores. The person makes the final choice: the GIF list is a ranked gallery, never a silent pick.
+Source of truth: `skills/content-creation/data/matrix.json`. `studio.py pick DIR` scores every content shape from the source and prints ranked options for each format; `studio.py plan DIR` and `studio.py hooks DIR` use the same scores. The person makes the final choice: the GIF list is a ranked gallery, never a silent pick.
 
 ## A. Content shape to visual, motion and hook
 

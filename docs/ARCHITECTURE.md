@@ -11,11 +11,18 @@
 ## Layout
 
 ```
-skills/explainer-studio/
+skills/content-creation/
   SKILL.md              agent instructions (kept short on purpose)
   config/brand.json     name, tagline, avatar, post CTA, voice, speed
+  data/logos.json       204 official logos (CC0 Iconify subset)
+  data/matrix.json      the decision matrix; data/hooks.json the hook patterns
   scripts/              orchestration and checks (standard library Python)
-    studio.py           CLI: doctor, spec, ingest, pick, check, build, review, finalize
+    studio.py           CLI: doctor, spec, logos, ingest, pick, plan, gate, check, build, thumbs, review, finalize (docs/CLI.md)
+    gates.py            approval records: plan and final codes, check, approve (docs/APPROVAL_GATES.md)
+    gate_hook.py        the agent hook: records approvals from the person's message, denies tampering
+    logos.py            official logos: resolve, search, grounding rule, add, import (docs/LOGOS.md)
+    cutout.swift        macOS Vision cut-out for the banner photo (studio.py brand --photo)
+    common.py           shared text utilities and data_home() (the data folder, with the 3.x migration)
     ingest.py           URL / repo / file -> chunks (SSRF guard, secret redaction)
     pick.py             template choice + fill-in skeletons
     validate_story.py   SPEC (all limits) + validators
@@ -26,6 +33,8 @@ skills/explainer-studio/
     kit.js              palette, icons, DOM + animation helpers
     gif_common.js       header, footer, flow arrows (travelling dots), nodes
     gif_<template>.js   one file per diagram template
+    arch.js             architecture diagrams: sketch, cloud, flow, sequence, panels (docs/ARCHITECTURE_DIAGRAMS.md)
+    thumb.js            thumbnails, blog covers and the newsletter banner
     reel.js, main.js    Reel scenes and the entry point
   runtime/              bundled render helpers (headless capture, mux); MIT notice in runtime/LICENSE
   fixtures/             one source + story per template (also the regression suite)
@@ -83,4 +92,6 @@ Arrows are drawn by `flow()` in `gif_common.js`: the path draws itself, then dot
 
 ## Platform notes
 
-The skill is a plain Agent Skills folder, so Claude Code, Codex, Antigravity and Gemini CLI load it the same way. The only per-platform differences are install paths (see README) and the question tool the agent uses to ask which artifact to build.
+The skill is a plain Agent Skills folder, so Claude Code, Codex, Antigravity and Gemini CLI load it the same way. The per-platform differences are the install paths, the hook event names and payloads (one `gate_hook.py` handles all three), and the question tool the agent uses to ask which artifact to build. See [INSTALL.md](INSTALL.md) and [APPROVAL_GATES.md](APPROVAL_GATES.md).
+
+Outside the skill folder: `hooks/hooks.json` (the Claude plugin route's hooks), `commands/content-creation*.md` (slash commands), `.claude-plugin/` and `.codex-plugin/` (manifests), `install.py` (install, hooks, packages).
