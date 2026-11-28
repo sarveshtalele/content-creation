@@ -3,7 +3,7 @@ import os, sys, subprocess, tempfile, shutil
 H = os.path.dirname(os.path.abspath(__file__)); F = os.path.join(H, '..', 'fixtures')
 sys.path.insert(0, H); import gates as GT
 def r(*a):
-    p = subprocess.run([sys.executable, os.path.join(H, 'studio.py'), *a], capture_output=True, text=True)
+    p = subprocess.run([sys.executable, os.path.join(H, 'studio.py'), *a], capture_output=True, text=True, encoding='utf-8', errors='replace')
     if p.returncode: print(p.stdout[-600:], p.stderr[-400:])
     return p.returncode
 for md in sorted(f for f in os.listdir(F) if f.endswith('.md')):

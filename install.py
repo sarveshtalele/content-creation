@@ -151,9 +151,9 @@ def clean(a):
 
 def update(a):
     if not a.no_pull and os.path.isdir(os.path.join(HERE, '.git')):
-        if subprocess.run(['git', '-C', HERE, 'status', '--porcelain', '--untracked-files=no'], capture_output=True, text=True).stdout.strip():
+        if subprocess.run(['git', '-C', HERE, 'status', '--porcelain', '--untracked-files=no'], capture_output=True, text=True, encoding='utf-8', errors='replace').stdout.strip():
             say('Local changes in this folder: commit or stash them, then run update again (nothing was overwritten).'); return 2
-        r = subprocess.run(['git', '-C', HERE, 'pull', '--ff-only'], capture_output=True, text=True); say((r.stdout + r.stderr).strip())
+        r = subprocess.run(['git', '-C', HERE, 'pull', '--ff-only'], capture_output=True, text=True, encoding='utf-8', errors='replace'); say((r.stdout + r.stderr).strip())
         if r.returncode: return r.returncode
         os.execv(sys.executable, [sys.executable, os.path.abspath(__file__), 'reinstall'])   # run the new installer code
     return reinstall(a)
@@ -185,7 +185,7 @@ def zips(a):
                 if not f.endswith('.pyc') and f != '.DS_Store': z.write(p, os.path.join(arc, os.path.relpath(p, base)).replace(os.sep, '/'))
     pz = os.path.join(dist, f'content-creation-plugin-{VERSION}.zip')
     with zipfile.ZipFile(pz, 'w', zipfile.ZIP_DEFLATED) as z:
-        for k in ('.claude-plugin', '.codex-plugin', 'hooks', 'commands', 'skills', 'docs', 'install.py', 'install.sh', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CREDITS.md', 'SECURITY.md'): add(z, os.path.join(HERE, k), k)
+        for k in ('.claude-plugin', '.codex-plugin', 'hooks', 'commands', 'skills', 'docs', 'install.py', 'install.sh', 'install.ps1', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CREDITS.md', 'SECURITY.md'): add(z, os.path.join(HERE, k), k)
         z.write(os.path.join(HERE, '.codex-plugin', 'plugin.json'), '.agent-plugin/plugin.json')
     sz = os.path.join(dist, f'content-creation-skill-{VERSION}.zip')
     with zipfile.ZipFile(sz, 'w', zipfile.ZIP_DEFLATED) as z: add(z, SRC, 'content-creation')

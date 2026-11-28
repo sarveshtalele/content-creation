@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.0.2
+
+- **Windows:** every subprocess output and the approval hook's input are read as UTF-8, so a Windows code page can no longer break them. `test_platform` now refuses any subprocess text read without an encoding.
+- **CI is green again on Windows, macOS and Linux:**
+  - Python 3.11, 3.12 and 3.13 run on each system.
+  - A new installer test runs in a throwaway home: install for all three agents, upgrade from explainer-studio 3.x, hooks merged without duplicates, the registered hook runs, uninstall removes only ours.
+  - End-to-end renders (GIFs, stage panels, architecture slides, newsletter banner) run on all three systems through the e2e suite, which approves its own test projects. The old render step failed at the approval gate.
+- **Release workflow:** pushing a `v*` tag checks that it matches the plugin version, runs the tests, builds the packages with checksums and publishes the release with notes from this changelog.
+- **Repository:**
+  - `.gitattributes`: LF line endings, CRLF for PowerShell, binaries marked.
+  - `.editorconfig`, `CODEOWNERS` and Dependabot for actions and the runtime.
+  - `install.ps1` for PowerShell.
+  - The README shows the release and platform badges, and the pull request checklist includes Windows checks.
+- **Authorship:** commits now use the maintainer's GitHub identity.
+
 ## 4.0.1
 
 - **Approvals go to the right project**: the hook keeps the recent projects waiting for an approval, and the code in your message picks the project, so a later review elsewhere (a test run, a second post) can no longer take it.

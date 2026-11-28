@@ -43,6 +43,7 @@ At 100% gates, the reviewer opens `out/review/*.png` and writes `attest.json` wi
 | `tests/test_studio.py` | the Design Studio server: tokens, hosts, sample stories |
 | `tests/test_matrix.py` | the decision matrix |
 | `scripts/logos.py` | logo resolution, the grounding rule, logo collection from a story |
+| `tests/test_install.py` | the installer in a throwaway home on any OS: install for all three agents, upgrade from explainer-studio 3.x, hooks merged with yours (no duplicates), the registered hook runs, uninstall removes only ours |
 | `scripts/selftest.py` | every fixture ingests, checks and picks; a build without an approved plan is refused |
 | `tests/e2e/run_all.py` | real renders of every media: GIFs (including stage panels with logos), carousel, 21 chart slides, five architecture styles, 25 thumbnails, the newsletter banner at three sizes, Reel, walkthrough, and a Playwright tour of the Design Studio |
 

@@ -16,6 +16,8 @@ for root, _, files in os.walk(S):
             if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == 'open':
                 mode = ''.join(a.value for a in n.args[1:2] if isinstance(a, ast.Constant) and isinstance(a.value, str)) + ''.join(k.value.value for k in n.keywords if k.arg == 'mode' and isinstance(k.value, ast.Constant))
                 if 'b' not in mode and not any(k.arg == 'encoding' for k in n.keywords): check(False, f'{os.path.relpath(p, R)}:{n.lineno} open() without encoding')
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr in ('run', 'Popen', 'check_output', 'check_call', 'call') and any(k.arg in ('text', 'universal_newlines') and isinstance(k.value, ast.Constant) and k.value.value is True for k in n.keywords) and not any(k.arg == 'encoding' for k in n.keywords):
+                check(False, f'{os.path.relpath(p, R)}:{n.lineno} subprocess text without encoding (Windows code pages break it)')
 
 # 2. no hard-coded POSIX-only paths or shell calls in the Python orchestration
 for f in ('studio.py', 'ingest.py', 'setup.py', 'selftest.py'):

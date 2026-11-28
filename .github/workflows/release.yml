@@ -1,0 +1,37 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions: { contents: write }
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.13' }
+      - name: Version matches the tag
+        run: |
+          V=$(python -c "import json; print(json.load(open('.claude-plugin/plugin.json'))['version'])")
+          test "v$V" = "${GITHUB_REF_NAME}" || { echo "tag ${GITHUB_REF_NAME} != plugin version $V"; exit 1; }
+          echo "V=$V" >> "$GITHUB_ENV"
+      - name: Tests
+        run: |
+          for t in skills/content-creation/tests/test_*.py; do python "$t"; done
+          python skills/content-creation/scripts/selftest.py
+      - name: Packages and notes
+        run: |
+          python install.py zip
+          python - <<'EOF'
+          import os, re
+          s = open('CHANGELOG.md', encoding='utf-8').read(); v = os.environ['V']
+          m = re.search(r'^## ' + re.escape(v) + r'\n(.*?)(?=^## |\Z)', s, re.S | re.M)
+          body = (m.group(1).strip() if m else 'See CHANGELOG.md.') + f"\n\n**Install:** see [docs/INSTALL.md](https://github.com/sarveshtalele/content-creation/blob/main/docs/INSTALL.md). Verify downloads with `shasum -a 256 -c SHA256SUMS.txt --ignore-missing`."
+          open('notes.md', 'w', encoding='utf-8').write(body)
+          EOF
+      - name: Publish (create, or add the packages to an existing release)
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          F="dist/content-creation-plugin-$V.zip dist/content-creation-skill-$V.zip dist/SHA256SUMS.txt"
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then gh release upload "$GITHUB_REF_NAME" $F --clobber
+          else gh release create "$GITHUB_REF_NAME" $F --title "content-creation $V" --notes-file notes.md; fi

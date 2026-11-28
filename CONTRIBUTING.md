@@ -11,7 +11,7 @@ python3 skills/content-creation/scripts/setup.py && python3 skills/content-creat
 Windows: use `py -3` instead of `python3` and `\` in paths.
 
 ## Before a pull request
-1. All unit tests and the self-test pass: `for t in skills/content-creation/tests/test_*.py; do python3 "$t"; done`, `python3 skills/content-creation/scripts/logos.py` and `python3 skills/content-creation/scripts/selftest.py`.
+1. All unit tests and the self-test pass: `for t in skills/content-creation/tests/test_*.py; do python3 "$t"; done`, `python3 skills/content-creation/scripts/logos.py`, `python3 skills/content-creation/tests/test_install.py` and `python3 skills/content-creation/scripts/selftest.py`. CI runs them on Windows, macOS and Linux with Python 3.11, 3.12 and 3.13, then renders end to end on all three systems.
    For engine or web-app changes, also run `python3 skills/content-creation/tests/e2e/run_all.py` (every media with gates and evaluations, plus the Playwright app tour) and attach its REPORT.md summary.
 2. For visual changes: build the affected fixture, run `studio.py review`, open the contact sheet, and attach the preview.
 3. Keep SKILL.md short; put detail in `docs/`.

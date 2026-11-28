@@ -1,6 +1,6 @@
 {
  "name": "content-creation",
- "version": "4.0.1",
+ "version": "4.0.2",
  "description": "Turn any article, docs page, repo or notes into grounded GIF diagrams, architecture diagrams with official logos, chart carousels, narrated Reels, thumbnails, LinkedIn newsletter banners and verified walkthrough videos, with your brand CTA. You approve the plan before anything is built.",
  "skills": "./skills/"
 }

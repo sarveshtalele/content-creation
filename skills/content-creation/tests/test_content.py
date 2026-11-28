@@ -8,7 +8,7 @@ def check_story(story, md='fixtures/grid.md'):
     W = tempfile.mkdtemp(); py = sys.executable
     subprocess.run([py, os.path.join(SK, 'scripts', 'studio.py'), 'ingest', os.path.join(SK, md), '--out', W], capture_output=True)
     json.dump(story, open(os.path.join(W, 'story.json'), 'w', encoding='utf-8'))
-    r = subprocess.run([py, os.path.join(SK, 'scripts', 'studio.py'), 'check', W], capture_output=True, text=True); shutil.rmtree(W, ignore_errors=True)
+    r = subprocess.run([py, os.path.join(SK, 'scripts', 'studio.py'), 'check', W], capture_output=True, text=True, encoding='utf-8', errors='replace'); shutil.rmtree(W, ignore_errors=True)
     return r.returncode, r.stdout + r.stderr
 base = json.load(open(os.path.join(SK, 'fixtures', 'grid.story.json'), encoding='utf-8'))
 assert check_story(base)[0] == 0

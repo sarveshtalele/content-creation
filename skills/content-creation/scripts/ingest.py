@@ -222,7 +222,7 @@ def run(src, out_dir, max_chars=36000, text=None):
     if not os.path.exists(src): sys.exit(f'ingest: not found: {src}')
     if src.lower().endswith('.pdf'):
         if not shutil.which('pdftotext'): sys.exit('ingest: PDF needs pdftotext (poppler); or paste the text into a .txt file')
-        t = subprocess.run(['pdftotext', '-layout', src, '-'], capture_output=True, text=True).stdout
+        t = subprocess.run(['pdftotext', '-layout', src, '-'], capture_output=True, text=True, encoding='utf-8', errors='replace').stdout
     else: t = open(src, encoding='utf-8', errors='replace').read()
     if src.lower().endswith(('.html', '.htm')): title, t = html_to_md(t)
     else: title = next((l.lstrip('# ').strip() for l in t.split('\n') if l.strip()), os.path.basename(src))[:100]

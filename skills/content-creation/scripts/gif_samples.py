@@ -12,7 +12,7 @@ def one(name):
     subprocess.run([py, os.path.join(H, 'studio.py'), 'ingest', os.path.join(F, name + '.md'), '--out', W], capture_output=True)
     shutil.copy(os.path.join(F, name + '.story.json'), os.path.join(W, 'story.json'))
     sys.path.insert(0, H); import gates as GT; GT.approve_ui(W, 'sample build')
-    r = subprocess.run([py, os.path.join(H, 'studio.py'), 'build', W, '--artifacts', 'gif'], capture_output=True, text=True, timeout=1500)
+    r = subprocess.run([py, os.path.join(H, 'studio.py'), 'build', W, '--artifacts', 'gif'], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=1500)
     pngs = [f for f in os.listdir(os.path.join(W, 'out'))] if os.path.isdir(os.path.join(W, 'out')) else []
     png = next((os.path.join(W, 'out', f) for f in pngs if f.endswith('-linkedin.png')), None)
     if png: Image.open(png).convert('RGB').resize((540, 675), Image.LANCZOS).save(os.path.join(OUT, f'gif-{tpl}.jpg'), quality=86, optimize=True)

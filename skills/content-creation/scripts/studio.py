@@ -504,9 +504,9 @@ def cutout_photo(src, dst):
         sw = shutil.which('swiftc')
         if not sw: return 'automatic cut-out needs the Xcode command line tools (xcode-select --install), or give a PNG with a transparent background'
         os.makedirs(os.path.dirname(exe), exist_ok=True)
-        r = subprocess.run([sw, '-O', os.path.join(SKILL, 'scripts', 'cutout.swift'), '-o', exe], capture_output=True, text=True)
+        r = subprocess.run([sw, '-O', os.path.join(SKILL, 'scripts', 'cutout.swift'), '-o', exe], capture_output=True, text=True, encoding='utf-8', errors='replace')
         if r.returncode: return 'could not build the cut-out helper: ' + r.stderr[-300:]
-    r = subprocess.run([exe, os.path.abspath(src), dst], capture_output=True, text=True)
+    r = subprocess.run([exe, os.path.abspath(src), dst], capture_output=True, text=True, encoding='utf-8', errors='replace')
     return '' if r.returncode == 0 and os.path.isfile(dst) else 'no person found in the photo; give a PNG with a transparent background'
 
 def set_brand(a):

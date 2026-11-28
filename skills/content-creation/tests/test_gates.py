@@ -2,17 +2,17 @@
 run: python3 tests/test_gates.py"""
 import json, os, subprocess, sys, tempfile
 SK = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); S = os.path.join(SK, 'scripts')
-HOME = tempfile.mkdtemp(prefix='gates-home-'); ENV = dict(os.environ, CONTENT_CREATION_HOME=HOME)
+HOME = tempfile.mkdtemp(prefix='gates-home-'); ENV = dict(os.environ, CONTENT_CREATION_HOME=HOME, PYTHONIOENCODING='utf-8')
 W = tempfile.mkdtemp(prefix='gates-work-')
 
 
 def hook(ev, payload, harness='claude'):
-    r = subprocess.run([sys.executable, os.path.join(S, 'gate_hook.py'), ev, '--harness', harness], input=json.dumps(payload), capture_output=True, text=True, env=ENV)
+    r = subprocess.run([sys.executable, os.path.join(S, 'gate_hook.py'), ev, '--harness', harness], input=json.dumps(payload), capture_output=True, text=True, encoding='utf-8', errors='replace', env=ENV)
     assert r.returncode == 0, r.stderr; return r.stdout.strip()
 
 
 def studio(*a):
-    r = subprocess.run([sys.executable, os.path.join(S, 'studio.py'), *a], capture_output=True, text=True, env=ENV); return r.returncode, r.stdout + r.stderr
+    r = subprocess.run([sys.executable, os.path.join(S, 'studio.py'), *a], capture_output=True, text=True, encoding='utf-8', errors='replace', env=ENV); return r.returncode, r.stdout + r.stderr
 
 
 def put(path, text, mode='w'):
@@ -64,7 +64,7 @@ d = json.loads(hook('tool', {'tool_name': 'run_command', 'tool_input': {'Command
 assert hook('tool', {'tool_name': 'Bash', 'tool_input': {'command': f'python3 scripts/studio.py build {W}'}}) == ''
 assert hook('tool', {'tool_name': 'Bash', 'tool_input': {'command': 'cat scripts/gates.py'}}) == ''
 # a broken payload never blocks the session
-r = subprocess.run([sys.executable, os.path.join(S, 'gate_hook.py'), 'tool'], input='not json', capture_output=True, text=True, env=ENV); assert r.returncode == 0 and r.stdout == ''
+r = subprocess.run([sys.executable, os.path.join(S, 'gate_hook.py'), 'tool'], input='not json', capture_output=True, text=True, encoding='utf-8', errors='replace', env=ENV); assert r.returncode == 0 and r.stdout == ''
 # another project reviewed later (a test run, a second post) must not take this project's approval: the code picks the project
 W2 = tempfile.mkdtemp(prefix='gates-other-'); put(os.path.join(W2, 'plan.md'), '# Other plan\n'); studio('gate', W2)
 os.makedirs(os.path.join(W2, 'out', 'review')); put(os.path.join(W2, 'out', 'review', 'gates.json'), json.dumps({'token': '9136aaaaaaaa'})); G.set_active(W2)

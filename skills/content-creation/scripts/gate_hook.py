@@ -15,7 +15,9 @@ TOUCH = re.compile(r'[/\\]\.gates\b|\.gates[/\\]|gates\.approve|gates\.from_mess
 def main(argv):
     ev = argv[1] if len(argv) > 1 else ''
     harness = argv[argv.index('--harness') + 1] if '--harness' in argv else 'claude'
-    raw = sys.stdin.read()
+    raw = sys.stdin.buffer.read().decode('utf-8', 'replace')   # agents send UTF-8 JSON; never trust the console code page (Windows)
+    try: sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception: pass
     try: data = json.loads(raw or '{}')
     except ValueError: data = {}
     if ev == 'prompt':

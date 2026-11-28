@@ -44,7 +44,7 @@ shasum -a 256 -c SHA256SUMS.txt --ignore-missing        # Windows: certutil -has
 
 | Agent | macOS / Linux | Windows |
 |---|---|---|
-| All three | `python3 install.py install` | `py -3 install.py install` |
+| All three | `python3 install.py install` (or `./install.sh install`) | `py -3 install.py install` (or `.\install.ps1 install` in PowerShell) |
 | Claude Code only | `python3 install.py install --for claude` | `py -3 install.py install --for claude` |
 | Codex only | `python3 install.py install --for codex` | `py -3 install.py install --for codex` |
 | Antigravity only | `python3 install.py install --for antigravity` | `py -3 install.py install --for antigravity` |
