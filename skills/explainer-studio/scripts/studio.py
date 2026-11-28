@@ -259,7 +259,7 @@ def build_gif(work, story, lib, env, out, slug):
     if not ok:
         print('[gif] LAYOUT ERRORS (shorten the named text in story.json gif section, then re-run build):'); [print('   ', l) for l in issues[:14]]; return None
     os.makedirs(out, exist_ok=True); vid = os.path.join(out, 'gif_video.mp4'); print('[gif] rendering...')
-    r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', size, '--fps', '10', '--workers', workers(), '--q', 'mode=gif', '--out', vid], cwd=lib, env=env)
+    r = run(['node', os.path.join(lib, 'core/render/video.mjs'), film, '--size', size, '--fps', '20', '--workers', workers(), '--q', 'mode=gif', '--out', vid], cwd=lib, env=env)
     if r.returncode: sys.exit('gif render failed')
     png = os.path.join(out, f'{slug}-linkedin.png')                      # the complete diagram as one still image: the last full frame before the closing fade (default output)
     dur_v = duration_of(env, vid)
@@ -269,9 +269,12 @@ def build_gif(work, story, lib, env, out, slug):
     for w, c in ((1080, 128), (900, 128), (800, 96), (720, 96), (640, 64)):  # always 4:5 portrait; width only shrinks to fit 5 MB
         make_gif(vid, fin, w, 10, c, env)
         if os.path.getsize(fin) <= 5 * 1048576: break
+    mp4 = os.path.join(out, f'{slug}-linkedin.mp4')                      # the same seamless loop as a video (smoother, native video in feeds): the loop three times
+    run([ff_, '-y', '-v', 'error', '-stream_loop', '2', '-i', vid, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-preset', 'medium', '-movflags', '+faststart', '-an', mp4], env=env, quiet=True)
     os.remove(vid); mb = os.path.getsize(fin) / 1048576; print(f'[gif] done -> {fin} ({w}px, {mb:.1f} MB)')
+    if os.path.isfile(mp4): print(f'[video] done -> {mp4} (1080x1350 MP4, the same loop x3)')
     if os.path.isfile(png): print(f'[image] done -> {png} (1080x1350 PNG, the complete diagram)')
-    return {'image': png if os.path.isfile(png) else None, 'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
+    return {'image': png if os.path.isfile(png) else None, 'video': mp4 if os.path.isfile(mp4) else None, 'file': fin, 'mb': round(mb, 2), 'width': w, 'template': g['template'], 'gates': {'readcheck': not bad, 'layout': True, 'size<=5MB': mb <= 5.0}}
 
 def png_size(p):
     with open(p, 'rb') as f: h = f.read(24)

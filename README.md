@@ -7,7 +7,7 @@
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.3.1-D97757)
+![Version](https://img.shields.io/badge/version-3.3.2-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
@@ -30,7 +30,7 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 3. [Requirements](#requirements)
 4. [Quick start](#quick-start) (macOS and Windows)
 5. [Install](#install): [Claude Code](#claude-code-step-by-step) · [Codex](#codex-step-by-step) · [Antigravity](#antigravity-step-by-step)
-6. [Use it](#use-it): [slash commands](#slash-commands) · [Design Studio web app](#design-studio-web-app) · [command line](#command-line)
+6. [Use it](#use-it): [slash commands](#slash-commands) · [architecture diagram or video from any article](#architecture-diagram-or-video-from-any-article) · [Design Studio web app](#design-studio-web-app) · [command line](#command-line)
 7. [Update, reinstall, clean, uninstall](#update-reinstall-clean-uninstall)
 8. [Quality: checks, evaluations and end-to-end tests](#quality-checks-evaluations-and-end-to-end-tests)
 9. [Project structure](#project-structure)
@@ -44,10 +44,10 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 | Media | Output | Highlights |
 |---|---|---|
-| **GIF** | 1080x1350 looping GIF (under 5 MB) + still PNG | 16 templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid… and an **animated chart** template for any of the 21 charts), **ranked for your content**; you choose. The complete diagram is on screen from the first frame; only the flow moves (dots on connectors, pulses, belts), in a seamless loop |
+| **GIF** | 1080x1350 looping GIF (under 5 MB) + the same loop as an MP4 video + still PNG | 16 templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid… and an **animated chart** template for any of the 21 charts), **ranked for your content**; you choose. The complete diagram is on screen from the first frame; only the flow moves (dots on connectors, pulses, belts), in a seamless loop |
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
-| **Architecture diagram** | GIF (flow-only), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
+| **Architecture diagram** | GIF and MP4 video (flow-only motion), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
 | **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, LinkedIn newsletter 1920×1080, dev.to 1000×420, Hashnode 1600×840; five layouts, each with your photo, name and tagline (face, number, diagram, versus, editorial) following current thumbnail research |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
 | **Walkthrough video** | 1080x1920 MP4 + E2E report | A real guide run in a browser by **Playwright**: every step is performed, checked (expected vs actual) and shown with a cursor, a highlight and a Verified/Failed badge |
@@ -281,6 +281,24 @@ Run `python3 install.py zip` (Windows: `py -3 install.py zip`), then upload `dis
 | `/explainer-uninstall` | Shows what will be removed, asks, then removes it |
 
 These are the same commands in Claude Code (`/`), Codex prompts and Antigravity workflows.
+
+### Architecture diagram or video from any article
+
+Ask your agent with the article, docs page, repository or your own notes, and name the media:
+
+```text
+/explainer https://example.com/how-our-rag-app-works  architecture diagram
+```
+
+1. The agent reads the source and shows the ranked designs. Pick a style by its ID: `arch-sketch`, `arch-cloud`, `arch-flow` or `arch-sequence`. As a GIF, the template is `arch`.
+2. It writes the diagram from the source: zones, components and the connections between them. Every label must appear in the source.
+3. You get three files in `outputs/<slug>/`:
+   - `<slug>-linkedin.gif`: the looping GIF
+   - `<slug>-linkedin.mp4`: the same loop as an 18-second video, to post as native video
+   - `<slug>-linkedin.png`: the complete diagram as one image
+4. For a narrated video that explains the system step by step, ask for a **Reel** too. For a slide, ask for a carousel with an `arch` slide.
+
+In the Design Studio, the architecture cards in the gallery show the four styles. Open one to edit and render a slide, or to prepare the request for your agent.
 
 ### Design catalogue
 

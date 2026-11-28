@@ -56,7 +56,7 @@ def run(out, only):
         for fx in ('funnel', 'https', 'chart', 'arch'):
             w = os.path.join(wk, 'gif-' + fx); project(w, fx); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'gif'])
             g = gates(w); m = gif_motion(w)
-            rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100 and m['complete_at_frame_0'] and m['seamless_loop'], s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', 'review/*.png']), motion=m, **g)
+            rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100 and m['complete_at_frame_0'] and m['seamless_loop'], s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', '*-linkedin.mp4', 'review/*.png']), motion=m, **g)
     if 'carousel' in only:
         w = os.path.join(wk, 'carousel'); project(w, 'carousel'); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'carousel', '--format', 'both'])
         rc2, e2e, _ = sh([PY, ST, 'e2e', w], 900); g = gates(w)

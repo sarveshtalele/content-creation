@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.3.2
+
+- **Video for every GIF, including architecture diagrams**: `build --artifacts gif` now also writes `<slug>-linkedin.mp4`, the same seamless loop as an 18-second 1080x1350 video for posting as native video. The loop renders at 20 fps, so the video is smooth; the GIF stays at 10 fps.
+- README: how to get an architecture diagram or video from any article.
+
 ## 3.3.1
 
 Full review of the app and every sample asset; fixes for what it found.

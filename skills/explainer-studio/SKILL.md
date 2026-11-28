@@ -31,7 +31,7 @@ python3 S/scripts/studio.py finalize W             # deliver ONLY the files in W
 
 ## GIF + PNG (1080x1350, thirteen templates)
 
-`build --artifacts gif` writes the animated GIF and `<slug>-linkedin.png`, the complete diagram as one image. Give the user both. The Reel (MP4) only when asked.
+`build --artifacts gif` writes the animated GIF, `<slug>-linkedin.mp4` (the same loop as an 18 s video, for posting as native video) and `<slug>-linkedin.png`, the complete diagram as one image. Give the user all three. The Reel (MP4) only when asked.
 `pick` ranks every template for this source (docs/DESIGN_MATRIX.md) and says why; it never chooses for the person. Templates: chart (any of the 21 charts as an animated GIF: `gif.chart{type,...slide fields}`, data charts need the source's figures), pipeline (steps), columns (categories), lanes (layers), hub (one concept, parts), ecosystem (core -> sections), framework (6|9 parts), exploded (3D layers), isoflow (3D flow), orbit (core with 4-6 around), stairs (levels), tower, skyline (ranking), conveyor (gates), funnel (narrowing), grid (card poster). Reuse the source's own words; icons by meaning (`spec --icons`); fill every slot, keep to the limits.
 
 ## Carousel (only if asked; PDF + PNG per slide + first-comment text)
