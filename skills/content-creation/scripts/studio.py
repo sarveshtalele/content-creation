@@ -318,7 +318,7 @@ def art_files(B):
     out = []
     for x in B.values():
         if not isinstance(x, dict): continue
-        out += [x[k] for k in ('file', 'image') if x.get(k)] + list(x.get('also') or [])
+        out += [x[k] for k in ('file', 'image', 'video') if x.get(k)] + list(x.get('also') or [])   # video: the GIF's MP4
     return out
 
 def build_background(a):
