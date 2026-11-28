@@ -169,9 +169,9 @@ function panels(root, A, B) {
     const tile = (it, cx, core, id) => { const t = card(root, { x: cx - ts / 2, y: cy - ts / 2, w: ts, h: ts, r: 16, fill: '#fff', bd: core ? C.clay : C.line, bw: 2.5, css: 'display:flex;align-items:center;justify-content:center;' });
       t.innerHTML = icon(it.icon, Math.round(ts * (it.icon.startsWith('logo:') ? .9 : .62)), C.ink, 1.9); icons.push({ el: t, color: C.clay, panel: k });
       tx(root, id, it.label, { x: cx - colW / 2, y: cy + ts / 2 + 4, w: colW, h: 50, size: fitSize(it.label, { w: colW - 4, h: 50, max: 21, min: 20, weight: 500, lh: 1.08 }), weight: 500, wrap: true, lh: 1.08, align: 'center', css: 'align-items:flex-start;' }); };
-    const xa = x + 14 + colW / 2, xb = x + 14 + colW * 1.5, ox = x + 26 + colW * 2, ow = x + pw - 14 - ox, outs = p.outputs, oh = Math.min(56, (body + 30 - 10 * (outs.length - 1)) / outs.length);
+    const xa = x + 14 + colW / 2, xb = x + 14 + colW * 1.5, ox = x + 26 + colW * 2, ow = x + pw - 14 - ox, outs = p.outputs, oTop = top + 10, oBot = y + ph - capH - 22, oh = Math.min(56, (oBot - oTop - 10 * (outs.length - 1)) / outs.length), stackH = outs.length * oh + 10 * (outs.length - 1), oy0 = Math.max(oTop, Math.min(oBot - stackH, cy - stackH / 2));   // the stack stays between the header band and the caption
     tile(p.input, xa, false, 'ar-pi' + k); tile(p.core, xb, true, 'ar-pc' + k); wire(xa + ts / 2 + 4, cy, xb - ts / 2 - 4, cy);
-    outs.forEach((o, j) => { const oy = cy - (outs.length * oh + 10 * (outs.length - 1)) / 2 + j * (oh + 10), b = card(root, { x: ox, y: oy, w: ow, h: oh, r: 12, fill: '#fff', bd: C.line, bw: 2, shadow: false });
+    outs.forEach((o, j) => { const oy = oy0 + j * (oh + 10), b = card(root, { x: ox, y: oy, w: ow, h: oh, r: 12, fill: '#fff', bd: C.line, bw: 2, shadow: false });
       E(b, 'abs', `left:10px;top:${f1((oh - 32) / 2 - 2)}px;width:32px;height:32px`, icon(o.icon, 32, C.ink, 2));
       tx(root, `ar-po${k}-${j}`, o.label, { x: ox + 50, y: oy + 2, w: ow - 58, h: oh - 4, size: fitSize(o.label, { w: ow - 60, h: oh - 6, max: 21, min: 20, weight: 700, lh: 1.05 }), weight: 700, wrap: true, lh: 1.05 });
       wire(xb + ts / 2 + 4, cy, ox - 4, oy + oh / 2); });
