@@ -7,7 +7,7 @@
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.3.3-D97757)
+![Version](https://img.shields.io/badge/version-3.4.0-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
@@ -25,8 +25,8 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 
 ## Contents
 
-1. [What it makes](#what-it-makes) · [Gallery](#gallery): [architecture diagrams](#architecture-diagrams) · [charts](#charts) · [thumbnails](#thumbnails-and-blog-covers) · [Reel covers and walkthroughs](#reel-covers-and-walkthrough-videos)
-2. [How it works](#how-it-works) · [plugin architecture](#plugin-architecture)
+1. [What it makes](#what-it-makes) · [Gallery](#gallery): [architecture diagrams](#architecture-diagrams) · [charts](#charts) · [thumbnails and the newsletter banner](#thumbnails-and-blog-covers) · [Reel covers and walkthroughs](#reel-covers-and-walkthrough-videos)
+2. [How it works](#how-it-works) · [approval gates](#approval-gates-you-approve-the-plan-and-the-result) · [official logos](#official-logos) · [plugin architecture](#plugin-architecture)
 3. [Requirements](#requirements)
 4. [Quick start](#quick-start) (macOS and Windows)
 5. [Install](#install): [Claude Code](#claude-code-step-by-step) · [Codex](#codex-step-by-step) · [Antigravity](#antigravity-step-by-step)
@@ -47,8 +47,8 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 | **GIF** | 1080x1350 looping GIF (under 5 MB) + the same loop as an MP4 video + still PNG | 16 templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid… and an **animated chart** template for any of the 21 charts), **ranked for your content**; you choose. The complete diagram is on screen from the first frame; only the flow moves (dots on connectors, pulses, belts), in a seamless loop |
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
-| **Architecture diagram** | GIF and MP4 video (flowing connectors and icons that come alive step by step), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
-| **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, LinkedIn newsletter 1920×1080, dev.to 1000×420, Hashnode 1600×840; five layouts, each with your photo, name and tagline (face, number, diagram, versus, editorial) following current thumbnail research |
+| **Architecture diagram** | GIF and MP4 video (flowing connectors and icons that come alive step by step), PNG and carousel slide | One diagram for a whole post in five styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram, numbered **stage panels**; with **official logos** (AWS, Google Cloud, Azure, Claude, GitHub, Slack, Kubernetes and 200 more) for every technology the source names |
+| **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, LinkedIn newsletter 1920×1080, dev.to 1000×420, Hashnode 1600×840; six layouts, each with your photo, name and tagline (face, number, diagram, versus, editorial, and the **newsletter banner** with your cut-out photo) following current thumbnail research |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
 | **Walkthrough video** | 1080x1920 MP4 + E2E report | A real guide run in a browser by **Playwright**: every step is performed, checked (expected vs actual) and shown with a cursor, a highlight and a Verified/Failed badge |
 | **Post** | LinkedIn post text | Hook, short points with their sources, your exact closing CTA |
@@ -61,12 +61,15 @@ Every image below was made by explainer-studio from a fixture source, and every 
 
 ### Architecture diagrams
 
-One diagram for a whole post or blog, in four styles. As a GIF the complete diagram is on screen from the first frame and only the flow moves (dots run along every connector); the same diagram is also a PNG and a carousel slide.
+One diagram for a whole post or blog, in five styles. As a GIF the complete diagram is on screen from the first frame and only the flow moves: dots run along every connector and the icons come alive step by step. The same diagram is also a PNG and a carousel slide. Any icon can be an [official logo](#official-logos) of a technology the source names.
 
-| Sketch (Excalidraw-like) | Cloud reference architecture | Swimlane flowchart | Sequence diagram |
-|:---:|:---:|:---:|:---:|
-| <img src="docs/img/arch/sketch.jpg" alt="Sketch-style architecture diagram: how an agent uses its tools" width="200"> | <img src="docs/img/arch/cloud.jpg" alt="Cloud architecture diagram: how a RAG app answers a question" width="200"> | <img src="docs/img/arch/flow.jpg" alt="Swimlane flowchart: how a pull request gets merged" width="200"> | <img src="docs/img/arch/sequence.jpg" alt="Sequence diagram: signing in with OAuth" width="200"> |
-| `arch-sketch` | `arch-cloud` | `arch-flow` | `arch-sequence` |
+| Sketch (Excalidraw-like) | Cloud reference architecture | Swimlane flowchart |
+|:---:|:---:|:---:|
+| <img src="docs/img/arch/sketch.jpg" alt="Sketch-style architecture diagram: how an agent uses its tools" width="250"> | <img src="docs/img/arch/cloud.jpg" alt="Cloud architecture diagram with official AWS logos: how a RAG app on AWS answers a question" width="250"> | <img src="docs/img/arch/flow.jpg" alt="Swimlane flowchart with the GitHub Actions logo: how a pull request gets merged" width="250"> |
+| `arch-sketch` | `arch-cloud` | `arch-flow` |
+| **Sequence diagram** | **Stage panels** | **Stage panels as a GIF** |
+| <img src="docs/img/arch/sequence.jpg" alt="Sequence diagram: signing in with OAuth" width="250"> | <img src="docs/img/arch/panels.jpg" alt="Stage panels with official logos: from idea to production with Claude Code" width="250"> | <img src="docs/img/arch/panels.gif" alt="Animated stage panels: each stage lights up in turn and its icons come alive" width="250"> |
+| `arch-sequence` | `arch-panels` | GIF template `arch`, style `panels` |
 
 ### Charts
 
@@ -78,7 +81,12 @@ One diagram for a whole post or blog, in four styles. As a GIF the complete diag
 
 ### Thumbnails and blog covers
 
-Five layouts at YouTube, Open Graph, LinkedIn newsletter, dev.to and Hashnode sizes, each with your photo, name and tagline.
+Six layouts at YouTube, Open Graph, LinkedIn newsletter, dev.to and Hashnode sizes, each with your photo, name and tagline.
+
+**LinkedIn newsletter banner** (`--layouts banner`): a logo row, a two-part title with a highlighted pill, a subtitle bar, a four-item checklist, a laptop screen with three checked steps, up to two round badges, your cut-out photo and your CTA. Set your photo once with `studio.py brand --photo FILE` (on macOS it is cut out automatically, offline).
+
+<img src="docs/img/gallery/thumb-banner.jpg" alt="LinkedIn newsletter banner: highlighted title, checklist, laptop with steps, badges, the author's cut-out photo and CTA" width="770">
+
 
 | Face | Versus |
 |:---:|:---:|
@@ -99,11 +107,14 @@ flowchart LR
   A[Source: URL, file, repo, text] --> B[ingest<br/>clean text + chunks]
   B --> C[decision matrix<br/>content shapes]
   C --> D{You choose<br/>template, charts,<br/>hooks, motion}
-  D --> E[story.json<br/>written by your agent]
-  E --> F[check<br/>grounding, limits, numbers]
+  D --> P[plan.md<br/>brainstormed with you]
+  P --> Q{{you type<br/>approve plan XXXX}}
+  Q --> E[story.json<br/>written by your agent]
+  E --> F[check<br/>grounding, limits, numbers, logos]
   F --> G[render<br/>headless Chromium]
   G --> H[review gates<br/>layout, legibility, speech]
-  H --> I[final/ files]
+  H --> R{{you type<br/>approve final XXXX}}
+  R --> I[final/ files]
 ```
 
 1. **Ingest** reads the source once and splits it into cited chunks.
@@ -111,6 +122,33 @@ flowchart LR
 3. **You choose.** The agent shows the ranked options and the [design catalogue](skills/explainer-studio/studio/catalog.html), a page with every design, its ID and a real sample. It asks which design IDs to use and does not build until you answer.
 4. **The agent writes one compact `story.json`** from the source. That is the only step that uses the model. Everything else is deterministic code.
 5. **Check, render, review.** Text grounding, length limits and number grounding run first. The engine then renders in headless Chromium. Finally, the review gates check layout (overflow, overlap, empty cards), reading time, file size and speech-to-text.
+
+### Approval gates: you approve the plan and the result
+
+The agent brainstorms with you, writes a plan, and builds nothing until you approve it:
+
+1. `studio.py plan DIR` writes `plan.md` with the questions to ask you (audience, design, logos and icons, must-haves).
+2. The agent fills in the answers, then `studio.py gate DIR` stamps the plan with a 4-character code and shows it to you.
+3. You type **`approve plan 7f3a`** (your code). Only that unlocks `build`, `thumbs` and `cover`.
+4. After the review, you look at the result and type **`approve final 9c1e`**. Only that unlocks `finalize`.
+
+The approval is recorded by a hook that reads **your own message**, never by the agent. The code is the start of the plan's hash, so if the plan changes after you approve it the build is blocked again until you approve the new code. The same hook denies any tool call that tries to read or write the approval records. Clicking build in the Design Studio or the editor counts as your approval for that job.
+
+| Harness | Records your approval | Blocks tampering | Installed in |
+|---|---|---|---|
+| Claude Code | `UserPromptSubmit` | `PreToolUse` (Bash, Write, Edit) | `~/.claude/settings.json`, or `hooks/hooks.json` in the plugin |
+| Codex | `UserPromptSubmit` | `PreToolUse` (Bash, apply_patch) | `~/.codex/hooks.json` (trust it once in `/hooks`) |
+| Antigravity | `PreInvocation` (your last message) | `PreToolUse` (run_command) | `~/.gemini/config/hooks.json` |
+
+`python install.py install` registers the hooks and `uninstall` removes only them; your other hooks and settings are kept. Limit: if every hook is turned off, `studio.py` still refuses to build without an approval record, but it cannot tell who wrote that record.
+
+### Official logos
+
+Any icon can be an official logo: `"icon": "logo:aws-s3"`. 204 logos ship with the plugin (a CC0 subset of the Iconify `logos` set: AWS services, Google Cloud, Azure, Claude, Claude Code, OpenAI, Gemini, GitHub, GitLab, Slack, MCP, Docker, Kubernetes, Terraform, Postgres, Grafana, Datadog and more).
+
+- `studio.py logos QUERY` searches them; `studio.py logos --add NAME` fetches any other logo of the set.
+- `studio.py logos --import DIR` imports an official icon pack you downloaded yourself, such as the AWS Architecture Icons; imported icons win.
+- **Accuracy rule:** `check` refuses a logo the source never names (`logo:github` needs "GitHub" in the source). Everything else gets a line icon. Logos are drawn unchanged, on a white tile, and remain trademarks of their owners.
 
 ### Plugin architecture
 
@@ -128,8 +166,12 @@ flowchart TB
     PY --> EN["engine/*.js<br/>GIF · carousel · charts · arch · thumbs · Reel · walkthrough"]
     EN --> CH["headless Chromium<br/>and Playwright"]
     APP["Design Studio web app<br/>studio/ · 127.0.0.1 only"] --> PY
+    HK["gate_hook.py<br/>records your approval,<br/>blocks tampering"] --> GT[".gates/<br/>plan · final"]
+    GT --> PY
+    LG["data/logos.json<br/>official logos"] --> EN
   end
   CC & CX & AG --> CMD
+  CC & CX & AG -. hooks .-> HK
   CH --> OUT["outputs/slug/<br/>GIF · PNG · PDF · MP4 · post"]
   BR[(your brand<br/>photo · name · tagline)] --> EN
 ```
@@ -290,15 +332,16 @@ Ask your agent with the article, docs page, repository or your own notes, and na
 /explainer https://example.com/how-our-rag-app-works  architecture diagram
 ```
 
-1. The agent reads the source and shows the ranked designs. Pick a style by its ID: `arch-sketch`, `arch-cloud`, `arch-flow` or `arch-sequence`. As a GIF, the template is `arch`.
-2. It writes the diagram from the source: zones, components and the connections between them. Every label must appear in the source.
-3. You get three files in `outputs/<slug>/`:
+1. The agent reads the source and shows the ranked designs. Pick a style by its ID: `arch-sketch`, `arch-cloud`, `arch-flow`, `arch-sequence` or `arch-panels`. As a GIF, the template is `arch`.
+2. It writes the plan (style, outline, the logo or icon for each block) and waits for you to type `approve plan XXXX`.
+3. It writes the diagram from the source: zones, components and the connections between them, with official logos for the technologies the source names. Every label must appear in the source.
+4. You get three files in `outputs/<slug>/`:
    - `<slug>-linkedin.gif`: the looping GIF
    - `<slug>-linkedin.mp4`: the same loop as an 18-second video, to post as native video
    - `<slug>-linkedin.png`: the complete diagram as one image
-4. For a narrated video that explains the system step by step, ask for a **Reel** too. For a slide, ask for a carousel with an `arch` slide.
+5. For a narrated video that explains the system step by step, ask for a **Reel** too. For a slide, ask for a carousel with an `arch` slide.
 
-In the Design Studio, the architecture cards in the gallery show the four styles. Open one to edit and render a slide, or to prepare the request for your agent.
+In the Design Studio, the architecture cards in the gallery show the five styles. Open one to edit and render a slide, or to prepare the request for your agent.
 
 ### Design catalogue
 

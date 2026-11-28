@@ -2,7 +2,8 @@
 // Rules from the research (docs/THUMBNAILS.md): one focal point, 3-6 big words with an outline, saturated mid-tone backgrounds that hold up in light
 // and dark mode, a face filling about a third of the frame, the middle ~70% as the working area, and nothing in YouTube's bottom-right duration badge.
 // Layouts: face, number, diagram, versus, editorial. Content comes from scripts/cover.py (words already in the story).
-import { C, E, tx, icon, fitSize, measure, svgLayer, path, circ, svgNS } from './kit.js';
+import { C, E, tx, icon, fitSize, measure, svgLayer, path, circ, svgNS, box } from './kit.js';
+import { cta } from './cta.js';
 
 const f1 = v => (+v).toFixed(1);
 function frame(W, H, D) {   // safe area: 6% margins; YouTube keeps text out of the bottom-right badge corner
@@ -32,7 +33,60 @@ function chip(root, id, text, x, y, F, bg, fg) {
 }
 function blob(root, x, y, r, c, o = 1) { E(root, 'abs', `left:${f1(x - r)}px;top:${f1(y - r)}px;width:${f1(2 * r)}px;height:${f1(2 * r)}px;border-radius:50%;background:${c};opacity:${o}`); }
 
+// LinkedIn newsletter banner (1920x1080; also YouTube and Open Graph): logo row, a two-part title with a highlighted pill, a subtitle bar,
+// four checklist rows, a laptop screen with three checked steps, up to two round badges, the author's cut-out photo on orange discs, the brand CTA.
+const OR = '#F2741F', NAVY = '#14213D';
+function banner(root, D, W, H) {
+  const b = D.thumb.banner, m = Math.round(Math.min(W, H) * .075), s = Math.min((W - 2 * m) / 1920, (H - 2 * m) / 1080), ox = (W - 1920 * s) / 2, oy = (H - 1080 * s) / 2, X = v => ox + v * s, Y = v => oy + v * s, Z = v => v * s;   // text stays in the safe area; the background fills the frame
+  root.style.background = 'radial-gradient(' + f1(W * .62) + 'px ' + f1(H * .65) + 'px at 30% 40%,#FFF8F1,#FBEADB)';
+  E(root, 'abs', `left:${f1(X(1660))}px;top:${f1(Y(-140))}px;width:${f1(Z(420))}px;height:${f1(Z(300))}px;border-radius:50%;background:#F9D7B8`);
+  E(root, 'abs', `left:${f1(X(-120))}px;top:${f1(Y(1010))}px;width:${f1(Z(300))}px;height:${f1(Z(200))}px;border-radius:50%;background:#F9D7B8`);
+  // logo row: official logos (only those the source names; checked by studio.py check), then the series name
+  let lx = X(90); (b.logos || []).slice(0, 2).forEach(l => { E(root, 'abs', `left:${f1(lx)}px;top:${f1(Y(50))}px;width:${f1(Z(76))}px;height:${f1(Z(76))}px;filter:drop-shadow(0 ${f1(Z(4))}px ${f1(Z(10))}px rgba(160,90,40,.18))`, icon(l, Math.round(Z(76)))); lx += Z(92); });
+  if (b.series) { if (b.logos && b.logos.length) { E(root, 'abs', `left:${f1(lx + Z(6))}px;top:${f1(Y(58))}px;width:${f1(Z(2))}px;height:${f1(Z(60))}px;background:${NAVY}55`); lx += Z(32); }
+    tx(root, 'bn-series', b.series, { x: lx, y: Y(56), w: X(1060) - lx, h: Z(64), size: fitSize(b.series, { w: X(1056) - lx, h: Z(60), max: Math.round(Z(40)), min: 14, weight: 500 }), weight: 500, color: NAVY }); }
+  tx(root, 'bn-lead', b.lead, { x: X(96), y: Y(188), w: Z(1000), h: Z(104), size: fitSize(b.lead, { w: Z(990), h: Z(100), max: Math.round(Z(84)), min: 16, weight: 800 }), weight: 800, color: NAVY, ls: -.02 });
+  E(root, 'abs', `left:${f1(X(66))}px;top:${f1(Y(300))}px;width:${f1(Z(1010))}px;height:${f1(Z(206))}px;border-radius:${f1(Z(40))}px;background:linear-gradient(100deg,#F08A3E,#C2410C);box-shadow:0 ${f1(Z(18))}px ${f1(Z(40))}px #C2410C44`);
+  const hz = fitSize(b.highlight, { w: Z(900), h: Z(150), max: Math.round(Z(112)), min: 16, weight: 800, lh: 1 });
+  tx(root, 'bn-hi', b.highlight, { x: X(110), y: Y(312), w: Z(920), h: Z(150), size: hz, weight: 800, color: '#fff', ls: -.03, lh: 1 });
+  const sv = svgLayer(root, W, H); path(sv, `M${f1(X(570))} ${f1(Y(466))}C${f1(X(700))} ${f1(Y(446))} ${f1(X(890))} ${f1(Y(446))} ${f1(X(1020))} ${f1(Y(458))}`, { stroke: '#FFD54A', w: Z(13) });
+  [[10, 30, 52, 4], [14, 70, 66, 70], [10, 110, 52, 136]].forEach(([a, b_, c, d]) => path(sv, `M${f1(X(1090 + a))} ${f1(Y(300 + b_))}L${f1(X(1090 + c))} ${f1(Y(300 + d))}`, { stroke: OR, w: Z(8) }));
+  if (b.sub) { const sz = fitSize(b.sub, { w: Z(880), h: Z(70), max: Math.round(Z(50)), min: 14, weight: 800 }), sw = Math.min(Z(960), measure(b.sub, { size: sz, weight: 800, w: Z(2000) }).w + Z(90));
+    const sb = box(root, { x: X(90), y: Y(540), w: sw, h: Z(92), r: Z(16), fill: '#FFFFFFAA', bd: 'transparent', bw: 0, shadow: false, bg: true });
+    E(sb, 'abs', `left:0;top:${f1(Z(14))}px;width:${f1(Z(9))}px;height:${f1(Z(64))}px;border-radius:${f1(Z(5))}px;background:${OR}`);
+    tx(root, 'bn-sub', b.sub, { x: X(130), y: Y(540), w: sw - Z(50), h: Z(92), size: sz, weight: 800, color: NAVY, ls: -.015 }); }
+  (b.items || []).slice(0, 4).forEach((it, k) => { const y = Y(668 + k * 98), r = box(root, { x: X(80), y, w: Z(600), h: Z(84), r: Z(18), fill: '#fff', bd: 'transparent', bw: 0, shadow: false, css: `box-shadow:0 ${f1(Z(8))}px ${f1(Z(24))}px #E0B89633;` });
+    E(r, 'abs', `left:${f1(Z(18))}px;top:${f1(Z(11))}px;width:${f1(Z(62))}px;height:${f1(Z(62))}px;border-radius:${f1(Z(14))}px;background:linear-gradient(#F59A54,#E0651F);display:flex;align-items:center;justify-content:center`, icon(it.icon, Math.round(Z(it.icon.startsWith('logo:') ? 56 : 38)), '#fff', 2));
+    tx(root, 'bn-i' + k, it.text, { x: X(186), y, w: Z(480), h: Z(84), size: fitSize(it.text, { w: Z(476), h: Z(76), max: Math.round(Z(31)), min: 14, weight: 700 }), weight: 700, color: NAVY }); });
+  (b.badges || []).slice(0, 2).forEach((g, k) => { const bx = X(1110 + k * 260), by = Y(70), R = Z(115), id = 'bnarc' + k, sv2 = svgLayer(root, W, H);
+    const pts = Array.from({ length: 12 }, (_, q) => { const a = Math.PI * 2 * q / 12 - Math.PI / 2; return `${f1(bx + R + Z(112) * Math.cos(a))},${f1(by + R + Z(112) * Math.sin(a))}`; }).join(' ');
+    sv2.insertAdjacentHTML('beforeend', `<defs><path id="${id}" d="M${f1(bx + Z(40))} ${f1(by + Z(118))}a${f1(Z(75))} ${f1(Z(75))} 0 0 1 ${f1(Z(150))} 0"/></defs><polygon points="${pts}" fill="#E07A45"/><circle cx="${f1(bx + R)}" cy="${f1(by + R)}" r="${f1(Z(96))}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="${f1(Z(2))}"/>`
+      + `<text font-family="JetBrains Mono,monospace" font-weight="700" font-size="${f1(Z(19))}" letter-spacing="${f1(Z(3))}" fill="#3B2A20"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${g.top.toUpperCase().replace(/&/g, '&amp;').replace(/</g, '&lt;')}</textPath></text>`);
+    E(root, 'abs', `left:${f1(bx + R - Z(20))}px;top:${f1(by + Z(92))}px;width:${f1(Z(40))}px;height:${f1(Z(40))}px`, icon(g.icon || 'star', Math.round(Z(40)), '#fff', 2.2));
+    [g.line1, g.line2].filter(Boolean).forEach((t, q) => tx(root, `bn-b${k}-${q}`, t, { x: bx + Z(24), y: by + Z(136 + q * 30), w: Z(182), h: Z(30), size: fitSize(t, { w: Z(178), h: Z(30), max: Math.round(Z(25)), min: 11, weight: 600, font: 'serif' }), weight: 600, font: 'serif', color: '#fff', align: 'center' })); });
+  // laptop: a screen with the title and three checked steps
+  const sc = b.screen || {}; E(root, 'abs', `left:${f1(X(720))}px;top:${f1(Y(700))}px;width:${f1(Z(560))}px;height:${f1(Z(330))}px;background:#1C1C1E;border-radius:${f1(Z(22))}px ${f1(Z(22))}px 0 0`);
+  E(root, 'abs', `left:${f1(X(736))}px;top:${f1(Y(716))}px;width:${f1(Z(528))}px;height:${f1(Z(298))}px;background:#FFFDF9;border-radius:${f1(Z(8))}px`);
+  E(root, 'abs', `left:${f1(X(670))}px;top:${f1(Y(1030))}px;width:${f1(Z(660))}px;height:${f1(Z(26))}px;background:linear-gradient(#D9D9DC,#A9A9AE);border-radius:0 0 ${f1(Z(30))}px ${f1(Z(30))}px`);
+  let sy = Y(736); if (sc.logo) { E(root, 'abs', `left:${f1(X(764))}px;top:${f1(sy)}px;width:${f1(Z(36))}px;height:${f1(Z(36))}px`, icon(sc.logo, Math.round(Z(36)))); }
+  if (sc.label) tx(root, 'bn-sl', sc.label, { x: X(sc.logo ? 810 : 764), y: sy, w: Z(320), h: Z(36), size: fitSize(sc.label, { w: Z(316), h: Z(34), max: Math.round(Z(24)), min: 12, weight: 700 }), weight: 700, color: C.ink });
+  sy += Z(46); if (sc.title) tx(root, 'bn-st', sc.title, { x: X(764), y: sy, w: Z(320), h: Z(44), size: fitSize(sc.title, { w: Z(316), h: Z(42), max: Math.round(Z(32)), min: 12, weight: 800 }), weight: 800, color: NAVY });
+  (sc.steps || []).slice(0, 3).forEach((t, k) => { const y = Y(840 + k * 52);
+    E(root, 'abs', `left:${f1(X(764))}px;top:${f1(y)}px;width:${f1(Z(30))}px;height:${f1(Z(30))}px;border-radius:50%;background:#E0651F;display:flex;align-items:center;justify-content:center`, icon('check', Math.round(Z(20)), '#fff', 2.6));
+    tx(root, 'bn-ss' + k, t, { x: X(806), y: y - Z(2), w: Z(240), h: Z(34), size: fitSize(t, { w: Z(220), h: Z(30), max: Math.round(Z(19)), min: 11, weight: 700, font: 'mono' }), weight: 700, font: 'mono', color: C.ink, css: `background:#FBEADB;border-radius:${f1(Z(8))}px;padding:0 ${f1(Z(12))}px;box-sizing:border-box;width:auto;max-width:${f1(Z(240))}px` }); });
+  E(root, 'abs', `left:${f1(X(1100))}px;top:${f1(Y(820))}px;width:${f1(Z(130))}px;height:${f1(Z(116))}px;border:${f1(Z(5))}px solid ${OR};border-radius:${f1(Z(12))}px;background:#FFF4EA;box-sizing:border-box;padding:${f1(Z(16))}px`,
+    [1, .7, .5].map(w => `<div style="height:${f1(Z(7))}px;width:${w * 100}%;background:#F6B98C;border-radius:4px;margin-bottom:${f1(Z(12))}px"></div>`).join(''));
+  E(root, 'abs', `left:${f1(X(1196))}px;top:${f1(Y(902))}px;width:${f1(Z(58))}px;height:${f1(Z(58))}px;border-radius:50%;background:#E0651F;display:flex;align-items:center;justify-content:center`, icon('star', Math.round(Z(32)), '#fff', 2.4));
+  // the author's photo: the cut-out (studio.py brand --photo) on orange discs; without one, the avatar in a round frame
+  E(root, 'abs', `left:${f1(X(1330))}px;top:${f1(Y(360))}px;width:${f1(Z(720))}px;height:${f1(Z(720))}px;border-radius:50%;background:#F7B98A`);
+  E(root, 'abs', `left:${f1(X(1410))}px;top:${f1(Y(450))}px;width:${f1(Z(580))}px;height:${f1(Z(580))}px;border-radius:50%;background:linear-gradient(#F59A54,#E8742F)`);
+  if (D.brand.cutout) E(root, 'abs', `left:${f1(X(1270))}px;top:${f1(Y(340))}px;width:${f1(Z(660))}px;height:${f1(H - Y(340))}px;background:url(${D.brand.cutout}) 50% 100%/contain no-repeat`);
+  else E(root, 'abs', `left:${f1(X(1450))}px;top:${f1(Y(490))}px;width:${f1(Z(500))}px;height:${f1(Z(500))}px;border-radius:50%;${photo(D, 'bust')};border:${f1(Z(8))}px solid #fff;box-sizing:border-box`);
+  cta(root, 'bn-cta', D.brand, { x: X(1150), y: Y(996), w: Z(740), h: Z(70), size: Math.round(Z(24)), bw: Math.max(2, Math.round(Z(4))) });
+}
+
 const L = {
+  banner,
   face(root, D, W, H) {   // saturated clay background, the author's photo on the right, 3-6 outlined words on the left
     const F = frame(W, H, D), t = D.thumb; root.style.background = `linear-gradient(135deg,${C.clay},#B9532F)`;
     blob(root, W * .86, H * .1, H * .45, '#ffffff', .10); blob(root, W * .06, H * 1.02, H * .4, '#000000', .08);

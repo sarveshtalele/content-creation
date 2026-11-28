@@ -59,7 +59,7 @@ function node(root, svg, n, x, y, w, h, P, hand, i, shape = 'rect') {
   const r = shape === 'pill' ? h / 2 : hand ? 10 : 20;
   if (hand) { NS(svg, 'rect', { x, y, width: w, height: h, rx: r, fill: '#fff' }); hachure(svg, x, y, w, h, P.bd, 70 + i); roughPoly(svg, rectPts(x, y, w, h), { stroke: ink, seed: 90 + i, closed: true }); }
   else { const b = card(root, { x, y, w, h, r, fill: shape === 'pill' ? P.soft : '#fff', bd: P.bd, bw: 3, css: 'box-shadow:0 10px 22px rgba(20,20,19,.08);' }); b.dataset.round = shape === 'pill' ? '1' : ''; }
-  const ic = hasIc ? E(root, 'abs', `left:${f1(x + (shape === 'pill' ? 18 : 10))}px;top:${f1(y + (h - ts) / 2)}px;width:${ts}px;height:${ts}px;border-radius:${Math.round(ts * .3)}px;background:${hand ? 'transparent' : P.soft};display:flex;align-items:center;justify-content:center`, icon(n.icon, Math.round(ts * .62), hand ? ink : P.ink, hand ? 2.2 : 2)) : null;
+  const ic = hasIc ? E(root, 'abs', `left:${f1(x + (shape === 'pill' ? 18 : 10))}px;top:${f1(y + (h - ts) / 2)}px;width:${ts}px;height:${ts}px;border-radius:${Math.round(ts * .3)}px;background:${hand ? 'transparent' : P.soft};display:flex;align-items:center;justify-content:center`, icon(n.icon, Math.round(ts * (n.icon.startsWith('logo:') ? .92 : .62)), hand ? ink : P.ink, hand ? 2.2 : 2)) : null;   // a logo brings its own white tile
   const tx0 = x + (hasIc ? ts + 22 + (shape === 'pill' ? 12 : 0) : 14), sub = n.sub && h >= 84, th = sub ? h * .5 : h - 12;
   const z = fitSize(n.title, { w: tw, h: th - 4, max: hand ? 30 : 24, min: 20, weight: hand ? 400 : 700, font, lh: 1.1 });
   tx(root, 'ar-n' + i, n.title, { x: tx0, y: y + (sub ? 8 : 6), w: tw, h: th, size: z, weight: hand ? 400 : 700, font, color: ink, wrap: true, lh: 1.1, align: hasIc ? 'left' : 'center' });
@@ -152,7 +152,36 @@ function sequence(root, A, B) {
   return { edges };
 }
 
+// —— panels: numbered stage cards, each input -> core -> outputs with a caption (2-6 panels, 1 column up to 3, else 2) ——
+function panels(root, A, B) {
+  const ps = A.panels, n = ps.length, cols = n <= 3 ? 1 : 2, rows = Math.ceil(n / cols), g = 18, hh = 54, capH = 60;
+  const pw = (B.w - g * (cols - 1)) / cols, ph = Math.min(420, (B.h - g * (rows - 1)) / rows), y0 = B.y + (B.h - ph * rows - g * (rows - 1)) / 2;
+  const at = k => ({ x: B.x + (k % cols) * (pw + g), y: y0 + Math.floor(k / cols) * (ph + g) });
+  const bgs = ps.map((p, k) => { const { x, y } = at(k), b = card(root, { x, y, w: pw, h: ph, r: 20, fill: C.sand, bd: C.lineD, bw: 2, shadow: false, bg: true, css: 'overflow:hidden;transition:none;' });
+    E(b, 'abs', `left:0;top:0;width:100%;height:${hh}px;background:${C.clayD}`);
+    E(root, 'abs', `left:${f1(x + 12)}px;top:${f1(y + 11)}px;width:34px;height:32px;border-radius:8px;background:#fff;color:${C.clayD};font:700 18px Inter,sans-serif;display:flex;align-items:center;justify-content:center`, String(k + 1).padStart(2, '0'));
+    tx(root, 'ar-p' + k, p.title, { x: x + 56, y: y + 6, w: pw - 112, h: hh - 12, size: fitSize(p.title, { w: pw - 116, h: hh - 14, max: 28, min: 20, weight: 600, font: 'serif' }), weight: 600, font: 'serif', color: '#fff', align: 'center' });
+    return { el: b, x, y }; });
+  const svg = svgLayer(root, 1080, 1920), icons = [], edges = [];   // wires above the panel backgrounds, below the tiles
+  const wire = (x1, y1, x2, y2) => { const mx = (x1 + x2) / 2, d = `M${f1(x1)} ${f1(y1)}C${f1(mx)} ${f1(y1)} ${f1(mx)} ${f1(y2)} ${f1(x2)} ${f1(y2)}`;
+    NS(svg, 'path', { d, fill: 'none', stroke: C.lineD, 'stroke-width': 3, 'stroke-dasharray': '2 8', 'stroke-linecap': 'round' }); edges.push({ path: NS(svg, 'path', { d, fill: 'none', stroke: 'none' }), color: C.clay }); };
+  ps.forEach((p, k) => { const { x, y } = bgs[k], top = y + hh, body = ph - hh - capH - 22, colW = Math.min(150, pw * .23), ts = Math.min(76, body * .44), cy = top + 8 + (body - 52) / 2;
+    const tile = (it, cx, core, id) => { const t = card(root, { x: cx - ts / 2, y: cy - ts / 2, w: ts, h: ts, r: 16, fill: '#fff', bd: core ? C.clay : C.line, bw: 2.5, css: 'display:flex;align-items:center;justify-content:center;' });
+      t.innerHTML = icon(it.icon, Math.round(ts * (it.icon.startsWith('logo:') ? .9 : .62)), C.ink, 1.9); icons.push({ el: t, color: C.clay, panel: k });
+      tx(root, id, it.label, { x: cx - colW / 2, y: cy + ts / 2 + 4, w: colW, h: 50, size: fitSize(it.label, { w: colW - 4, h: 50, max: 21, min: 20, weight: 500, lh: 1.08 }), weight: 500, wrap: true, lh: 1.08, align: 'center', css: 'align-items:flex-start;' }); };
+    const xa = x + 14 + colW / 2, xb = x + 14 + colW * 1.5, ox = x + 26 + colW * 2, ow = x + pw - 14 - ox, outs = p.outputs, oh = Math.min(56, (body + 30 - 10 * (outs.length - 1)) / outs.length);
+    tile(p.input, xa, false, 'ar-pi' + k); tile(p.core, xb, true, 'ar-pc' + k); wire(xa + ts / 2 + 4, cy, xb - ts / 2 - 4, cy);
+    outs.forEach((o, j) => { const oy = cy - (outs.length * oh + 10 * (outs.length - 1)) / 2 + j * (oh + 10), b = card(root, { x: ox, y: oy, w: ow, h: oh, r: 12, fill: '#fff', bd: C.line, bw: 2, shadow: false });
+      E(b, 'abs', `left:10px;top:${f1((oh - 32) / 2 - 2)}px;width:32px;height:32px`, icon(o.icon, 32, C.ink, 2));
+      tx(root, `ar-po${k}-${j}`, o.label, { x: ox + 50, y: oy + 2, w: ow - 58, h: oh - 4, size: fitSize(o.label, { w: ow - 60, h: oh - 6, max: 21, min: 20, weight: 700, lh: 1.05 }), weight: 700, wrap: true, lh: 1.05 });
+      wire(xb + ts / 2 + 4, cy, ox - 4, oy + oh / 2); });
+    if (p.caption) tx(root, 'ar-pk' + k, p.caption, { x: x + 14, y: y + ph - capH - 12, w: pw - 28, h: capH, size: fitSize(p.caption, { w: pw - 56, h: capH - 8, max: 22, min: 20, weight: 500, font: 'serif', lh: 1.12 }), weight: 500, font: 'serif', italic: true, wrap: true, lh: 1.12, align: 'center',
+      css: `background:#fff;border-radius:12px;box-shadow:0 0 0 2px ${C.line};padding:0 14px;box-sizing:border-box;` }); });
+  return { edges, icons, panels: bgs.map(b => b.el) };
+}
+
 export function renderArch(root, A, B) {
+  if (A.style === 'panels') return panels(root, A, B);
   if (A.style === 'flow') return flow(root, A, B);
   if (A.style === 'sequence') return sequence(root, A, B);
   return zones(root, A, B, A.style === 'sketch');

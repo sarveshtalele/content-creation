@@ -1,5 +1,5 @@
 // Entry: reads data.json (built by studio.py) and drives either the Reel (1080x1920, voiced) or the GIF (one page, silent).
-import { E, seg, eo, FLAGS } from './kit.js';
+import { E, seg, eo, FLAGS, setLogos } from './kit.js';
 import { buildReel } from './reel.js';
 import { buildGif } from './gif.js';
 import { cta } from './cta.js';
@@ -100,7 +100,7 @@ async function setupCover(D) {
 }
 (async () => {
   const D = await (await fetch('data.json')).json();
-  FLAGS.logo = D.logo === true;
+  FLAGS.logo = D.logo === true; setLogos(D.logos);
   await loadFonts();                                   // before building: templates measure text to fit it
   await (MODE === 'gif' ? setupGif(D) : MODE === 'carousel' ? setupCarousel(D) : MODE === 'cover' ? setupCover(D) : MODE === 'walk' ? setupWalk(D) : MODE === 'thumb' ? setupThumb(D) : setupReel(D));
   window.READY = true;

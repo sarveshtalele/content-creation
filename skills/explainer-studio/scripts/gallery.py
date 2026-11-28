@@ -14,7 +14,7 @@ GIF_FAMILY = {'funnel': 'Data', 'chart': 'Data', 'skyline': 'Data', 'arch': 'Arc
               'lanes': 'Architecture', 'exploded': 'Architecture', 'pipeline': 'Process', 'isoflow': 'Process', 'stairs': 'Process', 'conveyor': 'Process',
               'columns': 'Lists and frameworks', 'grid': 'Lists and frameworks', 'framework': 'Lists and frameworks', 'tower': 'Lists and frameworks'}
 REEL_COVERS = {'hero': 'Hook + mini diagram', 'question': 'Giant hook, underline, tags', 'number': 'One real figure in a ring', 'split': 'Two lists joined by an arrow', 'face': 'Your photo with the hook'}
-THUMBS = {'face': 'Your photo with 3-6 outlined words', 'number': 'One real figure in a ring', 'diagram': 'The hook with a mini flow', 'versus': 'Two lists side by side', 'editorial': 'A calm blog header'}
+THUMBS = {'face': 'Your photo with 3-6 outlined words', 'number': 'One real figure in a ring', 'diagram': 'The hook with a mini flow', 'versus': 'Two lists side by side', 'editorial': 'A calm blog header', 'banner': 'LinkedIn newsletter banner: highlighted title, checklist, laptop, badges, your cut-out photo'}
 
 def _has(f): return os.path.isfile(os.path.join(SAMPLES, f))
 def items():
@@ -35,5 +35,5 @@ def items():
                 'img': 'walkthrough.jpg' if _has('walkthrough.jpg') else 'reelcover-hero.jpg', 'motion': 'walkthrough.mp4' if _has('walkthrough.mp4') else None, 'aspect': '9/16', 'action': 'walk'})
     for k, v in THUMBS.items():
         out.append({'id': 'thumb-' + k, 'layout': k, 'media': 'thumbnail', 'category': 'Thumbnails and blog covers', 'name': k.title() + ' thumbnail', 'tag': v, 'best': 'YouTube, link previews, LinkedIn newsletters, dev.to and Hashnode covers',
-                    'img': f'thumb-{k}.jpg', 'motion': None, 'aspect': '16/9', 'action': 'thumb'})
+                    'img': f'thumb-{k}.jpg', 'motion': None, 'aspect': '16/9', 'action': 'request' if k == 'banner' else 'thumb'})   # the banner needs a banner section: the agent writes it from your source
     return [i for i in out if _has(i['img'])]

@@ -1,0 +1,7 @@
+{
+  "description": "explainer-studio approval gates: the person approves the plan before build and the result before finalize",
+  "hooks": {
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/explainer-studio/scripts/gate_hook.py\" prompt --harness claude", "timeout": 10}]}],
+    "PreToolUse": [{"matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit", "hooks": [{"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/explainer-studio/scripts/gate_hook.py\" tool --harness claude", "timeout": 10}]}]
+  }
+}

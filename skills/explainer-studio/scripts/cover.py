@@ -46,7 +46,7 @@ def data(story, hook=None, layout=None):
 
 # —— thumbnails and blog covers (engine/thumb.js) ——
 THUMB_SIZES = {'youtube': (1280, 720), 'og': (1200, 630), 'newsletter': (1920, 1080), 'devto': (1000, 420), 'hashnode': (1600, 840)}   # newsletter = LinkedIn newsletter / article cover
-THUMB_LAYOUTS = ('face', 'number', 'diagram', 'versus', 'editorial')
+THUMB_LAYOUTS = ('face', 'number', 'diagram', 'versus', 'editorial', 'banner')
 def thumb_data(story, size, text=None, layouts=None):
     """Words for a thumbnail or blog cover, from the story (thumb.text, else the hook). Layouts offered only when the story has what they need."""
     th = story.get('thumb') or {}
@@ -61,7 +61,8 @@ def thumb_data(story, size, text=None, layouts=None):
     if m and (v[-1:] in '%xkmbKMB' or float(re.sub(r'[^\d.]', '', v) or 0) >= 10): out['number'] = {'value': v, 'label': out['text']}   # the thumbnail's own figure first
     elif cd.get('number'): out['number'] = cd['number']
     if cd.get('split'): out['split'] = cd['split']
-    ok = [l for l in THUMB_LAYOUTS if l in ('face', 'editorial') or (l == 'diagram' and 'flow' in out) or (l == 'number' and 'number' in out) or (l == 'versus' and 'split' in out)]
+    if isinstance(story.get('banner'), dict): out['banner'] = story['banner']   # the newsletter banner template (engine/thumb.js banner)
+    ok = [l for l in THUMB_LAYOUTS if l in ('face', 'editorial') or (l == 'diagram' and 'flow' in out) or (l == 'number' and 'number' in out) or (l == 'versus' and 'split' in out) or (l == 'banner' and 'banner' in out)]
     out['layouts'] = [l for l in ok if not layouts or l in layouts] or ok
     out['words'] = len(out['text'].split())
     return out

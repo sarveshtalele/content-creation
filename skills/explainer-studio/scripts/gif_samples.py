@@ -8,8 +8,10 @@ def one(name):
     W = tempfile.mkdtemp(prefix='gifs-'); st = json.load(open(os.path.join(F, name + '.story.json'), encoding='utf-8'))
     if 'gif' not in st: return name, 'skipped (no GIF in this fixture)'
     tpl = st['gif'].get('template', 'hub'); py = sys.executable
+    if tpl == 'arch' and st['gif'].get('arch', {}).get('style') == 'panels': tpl = 'arch-panels'   # its own sample next to gif-arch
     subprocess.run([py, os.path.join(H, 'studio.py'), 'ingest', os.path.join(F, name + '.md'), '--out', W], capture_output=True)
     shutil.copy(os.path.join(F, name + '.story.json'), os.path.join(W, 'story.json'))
+    sys.path.insert(0, H); import gates as GT; GT.approve_ui(W, 'sample build')
     r = subprocess.run([py, os.path.join(H, 'studio.py'), 'build', W, '--artifacts', 'gif'], capture_output=True, text=True, timeout=1500)
     pngs = [f for f in os.listdir(os.path.join(W, 'out'))] if os.path.isdir(os.path.join(W, 'out')) else []
     png = next((os.path.join(W, 'out', f) for f in pngs if f.endswith('-linkedin.png')), None)

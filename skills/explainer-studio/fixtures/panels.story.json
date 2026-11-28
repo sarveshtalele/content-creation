@@ -1,0 +1,17 @@
+{
+ "meta": {"title": "How a team ships a change with Claude Code", "slug": "ship-with-claude-code"},
+ "gif": {
+  "template": "arch",
+  "title": "How a team ships a change",
+  "subtitle": "From a Slack alert to production, stage by stage",
+  "arch": {
+   "style": "panels",
+   "panels": [
+    {"title": "Plan", "input": {"icon": "logo:slack", "label": "Slack alert"}, "core": {"icon": "logo:claude", "label": "Claude"}, "outputs": [{"icon": "doc", "label": "intent.md"}, {"icon": "users", "label": "Owner approves"}], "caption": "Claude writes intent.md from the alert."},
+    {"title": "Build", "input": {"icon": "doc", "label": "spec.md"}, "core": {"icon": "logo:claude-code", "label": "Claude Code"}, "outputs": [{"icon": "list", "label": "plan.md"}, {"icon": "code", "label": "Code and tests"}], "caption": "The engineer accepts the plan first."},
+    {"title": "Test", "input": {"icon": "code", "label": "Pull request"}, "core": {"icon": "logo:github-actions", "label": "GitHub Actions"}, "outputs": [{"icon": "check", "label": "Evals pass"}, {"icon": "eye", "label": "Review findings"}], "caption": "The evals pass before anyone reviews."},
+    {"title": "Deploy", "input": {"icon": "check", "label": "Approved change"}, "core": {"icon": "users", "label": "Release manager"}, "outputs": [{"icon": "lock", "label": "Release gate"}, {"icon": "rocket", "label": "Production"}, {"icon": "chart", "label": "Monitoring"}], "caption": "A release manager approves the release gate."}
+   ]
+  }
+ }
+}

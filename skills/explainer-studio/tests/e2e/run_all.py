@@ -1,6 +1,6 @@
 """End-to-end run of every media, with evaluations, into a showcase folder you can open.
 
-usage: python tests/e2e/run_all.py [--out DIR] [--only gif,carousel,charts,reel,walkthrough,app] [--no-app]
+usage: python tests/e2e/run_all.py [--out DIR] [--only gif,carousel,charts,arch,thumbs,banner,reel,walkthrough,app] [--no-app]
 default --out: ~/Downloads/explainer-studio-showcase (outside the repository; the plugin keeps no example outputs)
 
 For each media it runs the real build (headless Chromium through Playwright), then the deterministic gates (`studio.py review`), the carousel
@@ -19,6 +19,7 @@ def project(work, fixture, story=None):
     sh([PY, ST, 'ingest', os.path.join(FX, fixture + '.md'), '--out', work])
     if story is not None: json.dump(story, open(os.path.join(work, 'story.json'), 'w', encoding='utf-8'), indent=1)
     else: shutil.copy(os.path.join(FX, fixture + '.story.json'), os.path.join(work, 'story.json'))
+    sys.path.insert(0, os.path.join(SK, 'scripts')); import gates as GT; GT.approve_ui(work, 'e2e test')
 
 def gif_motion(work):
     """v3.1 GIF rules: the whole diagram is on screen at frame 0 (it matches the still PNG), and the last frame flows into the first."""
@@ -53,7 +54,7 @@ def run(out, only):
     def rec(name, ok, secs, files, **kw): R.append({'media': name, 'ok': bool(ok), 'seconds': secs, 'files': [os.path.relpath(f, out) for f in files], **kw}); print(('PASS ' if ok else 'FAIL ') + name, secs, 's', flush=True)
 
     if 'gif' in only:
-        for fx in ('funnel', 'https', 'chart', 'arch'):
+        for fx in ('funnel', 'https', 'chart', 'arch', 'panels'):
             w = os.path.join(wk, 'gif-' + fx); project(w, fx); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'gif'])
             g = gates(w); m = gif_motion(w)
             rec(f'GIF ({fx})', rc == 0 and 'BUILD COMPLETE' in log and (g['review_pct'] or 0) == 100 and m['complete_at_frame_0'] and m['seamless_loop'], s, collect(w, os.path.join(out, 'gif', fx), ['*.gif', '*-linkedin.png', '*-linkedin.mp4', 'review/*.png']), motion=m, **g)
@@ -71,15 +72,18 @@ def run(out, only):
             dest = os.path.join(out, 'charts', f'set-{n_ + 1}'); os.makedirs(dest, exist_ok=True); files = [shutil.copy(f, dest) for f in r['files']]
             rc2, e2e, _ = sh([PY, ST, 'e2e', r['job']], 900)
             rec('Chart slides ' + ', '.join(ids[k:k2]).replace('chart-', ''), r['ok'] and rc2 == 0, round(time.time() - t0, 1), files, e2e=e2e.strip().splitlines()[-3:], log=None if r['ok'] else r['log'][-800:])
-    if 'arch' in only:   # the four architecture styles as one carousel (cover, 4 slides, closing)
+    if 'arch' in only:   # the five architecture styles as one carousel (cover, 5 slides, closing)
         import designs as DS, studio_jobs as SJ
         root = os.path.join(wk, 'arch'); os.makedirs(root, exist_ok=True); ids = [d['id'] for d in DS.DESIGNS if d['group'] == 'architecture']; t0 = time.time()
         r = SJ.render(root, [{'design': i, 'values': DS.BY_ID[i]['sample']} for i in ['cover-bold'] + ids], {'title': 'Which diagram fits your post?', 'lines': []}, 'paper', 'carousel', 'both')
         dest = os.path.join(out, 'architecture'); os.makedirs(dest, exist_ok=True); files = [shutil.copy(f, dest) for f in r['files']]; rc2, e2e, _ = sh([PY, ST, 'e2e', r['job']], 900)
-        rec('Architecture slides (sketch, cloud, flow, sequence)', r['ok'] and rc2 == 0, round(time.time() - t0, 1), files, e2e=e2e.strip().splitlines()[-3:], log=None if r['ok'] else r['log'][-800:])
+        rec('Architecture slides (sketch, cloud, flow, sequence, panels)', r['ok'] and rc2 == 0, round(time.time() - t0, 1), files, e2e=e2e.strip().splitlines()[-3:], log=None if r['ok'] else r['log'][-800:])
     if 'thumbs' in only:   # every size x every layout
         w = os.path.join(wk, 'thumbs'); project(w, 'thumbs'); rc, log, s = sh([PY, ST, 'thumbs', w], 900)
         rec('Thumbnails and blog covers (5 sizes x 5 layouts)', rc == 0 and '25 images' in log, s, collect(w, os.path.join(out, 'thumbs'), ['thumbs/*.png']), notes=[l for l in log.splitlines() if 'LAYOUT' in l][:5])
+    if 'banner' in only:   # LinkedIn newsletter banner template at three sizes
+        w = os.path.join(wk, 'banner'); project(w, 'banner'); rc, log, s = sh([PY, ST, 'thumbs', w, '--sizes', 'newsletter,youtube,og', '--layouts', 'banner'], 900)
+        rec('Newsletter banner (newsletter, youtube, og)', rc == 0 and '3 images' in log, s, collect(w, os.path.join(out, 'banner'), ['thumbs/*.png']), notes=[l for l in log.splitlines() if 'LAYOUT' in l][:5])
     if 'reel' in only:
         w = os.path.join(wk, 'reel'); project(w, 'https'); rc, log, s = sh([PY, ST, 'build', w, '--artifacts', 'reel,post'], 2400)
         g = gates(w); rec('Reel + designed covers + post', rc == 0 and 'BUILD COMPLETE' in log, s, collect(w, os.path.join(out, 'reel'), ['*.mp4', '*.srt', '*poster.jpg', 'covers/*.png', '*post.txt', 'review/*.png']),
@@ -111,7 +115,7 @@ def report(out, R):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--out', default=os.path.join(os.path.expanduser('~'), 'Downloads', 'explainer-studio-showcase'))
-    ap.add_argument('--only', default='gif,carousel,charts,arch,thumbs,reel,walkthrough,app'); ap.add_argument('--no-app', action='store_true'); a = ap.parse_args()
+    ap.add_argument('--only', default='gif,carousel,charts,arch,thumbs,banner,reel,walkthrough,app'); ap.add_argument('--no-app', action='store_true'); a = ap.parse_args()
     only = set(a.only.split(',')) - ({'app'} if a.no_app else set()); os.makedirs(a.out, exist_ok=True)
     R = run(os.path.abspath(a.out), only); report(os.path.abspath(a.out), R)
     print(f"\n{sum(r['ok'] for r in R)}/{len(R)} passed -> {os.path.join(a.out, 'REPORT.md')}"); sys.exit(0 if all(r['ok'] for r in R) else 1)

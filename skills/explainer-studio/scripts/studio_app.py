@@ -119,12 +119,12 @@ def serve(port=0, open_browser=True, state_path=None):
                     threading.Thread(target=go, daemon=True).start(); return self._json(200, {'job': jid})
                 if u.path == '/api/request':
                     kind = body.get('kind'); 
-                    if kind not in ('gif', 'reel', 'post'): return self._json(400, {'error': 'Unknown kind.'})
+                    if kind not in ('gif', 'reel', 'post', 'banner'): return self._json(400, {'error': 'Unknown kind.'})
                     topic = (body.get('topic') or '').strip()[:300]; src = (body.get('source') or '').strip()[:4000]; note = (body.get('notes') or '').strip()[:1000]; hook = (body.get('hook') or '').strip()[:200]; design = (body.get('design') or '').strip()[:40]; extra = (body.get('extra') or '').strip()[:400]
                     if len(topic) < 4: return self._json(400, {'error': 'Describe the topic in a few words.'})
                     rd = os.path.join(ST.EH, 'requests'); os.makedirs(rd, exist_ok=True)
                     json.dump({'kind': kind, 'topic': topic, 'source': src, 'notes': note, 'hook': hook, 'design': design, 'at': int(_t.time())}, open(os.path.join(rd, f'{int(_t.time())}-{kind}.json'), 'w', encoding='utf-8'), ensure_ascii=False)
-                    word = {'gif': 'a LinkedIn GIF', 'reel': 'a Reel (Claude light theme unless I say otherwise)', 'post': 'a LinkedIn post'}[kind]
+                    word = {'gif': 'a LinkedIn GIF', 'reel': 'a Reel (Claude light theme unless I say otherwise)', 'post': 'a LinkedIn post', 'banner': 'a LinkedIn newsletter banner (studio.py thumbs --sizes newsletter --layouts banner, with my cut-out photo)'}[kind]
                     prompt = f'Use explainer-studio to make {word} about: {topic}.' + (f' Source: {src}.' if src else '') + (f' Notes: {note}.' if note else '') + (f' Open with this pattern, filled with the real topic and real numbers: "{hook}".' if hook else '') + (f' {extra}.' if extra else '') + ' Ask me before building anything that needs a choice, then run the build in the background and tell me when it is done.'
                     if design and kind == 'gif' and design in {g['id'] for g in DS.GIF_STYLES}: prompt += f' Use the "{design}" GIF template (gif.template = "{design}").'
                     elif design and kind == 'post' and design in DS.BY_ID: prompt += f' The post image is the "{DS.BY_ID[design]["name"]}" design ({design}): build it with studio.py build --artifacts carousel, single slide, in the Claude light theme.'

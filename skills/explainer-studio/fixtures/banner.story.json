@@ -1,0 +1,19 @@
+{
+ "meta": {"title": "How a team ships a change with Claude Code", "slug": "ship-with-claude-code"},
+ "thumb": {"text": "How a team ships a change"},
+ "banner": {
+  "logos": ["logo:claude-code"],
+  "series": "Claude Code",
+  "lead": "How a team ships",
+  "highlight": "a change to production",
+  "sub": "Stage by stage, from a Slack alert",
+  "items": [
+   {"icon": "logo:slack", "text": "Alert in Slack"},
+   {"icon": "list", "text": "Plan before the code"},
+   {"icon": "check", "text": "The evals pass"},
+   {"icon": "lock", "text": "Release gate approved"}
+  ],
+  "screen": {"logo": "logo:claude-code", "label": "Claude Code", "title": "Ship a change", "steps": ["intent.md", "spec.md", "plan.md"]},
+  "badges": [{"top": "Stage by stage", "line1": "Alert to", "line2": "production"}, {"top": "Release gate", "line1": "Release", "line2": "manager"}]
+ }
+}

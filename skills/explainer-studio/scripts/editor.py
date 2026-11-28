@@ -28,7 +28,7 @@ def serve(work, port=0, open_browser=True, state_path=None):
                 for f in sorted(fs):
                     if f.lower().endswith(('.png', '.jpg', '.gif', '.mp4', '.pdf', '.txt', '.srt')):
                         rel = os.path.relpath(os.path.join(dp, f), work).replace(os.sep, '/'); outs.append({'path': rel, 'mtime': int(os.path.getmtime(os.path.join(dp, f)))})
-        return {'story': story, 'brand': ST.brand(), 'icons': sorted(VS.icon_names()), 'templates': list(VS.TEMPLATES), 'groups': GROUPS, 'hook_styles': list(CAR.HOOK_STYLES),
+        return {'story': story, 'brand': ST.brand(), 'icons': sorted(VS.icon_names()) + VS.LG.names(), 'templates': list(VS.TEMPLATES), 'groups': GROUPS, 'hook_styles': list(CAR.HOOK_STYLES),
                 'hook_help': CAR.HOOKS, 'slide_types': list(VS.CAR_TYPES), 'deck': deck, 'outputs': outs, 'work': os.path.basename(work)}
 
     def check_text():
@@ -37,6 +37,7 @@ def serve(work, port=0, open_browser=True, state_path=None):
         return ok, buf.getvalue()
 
     def run_build(arts, slide):
+        sys.path.insert(0, HERE); import gates as GT; GT.approve_ui(work, 'the editor')   # the person clicked build
         cmd = [sys.executable, os.path.join(HERE, 'studio.py'), 'build', work, '--artifacts', arts] + (['--slide', str(int(slide))] if slide else [])
         r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=1800)
         return r.returncode, (r.stdout + r.stderr)[-6000:]

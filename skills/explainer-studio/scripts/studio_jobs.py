@@ -2,7 +2,7 @@
 import json, os, re, shutil, subprocess, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__)); SKILL = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import designs as DS
+import designs as DS, gates as GT
 
 def _brand_name():
     try:
@@ -22,6 +22,7 @@ def render(jobs_root, items, closing=None, theme='sky', mode='single', fmt='imag
     for n in ('source_full.txt', 'source.md'): open(os.path.join(job, n), 'w', encoding='utf-8', newline='\n').write(src)
     json.dump([{'id': 'c01', 'h': '', 'text': src, 's': 1.0}], open(os.path.join(job, 'source.chunks.json'), 'w', encoding='utf-8'))
     json.dump({'title': story['meta']['title'], 'url': '', 'chunks': 1, 'chars': len(src), 'approx_tokens': len(src) // 4, 'salient': ['c01'], 'dropped_chunks': 0, 'dropped_headings': []}, open(os.path.join(job, 'source.meta.json'), 'w', encoding='utf-8'))
+    GT.approve_ui(job, 'the Design Studio')
     cmd = [sys.executable, os.path.join(HERE, 'studio.py'), 'build', job, '--artifacts', 'carousel', '--format', 'images' if single else fmt]
     r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=1800)
     log = (r.stdout + r.stderr)[-5000:]; out = os.path.join(job, 'out'); files = []
@@ -65,7 +66,7 @@ def cover_job(root, v):
     slug = re.sub(r'[^a-z0-9]+', '-', hook.lower()).strip('-')[:40] or 'cover'
     story = {'meta': {'title': hook, 'slug': slug}, 'scenes': [{'p': {'q': hook, 'sub': (v.get('sub') or '')[:90], 'chips': chips}}] + ([{'p': {'title': (v.get('flow_title') or 'How it works')[:40], 'steps': steps}}] if len(steps) >= 2 else []),
              'reel': {'cover': {'layout': v['layout']}} if v.get('layout') else {}}
-    job = _jobdir(root, slug); _project(job, story, ' '.join([hook, v.get('sub') or ''] + chips + [s['label'] for s in steps]) + ' ' + _brand_name())
+    job = _jobdir(root, slug); _project(job, story, ' '.join([hook, v.get('sub') or ''] + chips + [s['label'] for s in steps]) + ' ' + _brand_name()); GT.approve_ui(job, 'the Design Studio')
     r = subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'cover', job] + (['--layout', v['layout']] if v.get('layout') else []), capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=600)
     cd = os.path.join(job, 'out', 'covers'); files = sorted(os.path.join(cd, f) for f in os.listdir(cd)) if os.path.isdir(cd) else []
     return {'ok': r.returncode == 0 and bool(files), 'log': (r.stdout + r.stderr)[-3000:], 'files': files, 'job': job}
@@ -83,8 +84,8 @@ def thumb_job(root, v):
     if len(st) >= 2: th['steps'] = st
     slug = re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')[:40] or 'thumb'
     story = {'meta': {'title': text, 'slug': slug}, 'thumb': th}
-    job = _jobdir(root, slug + '-thumbs'); _project(job, story, ' '.join([text, th.get('kicker', ''), th.get('sub', '')] + ch + st) + ' ' + _brand_name())
-    sizes = [s_ for s_ in (v.get('sizes') or []) if s_ in ('youtube', 'og', 'newsletter', 'devto', 'hashnode')]; lays = [l for l in (v.get('layouts') or []) if l in ('face', 'number', 'diagram', 'versus', 'editorial')]
+    job = _jobdir(root, slug + '-thumbs'); _project(job, story, ' '.join([text, th.get('kicker', ''), th.get('sub', '')] + ch + st) + ' ' + _brand_name()); GT.approve_ui(job, 'the Design Studio')
+    sizes = [s_ for s_ in (v.get('sizes') or []) if s_ in ('youtube', 'og', 'newsletter', 'devto', 'hashnode')]; lays = [l for l in (v.get('layouts') or []) if l in ('face', 'number', 'diagram', 'versus', 'editorial', 'banner')]
     cmd = [sys.executable, os.path.join(HERE, 'studio.py'), 'thumbs', job] + (['--sizes', ','.join(sizes)] if sizes else []) + (['--layouts', ','.join(lays)] if lays else [])
     r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900, cwd=job)
     td = os.path.join(job, 'out', 'thumbs'); files = sorted(os.path.join(td, f) for f in os.listdir(td)) if os.path.isdir(td) else []
@@ -138,13 +139,20 @@ def brand_samples(dest, which=('reelcovers', 'thumbs')):
     if 'thumbs' in which:   # the thumbs fixture has the two lists the versus layout needs
         job = os.path.join(root, 'thumbs'); os.makedirs(job); fx = os.path.join(SKILL, 'fixtures')
         subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'ingest', os.path.join(fx, 'thumbs.md'), '--out', job], capture_output=True)
-        shutil.copy(os.path.join(fx, 'thumbs.story.json'), os.path.join(job, 'story.json'))
+        shutil.copy(os.path.join(fx, 'thumbs.story.json'), os.path.join(job, 'story.json')); GT.approve_ui(job, 'sample build')
         r = subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'thumbs', job, '--sizes', 'youtube'], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900, cwd=job)
         fs = sorted(os.path.join(job, 'out', 'thumbs', f) for f in os.listdir(os.path.join(job, 'out', 'thumbs'))) if r.returncode == 0 else []
         if not fs: bad.append(('thumbs', (r.stdout + r.stderr)[-900:]))
         for f in fs:
             m = re.search(r'-youtube-(\w+)\.png$', f)
             if m: save(f, f'thumb-{m.group(1)}.jpg', (640, 360))
+        job = os.path.join(root, 'banner'); os.makedirs(job)   # the newsletter banner template (needs a banner section: its own fixture)
+        subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'ingest', os.path.join(fx, 'banner.md'), '--out', job], capture_output=True)
+        shutil.copy(os.path.join(fx, 'banner.story.json'), os.path.join(job, 'story.json')); GT.approve_ui(job, 'sample build')
+        r = subprocess.run([sys.executable, os.path.join(HERE, 'studio.py'), 'thumbs', job, '--sizes', 'youtube', '--layouts', 'banner'], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900, cwd=job)
+        f = os.path.join(job, 'out', 'thumbs', 'ship-with-claude-code-youtube-banner.png')
+        if r.returncode == 0 and os.path.isfile(f): save(f, 'thumb-banner.jpg', (640, 360))
+        else: bad.append(('banner', (r.stdout + r.stderr)[-900:]))
     shutil.rmtree(root, ignore_errors=True)
     for i, log in bad: print('FAILED', i, '\n', log)
     return bad

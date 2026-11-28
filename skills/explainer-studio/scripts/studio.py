@@ -6,13 +6,14 @@
   studio.py check DIR                   validate story.json + accuracy metrics; prints only what must be fixed
   studio.py build DIR [--artifacts gif|reel|post|all]   (default: gif only; reel/post only when the user asked)
   studio.py post DIR | eval DIR | pick DIR (best GIF template)
-  studio.py brand [--name --tagline --follow --cta LINE --avatar FILE --voice V --reset]   change the CTA/brand, then rebuild
+  studio.py brand [--name --tagline --follow --cta LINE --avatar FILE --photo FILE --voice V --reset]   change the CTA/brand, then rebuild
+  studio.py plan DIR / gate DIR         write plan.md, agree it with the person, then gate prints the code they type: approve plan XXXX
   studio.py review DIR                  deterministic gates + contact sheets; prints the token to attest
   studio.py finalize DIR                copies to DIR/final only when every gate is 100% and the visual attestation matches"""
 import argparse, tempfile, glob, hashlib, json, os, re, shutil, struct, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
-import carousel as CAR, ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
+import gates as GT, logos as LG, carousel as CAR, ingest as ING, validate_story as VS, evaluate as EV, post as POST, timeline as TL, tts_norm, pick as PICK
 
 for _st in (sys.stdout, sys.stderr):   # Windows consoles default to a legacy code page that cannot print arrows or accents
     try: _st.reconfigure(encoding='utf-8', errors='replace')
@@ -81,6 +82,7 @@ def doctor(a):
 
 def spec(a):
     if a.icons: print(' '.join(icon_names())); return 0
+    if a.logos is not None: return logos_cmd(argparse.Namespace(query=a.logos, add=None, import_=None))
     S = VS.SPEC
     def comp(x):
         if isinstance(x, tuple):
@@ -104,7 +106,7 @@ def brand():
     b = cfg('brand.json'); b.setdefault('follow', 'Follow')
     if os.path.exists(USER_BRAND): b.update(load(USER_BRAND))
     return b
-def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': '', **{k: b[k] for k in ('face_x', 'face_y') if k in b}}   # face_x/face_y (percent) tune the face crop; no photo on covers; the profile photo appears only in the CTA / header avatar
+def brand_for_film(b): return {'name': b['name'], 'tagline': b['tagline'], 'follow': b.get('follow', 'Follow'), 'avatar': 'assets/avatar.png', 'photo': '', 'cutout': 'assets/photo_cutout.png' if os.path.isfile(USER_PHOTO) else '', **{k: b[k] for k in ('face_x', 'face_y') if k in b}}   # face_x/face_y (percent) tune the face crop; no photo on covers; the profile photo appears only in the CTA / header avatar
 def do_check(work, quiet=False):
     story, chunks, full, meta = load_project(work)
     if not story['meta'].get('url') and meta.get('url'): story['meta']['url'] = meta['url']
@@ -157,7 +159,9 @@ def stage(work, name, data):
         if f.endswith(('.js', '.html')): shutil.copy(os.path.join(SKILL, 'engine', f), d)
     shutil.copytree(os.path.join(SKILL, 'assets'), os.path.join(d, 'assets'))
     if os.path.isfile(USER_AVATAR): shutil.copy(USER_AVATAR, os.path.join(d, 'assets', 'avatar.png'))   # the user's own avatar replaces the shipped one
-    dump(data, os.path.join(d, 'data.json')); return d
+    if os.path.isfile(USER_PHOTO): shutil.copy(USER_PHOTO, os.path.join(d, 'assets', 'photo_cutout.png'))   # cut-out photo for the newsletter banner
+    lg = LG.pack(data)
+    dump({**data, 'logos': lg} if lg else data, os.path.join(d, 'data.json')); return d
 BAD = re.compile(r'^BAD\s+(\S+)\s+at\s+([\d.]+)s\s+\d+ chars\s+need\s+([\d.]+)s\s+got\s+([\d.]+)s', re.M)
 def readcheck(lib, env, film, size, q=None, fast=False):
     cmd = ['node', os.path.join(lib, 'core/render/readcheck.mjs'), film, '--size', size] + (['--q', q] if q else []) + (['--latin-cps', '20', '--pad', '0.9'] if fast else [])      # a Reel is read at video pace: 20 characters a second, 0.9 s to take it in
@@ -345,7 +349,13 @@ def jobstatus(a):
     tail = open(log, encoding='utf-8', errors='replace').read()[-600:] if os.path.isfile(log) else ''
     print(json.dumps(cur)); print(tail); return 0 if cur['state'] in ('running', 'done') else 1
 
+def gate_ok(work, gate='plan'):
+    ok, why = GT.check(work, gate)
+    if not ok: print(why)
+    return ok
+
 def build(a):
+    if not gate_ok(os.path.abspath(a.dir)): return 3
     if getattr(a, 'background', False): return build_background(a)
     work = os.path.abspath(a.dir); ok, story, chunks, rep = do_check(work, quiet=False)
     if not ok: print('Fix story.json first.'); return 2
@@ -451,13 +461,16 @@ def review(a):
     for k in bad: print('GATE FAILED:', k)
     if 'reel.speech_matches_script' in bad and B.get('reel', {}).get('gates', {}).get('speech') == 'skipped': print('  (speech check was skipped: run  sh scripts/setup.sh asr  to enable it, then rebuild the Reel)')
     print(f'gates {rep_["passed"]}/{rep_["total"]} ({pct}%)  token {token}')
-    if pct == 100: print('NEXT: open ' + ', '.join('out/review/' + x for x in rep_['sheets']) + ' and LOOK at them. Then write out/review/attest.json:\n  {"token":"' + token + '","checked":{"text_legible":true,"nothing_overlaps_or_clipped":true,"matches_source":true,"arrows_follow_the_logic":true},"notes":""}\n  then run: studio.py finalize ' + a.dir)
+    if pct == 100:
+        GT.set_active(work)
+        print('NEXT: open ' + ', '.join('out/review/' + x for x in rep_['sheets']) + ' and LOOK at them. Then write out/review/attest.json:\n  {"token":"' + token + '","checked":{"text_legible":true,"nothing_overlaps_or_clipped":true,"matches_source":true,"arrows_follow_the_logic":true},"notes":""}\n  Show the person the outputs and ask them to type: approve final ' + token[:4] + '\n  then run: studio.py finalize ' + a.dir)
     else: print('Fix the failed gates (edit story.json, rebuild) and run review again.')
     return 0 if pct == 100 else 1
 
 def finalize(a):
     work = os.path.abspath(a.dir); out = os.path.join(work, 'out'); gj = os.path.join(out, 'review', 'gates.json'); at = os.path.join(out, 'review', 'attest.json')
     if not os.path.exists(gj): sys.exit('run studio.py review first')
+    if not gate_ok(work, 'final'): return 3
     R = load(gj)
     if R['confidence_pct'] != 100: print('REFUSED: gates not at 100%'); return 1
     if not os.path.exists(at): print('REFUSED: out/review/attest.json missing (look at the sheets, then write it)'); return 1
@@ -475,10 +488,31 @@ def finalize(a):
     dump({'confidence_pct': 100, 'gates': R['gates'], 'token': cur, 'files': {os.path.basename(f): sha(os.path.join(fin, os.path.basename(f))) for f in os.listdir(fin) for f in [os.path.join(fin, f)]}}, os.path.join(fin, 'MANIFEST.json'))
     print('FINAL (all gates 100%, visual review attested):'); [print('  ', os.path.join(fin, f)) for f in sorted(os.listdir(fin))]; return 0
 
+def png_alpha(p):
+    """True for a PNG whose colour type carries transparency (RGBA or grey + alpha)."""
+    with open(p, 'rb') as f: h = f.read(26)
+    return h[:8] == b'\x89PNG\r\n\x1a\n' and h[25] in (4, 6)
+
+def cutout_photo(src, dst):
+    """The banner photo: a PNG with transparency is used as it is; otherwise, on macOS, Apple's Vision framework cuts the person out (offline)."""
+    if not os.path.isfile(src): return 'not found: ' + src
+    os.makedirs(EH, exist_ok=True)
+    if png_alpha(src): shutil.copy(src, dst); return ''
+    if sys.platform != 'darwin': return 'give a PNG with a transparent background (automatic cut-out needs macOS)'
+    exe = os.path.join(EH, 'bin', 'cutout')
+    if not os.path.isfile(exe):
+        sw = shutil.which('swiftc')
+        if not sw: return 'automatic cut-out needs the Xcode command line tools (xcode-select --install), or give a PNG with a transparent background'
+        os.makedirs(os.path.dirname(exe), exist_ok=True)
+        r = subprocess.run([sw, '-O', os.path.join(SKILL, 'scripts', 'cutout.swift'), '-o', exe], capture_output=True, text=True)
+        if r.returncode: return 'could not build the cut-out helper: ' + r.stderr[-300:]
+    r = subprocess.run([exe, os.path.abspath(src), dst], capture_output=True, text=True)
+    return '' if r.returncode == 0 and os.path.isfile(dst) else 'no person found in the photo; give a PNG with a transparent background'
+
 def set_brand(a):
-    """studio.py brand [--name N] [--tagline T] [--follow F] [--cta LINE ...] [--avatar FILE] [--voice V] [--speed X] [--reset]"""
+    """studio.py brand [--name N] [--tagline T] [--follow F] [--cta LINE ...] [--avatar FILE] [--photo FILE (cut out for the newsletter banner)] [--voice V] [--speed X] [--reset]"""
     if a.reset:
-        for p in (USER_BRAND, USER_AVATAR):
+        for p in (USER_BRAND, USER_AVATAR, USER_PHOTO):
             if os.path.exists(p): os.remove(p)
         print('brand reset to the shipped defaults')
     cur = load(USER_BRAND) if os.path.exists(USER_BRAND) else {}; errs = []
@@ -492,6 +526,8 @@ def set_brand(a):
         if not 1 <= len(a.cta) <= 4 or any(not 5 <= len(x.strip()) <= 220 for x in a.cta): errs.append('--cta: give 1-4 lines of 5-220 characters each (one --cta per line)')
         else: cur['post_cta'] = [x.strip() for x in a.cta]
     if a.voice: cur['voice'] = a.voice.strip()
+    if a.photo:
+        e = cutout_photo(a.photo, USER_PHOTO); errs.append('--photo: ' + e) if e else print('banner photo saved (cut out):', USER_PHOTO)
     if a.speed is not None:
         if 0.8 <= a.speed <= 1.3: cur['speed'] = a.speed
         else: errs.append('--speed: use 0.8-1.3')
@@ -502,7 +538,7 @@ def set_brand(a):
         else: os.makedirs(EH, exist_ok=True); shutil.copy(a.avatar, USER_AVATAR); print('avatar saved:', USER_AVATAR)
     if errs: [print('FIX ', e) for e in errs]; return 1
     if cur: dump(cur, USER_BRAND)
-    elif not (a.avatar or a.reset): print('(nothing to change: pass --name, --tagline, --follow, --cta, --avatar, --voice, --speed or --reset)')
+    elif not (a.avatar or a.reset or a.photo): print('(nothing to change: pass --name, --tagline, --follow, --cta, --avatar, --photo, --voice, --speed or --reset)')
     b = brand(); print(json.dumps({k: b[k] for k in ('name', 'follow', 'tagline', 'post_cta', 'voice', 'speed') if k in b}, ensure_ascii=False, indent=1))
     print('avatar:', USER_AVATAR if os.path.isfile(USER_AVATAR) else 'shipped default'); print('Saved in ' + USER_BRAND + '. Next: studio.py build DIR --artifacts gif  (reel/post/all as needed), then review and finalize.'); return 0
 
@@ -595,8 +631,28 @@ def plan_cmd(a):
          '1. Who is this for, and what should they do after the last slide (save, comment, follow, click)?', '2. Which hook style: ' + ', '.join(R['hooks']['carousel']) + ' (from the matrix), or another (`studio.py hooks DIR`)?', '3. Tone: plain and practical, bold and opinionated, or warm and personal?', '4. Anything that must be on a slide, or must not be?',
          '', '## What the source looks like', '', *[f"- **{r['label']}** (score {r['score']}): {', '.join(r['signals'])}" for r in R['shapes']], f"- Figures in the source: {R['figures_in_source']}" + ('' if R['figures_in_source'] >= 2 else ' (no data charts: they need numbers from the source)'),
          '', f"Structure: {R['carousel_structure']} (see data/hooks.json structures). Decision matrix: data/matrix.json, docs/DESIGN_MATRIX.md.", '', '## Carousel rules (checked by studio.py e2e where measurable)', '', *['- ' + r for r in MX.load()['formats']['carousel']['rules']]]
-    L += ['', '## Proposed slides (5-7)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
-    open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L)); return 0
+    L += ['', '## Proposed slides (5-7, only if a carousel was asked for)', '', '1. Cover: short hook, <= 60 characters', *[f'{i}. {t.split(" / ")[0]} slide from the source' for i, (t, _, _) in enumerate(sig[:4], 2)], f'{min(len(sig), 4) + 2}. Closing: question + follow CTA', '', 'Rule: every number or claim on a slide must come from the source. Approve or change this plan, then write story.json.']
+    L += ['', '## Agreed with the person (fill in while you brainstorm, before asking for approval)', '', '- Output(s):', '- Design ID(s) (from studio.py pick / catalog):', '- Outline (one line per node, panel or slide):', '- Logo or icon per node (logo:NAME only for technologies the source names; studio.py spec --logos QUERY):', '- Must have / must avoid:']
+    open(os.path.join(work, 'plan.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n'); print('\n'.join(L))
+    print('\nNEXT: ask these questions, fill in the "Agreed" section of plan.md with the answers, then run studio.py gate ' + a.dir + ' and ask the person to approve. Nothing builds before that.'); return 0
+
+def logos_cmd(a):
+    """studio.py logos [QUERY] | --add NAME[,NAME] | --import DIR"""
+    if a.add:
+        got, miss = LG.add(a.add.split(',')); print('added: ' + (', '.join('logo:' + g for g in got) or '-')); miss and print('not found: ' + ', '.join(miss)); return 0 if got else 1
+    if a.import_:
+        got = LG.import_dir(os.path.abspath(a.import_)); print(f'imported {len(got)} logos, e.g. ' + ', '.join('logo:' + g for g in got[:8])); return 0 if got else 1
+    hits = LG.search(a.query); print(' '.join(hits) or 'no match (studio.py logos --add NAME fetches more from the Iconify logos set)')
+    print('Use as an icon value, e.g. "icon": "logo:aws-s3". Only for technologies the source names (studio.py check refuses others).'); return 0
+
+def gate_cmd(a):
+    """studio.py gate DIR: stamp plan.md with its approval code (and make DIR the active project), then show both gates."""
+    work = os.path.abspath(a.dir); c = GT.stamp(work)
+    if not c: print('no plan.md in ' + work + ' (run studio.py plan first)'); return 1
+    p_ok = GT.check(work, 'plan')[0]; f_ok = GT.check(work, 'final')[0]
+    print(f'plan   {"APPROVED" if p_ok else "waiting"}  (code {c})'); print(f'final  {"APPROVED" if f_ok else "waiting" if GT.current(work, "final") else "not reviewed yet"}')
+    if not p_ok: print(f'\nShow the person plan.md and ask them to type exactly:  approve plan {c}\nWait for that message; do not build before it. If they ask for changes, edit plan.md and run gate again (the code changes).')
+    return 0
 
 def build_thumbs(work, story, lib, env, out, slug, sizes=None, layouts=None, text=None):
     """Thumbnails and blog covers: every size x every supported layout, through the layout gates, as out/thumbs/<slug>-<size>-<layout>.png."""
@@ -619,7 +675,9 @@ def build_thumbs(work, story, lib, env, out, slug, sizes=None, layouts=None, tex
 
 def thumbs_cmd(a):
     """studio.py thumbs DIR [--sizes youtube,og,devto,hashnode] [--layouts face,number,diagram,versus,editorial] [--text "3-6 WORDS"]"""
-    work = os.path.abspath(a.dir); story = load_project(work)[0]; lib = find_lib(); env = env_for(lib)
+    work = os.path.abspath(a.dir)
+    if not gate_ok(work): return 3
+    story = load_project(work)[0]; lib = find_lib(); env = env_for(lib)
     r = build_thumbs(work, story, lib, env, os.path.join(work, 'out'), story['meta']['slug'], a.sizes.split(',') if a.sizes else None, a.layouts.split(',') if a.layouts else None, a.text)
     od = publish_outputs(work, story['meta']['slug']) if r['files'] else ''
     if od: print('  ALL OUTPUTS -> ' + od)
@@ -652,19 +710,22 @@ def walkthrough_cmd(a):
 
 def cover_cmd(a):
     """studio.py cover DIR [--layout hero|question|number|split|face] [--hook TEXT]: the designed Reel cover, every layout the story supports, no Reel build needed."""
-    work = os.path.abspath(a.dir); story = load_project(work)[0]
+    work = os.path.abspath(a.dir)
+    if not gate_ok(work): return 3
+    story = load_project(work)[0]
     lib = find_lib(); env = env_for(lib); slug = story['meta']['slug']
     r = build_cover(work, story, lib, env, os.path.join(work, 'out'), slug, a.layout, a.hook)
     return 0 if r else 1
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap.add_subparsers(dest='cmd', required=True)
-    dc = sp.add_parser('doctor'); dc.add_argument('--for', dest='for_', choices=['carousel', 'gif', 'reel', 'all'], default='all');  s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true')
+    dc = sp.add_parser('doctor'); dc.add_argument('--for', dest='for_', choices=['carousel', 'gif', 'reel', 'all'], default='all');  s = sp.add_parser('spec'); s.add_argument('--icons', action='store_true'); s.add_argument('--logos', metavar='QUERY', nargs='?', const='', default=None, help='official logos (logo:NAME) matching QUERY')
+    lgp = sp.add_parser('logos', help='official technology logos: search, --add NAME (fetch more), --import DIR (an official icon pack you downloaded)'); lgp.add_argument('query', nargs='?', default=''); lgp.add_argument('--add'); lgp.add_argument('--import', dest='import_')
     i = sp.add_parser('ingest'); i.add_argument('src'); i.add_argument('--out', default='.'); i.add_argument('--max-chars', type=int, default=36000)
     for n in ('check', 'eval', 'post', 'review', 'finalize'): sp.add_parser(n).add_argument('dir')
     pk = sp.add_parser('pick', help='decision matrix: ranked GIF templates, carousel charts, Reel motion and hooks for this source'); pk.add_argument('dir'); pk.add_argument('--template', help='print the skeleton for the template the person chose')
     br = sp.add_parser('brand')
-    for f in ('name', 'tagline', 'follow', 'avatar', 'voice'): br.add_argument('--' + f)
+    for f in ('name', 'tagline', 'follow', 'avatar', 'voice', 'photo'): br.add_argument('--' + f)
     br.add_argument('--cta', action='append'); br.add_argument('--speed', type=float); br.add_argument('--reset', action='store_true')
     b = sp.add_parser('build'); b.add_argument('dir'); b.add_argument('--background', action='store_true', help='detach and return at once (use for reel/gif: they take minutes); poll with jobstatus'); b.add_argument('--artifacts', default=None, help='gif (default), reel, post, carousel, all; comma-separated'); b.add_argument('--format', choices=['pdf', 'images', 'both'], default=None, help='carousel only: ask the user which they want, then pass it (no default on purpose)'); b.add_argument('--slide', type=int, default=None, help='carousel only: rebuild just this slide (1-based), then the PDF')
     js = sp.add_parser('jobstatus'); js.add_argument('dir')
@@ -675,7 +736,7 @@ def main():
     ew = sp.add_parser('editor'); ew.add_argument('dir'); ew.add_argument('--port', type=int, default=0); ew.add_argument('--no-open', action='store_true'); ew.add_argument('--foreground', action='store_true', help='run in this terminal (blocks)'); ew.add_argument('--stop', action='store_true'); ew.add_argument('--status', action='store_true'); ew.add_argument('--state', default=None, help=argparse.SUPPRESS)
     rc = sp.add_parser('readercard'); rc.add_argument('dir'); rc.add_argument('name'); rc.add_argument('spec')
     sh = sp.add_parser('shot'); sh.add_argument('dir'); sh.add_argument('name'); sh.add_argument('url'); sh.add_argument('--size', default='1280x860')
-    pl = sp.add_parser('plan'); pl.add_argument('dir')
+    pl = sp.add_parser('plan'); pl.add_argument('dir'); gt = sp.add_parser('gate', help='stamp plan.md with its approval code and show both gates'); gt.add_argument('dir')
     cv = sp.add_parser('cover'); cv.add_argument('dir'); cv.add_argument('--layout', choices=['hero', 'question', 'number', 'split', 'face']); cv.add_argument('--hook')
     e2 = sp.add_parser('e2e'); e2.add_argument('dir')
     sp.add_parser('catalog', help='regenerate studio/catalog.html (every design with its ID and sample) and print its path')
@@ -688,6 +749,7 @@ def main():
     if a.cmd == 'catalog':
         import catalog as CT; p = CT.build(); print(p); print('Show this page to the person and ask which design IDs to use before building.'); return 0
     if a.cmd == 'plan': return plan_cmd(a)
+    if a.cmd == 'gate': return gate_cmd(a)
     if a.cmd == 'e2e': return e2e_cmd(a)
     if a.cmd == 'readercard': return readercard_cmd(a)
     if a.cmd == 'shot': return shot_cmd(a)
@@ -715,6 +777,7 @@ def main():
     if a.cmd == 'doctor': return doctor(a)
     if a.cmd == 'brand': return set_brand(a)
     if a.cmd == 'spec': return spec(a)
+    if a.cmd == 'logos': return logos_cmd(a)
     if a.cmd == 'ingest': m = ING.run(a.src, a.out, a.max_chars); print(json.dumps(m, ensure_ascii=False)); print('-> read', os.path.join(a.out, 'source.md'), 'once; cite chunk ids [cNN]'); return 0
     if a.cmd == 'pick':
         import matrix as MX

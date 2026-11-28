@@ -74,7 +74,7 @@ function panel(it) {
     el('h2', { text: it.name, style: 'margin-top:14px' }), el('p', { class: 'muted', text: it.tag }), el('p', { class: 'note', text: 'Best for: ' + it.best }), why ? el('p', { class: 'note', style: 'color:var(--clayD)', text: 'For your content: ' + why }) : '', idrow);
   const body = el('div', { style: 'margin-top:16px' }); p.append(body, out);
   if (it.action === 'request') {
-    const kind = it.media === 'gif' ? 'gif' : 'reel', topic = el('input', { type: 'text', id: 'gp-t', placeholder: 'What is it about?' }), src = el('textarea', { id: 'gp-s', placeholder: 'A link, or the text to explain' }); src.value = S.source.slice(0, 4000);
+    const kind = it.media === 'gif' ? 'gif' : it.id === 'thumb-banner' ? 'banner' : 'reel', topic = el('input', { type: 'text', id: 'gp-t', placeholder: 'What is it about?' }), src = el('textarea', { id: 'gp-s', placeholder: 'A link, or the text to explain' }); src.value = S.source.slice(0, 4000);
     const go = el('button', { class: 'btn pri', type: 'button', text: 'Prepare the request for my agent', onclick: () => request(out, { kind, topic: topic.value, source: src.value, design: kind === 'gif' ? it.id : '', extra: kind === 'reel' ? 'Look: light' : '' }) });
     body.append(el('h3', { text: 'Make it with your agent' }), el('p', { class: 'note', text: 'Your agent writes it from your source with this design, asks before building, and saves it to the library.' }), el('div', { class: 'fld' }, el('label', { for: 'gp-t' }, 'Topic'), topic), el('div', { class: 'fld' }, el('label', { for: 'gp-s' }, 'Source'), src), go);
   } else if (it.action === 'render') {

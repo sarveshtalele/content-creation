@@ -36,3 +36,21 @@ Words: `thumb.text` (6–40 characters, from the source) and `thumb.kicker` in s
 - The thumbnail must match what the video or post delivers.
 
 Sources: Blare Media's 2026 thumbnail best practices (citing vidIQ's 2026 study of 500 breakout videos: 69% showed a face, 56% high-contrast colour, median of five words of text), and Henry David's 2026 YouTube thumbnail design guide.
+
+## LinkedIn newsletter banner (`banner` layout)
+
+`studio.py thumbs W --sizes newsletter --layouts banner` (also `youtube`, `og`). The story needs a `banner` section:
+
+| Slot | Limit | Notes |
+|---|---|---|
+| `logos` | 1-2 | official logos only (`logo:NAME`), for technologies the source names |
+| `series` | <= 28 | next to the logos, e.g. the newsletter or product name |
+| `lead` | <= 30 | dark first line of the title |
+| `highlight` | <= 22 | the key phrase, in the orange pill with the yellow swoosh |
+| `sub` | <= 36 | the subtitle bar |
+| `items` | exactly 4 `{icon, text<=28}` | checklist rows |
+| `screen` | `{logo?, label?<=18, title<=22, steps[3]<=14}` | the laptop: three checked steps |
+| `badges` | 1-2 `{top<=14, line1<=12, line2?<=12, icon?}` | round badges with arc text; our own design, never copies of real badges |
+
+Every word comes from the source. The text stays inside a 7.5% safe margin (LinkedIn crops the cover's edges on some views); the background fills the frame.
+Your photo: `studio.py brand --photo FILE` once. A PNG with a transparent background is used as it is; any other photo is cut out on macOS with Apple's Vision framework, offline. Without a cut-out the banner shows your avatar in a round frame.

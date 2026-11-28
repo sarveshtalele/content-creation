@@ -13,6 +13,7 @@ Where each agent gets the skill and the commands:
   claude       ~/.claude/skills/explainer-studio        + ~/.claude/commands/explainer*.md
   codex        ~/.agents/skills/explainer-studio        + ~/.codex/prompts/explainer*.md
   antigravity  ~/.gemini/config/skills/explainer-studio + ~/.gemini/antigravity/global_workflows/explainer*.md
+Each also gets the approval-gate hooks: ~/.claude/settings.json, ~/.codex/hooks.json, ~/.gemini/config/hooks.json
   --project    <DIR>/.agents/skills/explainer-studio    (workspace copy for Codex and Antigravity)
 Claude Code can also use the plugin route instead of a copy: claude plugin marketplace add <this folder>, then
 claude plugin install explainer-studio@explainer-studio-marketplace (do not use both for Claude)."""
@@ -52,12 +53,35 @@ def copy_cmds(dst_dir, skill_path):
         if f.endswith('.md'):
             t = open(os.path.join(CMDS, f), encoding='utf-8').read().replace('<skill>', skill_path.replace(os.sep, '/'))
             open(os.path.join(dst_dir, f), 'w', encoding='utf-8', newline='\n').write(t); say('  command  ', os.path.join(dst_dir, f))
+# Approval-gate hooks (scripts/gate_hook.py): record "approve plan XXXX" from the person's own message, deny agent edits to gate records.
+HOOK_CFG = {'claude': os.path.join(H, '.claude', 'settings.json'), 'codex': os.path.join(H, '.codex', 'hooks.json'), 'antigravity': os.path.join(H, '.gemini', 'config', 'hooks.json')}
+TOOLS = {'claude': 'Bash|Write|Edit|MultiEdit|NotebookEdit', 'codex': 'Bash|apply_patch'}
+def _ours(h): return 'gate_hook.py' in json.dumps(h) and 'explainer-studio' in json.dumps(h)
+def register_hooks(ag, skill, on=True):
+    f = HOOK_CFG[ag]; py = sys.executable.replace('\\', '/'); hook = os.path.join(skill, 'scripts', 'gate_hook.py').replace('\\', '/')
+    try: cfg = json.load(open(f, encoding='utf-8')) if os.path.isfile(f) else {}
+    except ValueError: say(f'  hooks     skipped: {f} is not valid JSON (left untouched)'); return
+    cmd = lambda ev: {'type': 'command', 'command': f'"{py}" "{hook}" {ev} --harness {ag}', 'timeout': 10}
+    if ag == 'antigravity':
+        cfg.pop('explainer-studio-gates', None)
+        if on: cfg['explainer-studio-gates'] = {'PreInvocation': [cmd('prompt')], 'PreToolUse': [{'matcher': 'run_command', 'hooks': [cmd('tool')]}]}
+    else:
+        hk = cfg.setdefault('hooks', {})
+        for ev in ('UserPromptSubmit', 'PreToolUse'): hk[ev] = [h for h in hk.get(ev, []) if not _ours(h)]
+        if on: hk['UserPromptSubmit'].append({'hooks': [cmd('prompt')]}); hk['PreToolUse'].append({'matcher': TOOLS[ag], 'hooks': [cmd('tool')]})
+        for ev in ('UserPromptSubmit', 'PreToolUse'):
+            if not hk[ev]: hk.pop(ev)
+        if not hk: cfg.pop('hooks')
+    os.makedirs(os.path.dirname(f), exist_ok=True); tmp = f + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as o: json.dump(cfg, o, indent=2)
+    os.replace(tmp, f); say(('  hooks     ' if on else '  unhooked  ') + f + (' (Codex asks you to trust it once: /hooks)' if on and ag == 'codex' else ''))
+
 def our_cmds(d): return [os.path.join(d, f) for f in sorted(os.listdir(CMDS)) if f.endswith('.md') and os.path.isfile(os.path.join(d, f))] if os.path.isdir(d) else []
 
 def install(a):
     st = load_state(); ags = agents_arg(a.for_)
     for ag in ags:
-        say(f'[{ag}]'); P = AGENTS[ag]; copy_skill(P['skill']); copy_cmds(P['cmds'], P['skill'])
+        say(f'[{ag}]'); P = AGENTS[ag]; copy_skill(P['skill']); copy_cmds(P['cmds'], P['skill']); register_hooks(ag, P['skill'])
         if ag not in st['agents']: st['agents'].append(ag)
     if a.project:
         d = os.path.join(os.path.abspath(a.project), '.agents', 'skills', 'explainer-studio'); say('[project]'); copy_skill(d)
@@ -77,6 +101,8 @@ def uninstall(a):
     say('Will remove:'); [say('  ' + g) for g in gone]
     if a.dry_run: return 0
     if a.purge and not a.yes: say('\n--purge also deletes your brand, library index and Design Studio jobs. Add --yes to confirm.'); return 2
+    for ag in ags:
+        if os.path.exists(AGENTS[ag]['skill']): register_hooks(ag, AGENTS[ag]['skill'], on=False)
     for g in gone:
         if os.path.islink(g) or os.path.isfile(g): os.remove(g)
         else: shutil.rmtree(g, ignore_errors=True)
@@ -138,7 +164,7 @@ def zips(a):
                 if not f.endswith('.pyc') and f != '.DS_Store': p = os.path.join(r, f); z.write(p, os.path.join(arc, os.path.relpath(p, base)).replace(os.sep, '/'))
     pz = os.path.join(dist, 'explainer-studio-plugin.zip')
     with zipfile.ZipFile(pz, 'w', zipfile.ZIP_DEFLATED) as z:
-        for k in ('.claude-plugin', '.codex-plugin', 'commands', 'skills', 'docs', 'install.py', 'install.sh', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CREDITS.md', 'SECURITY.md'): add(z, os.path.join(HERE, k), k)
+        for k in ('.claude-plugin', '.codex-plugin', 'hooks', 'commands', 'skills', 'docs', 'install.py', 'install.sh', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CREDITS.md', 'SECURITY.md'): add(z, os.path.join(HERE, k), k)
         z.write(os.path.join(HERE, '.codex-plugin', 'plugin.json'), '.agent-plugin/plugin.json')
     sz = os.path.join(dist, 'explainer-studio-skill.zip')
     with zipfile.ZipFile(sz, 'w', zipfile.ZIP_DEFLATED) as z: add(z, SRC, 'explainer-studio')

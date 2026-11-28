@@ -1,7 +1,7 @@
 """validate_story: schema + limits + storytelling arc + grounding checks for story.json. Returns (errors, warnings). Pure standard library."""
 import re, sys
 from common import *
-import tts_norm, carousel as CAR
+import tts_norm, carousel as CAR, logos as LG
 
 ROLES = ['hook', 'stakes', 'answer', 'how', 'proof', 'takeaway', 'engage']
 NEED_CITE = {'stakes', 'answer', 'how', 'proof'}
@@ -25,7 +25,7 @@ SPEC = {
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
     'template': 'arch | chart | grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
-    'arch': 'architecture diagram of the whole post, flow animated on every connector: gif.arch{style sketch|cloud|flow|sequence; sketch/cloud: zones[1-5]{title} nodes[2-14]{id,title<=22,sub?<=36,icon?,zone} edges[1-18]{from,to,label?<=18,dashed?}; flow: lanes[1-4]{title} steps[3-10]{id,title<=26,lane,icon?,kind step|decision|start|end} edges?; sequence: actors[2-5]{title<=16,icon?} messages[2-10]{from,to (actor index),text<=34,reply?}}',
+    'arch': 'architecture diagram of the whole post, flow animated on every connector: gif.arch{style sketch|cloud|flow|sequence; sketch/cloud: zones[1-5]{title} nodes[2-14]{id,title<=22,sub?<=36,icon?,zone} edges[1-18]{from,to,label?<=18,dashed?}; flow: lanes[1-4]{title} steps[3-10]{id,title<=26,lane,icon?,kind step|decision|start|end} edges?; sequence: actors[2-5]{title<=16,icon?} messages[2-10]{from,to (actor index),text<=34,reply?}; panels (numbered stage cards, input -> core -> outputs): panels[2-6]{title<=18,input{icon,label<=18},core{icon,label<=18},outputs[1-3]{icon,label<=20},caption?<=60}}. Any icon may be an official logo, logo:NAME (studio.py logos QUERY), only for technologies the source names',
     'chart': 'any of the 21 chart slides animated: gif.chart{type lollipop|dumbbell|slope|bullet|radar|sankey|alluvial|network|arc|flowchart|donut|waffle|treemap|sunburst|mindmap|decision|timeline|gantt|waterfall|line|heatmap, ...the same fields as the carousel slide (docs/CAROUSEL.md)}; data charts take only figures from the source',
     'grid': 'poster of 4, 6 or 9 numbered cards, each with a mini diagram: gif.grid{kicker?,legend[0-4]{label<=20,group},cards[4|6|9]{motif bars|curve|tree|flow|cluster|network|loop|steps|split|pixels,caption<=30,title<=24,sub 10-70,group}}  (also carousel slide type grid)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
@@ -95,10 +95,10 @@ def strings(o, out=None):
     return out
 
 def validate(story, chunks, full_text):
-    v = V(); icons = set(icon_names()); N = SPEC['narration']
+    v = V(); icons = set(icon_names()) | set(LG.names()); N = SPEC['narration']
     byid = {c['id']: c for c in chunks}; srcn, srcw = source_index(full_text)
     if 'meta' not in story: v.e('story.json: missing "meta"')
-    if not any(k in story for k in ('beats', 'gif', 'post', 'carousel', 'thumb')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post, carousel, thumb')
+    if not any(k in story for k in ('beats', 'gif', 'post', 'carousel', 'thumb', 'banner')): v.e('story.json: needs at least one of beats+scenes (Reel), gif, post, carousel, thumb, banner')
     if ('beats' in story) != ('scenes' in story): v.e('story.json: "beats" and "scenes" go together (Reel)')
     if v.err: return v.err, v.warn
     beats, scenes, meta = story.get('beats', []), story.get('scenes', []), story['meta']
@@ -180,6 +180,20 @@ def validate(story, chunks, full_text):
                 if th.get(k) is not None:
                     _S(v, f'thumb.{k}', th[k], lo, mx); cw = content_words(th[k])
                     if len(cw) >= 3 and sum(x in srcw for x in cw) / len(cw) < .75: v.e(f'thumb.{k} not grounded in source: reuse the source\'s words')
+    bn = story.get('banner')
+    if bn is not None:   # LinkedIn newsletter banner (studio.py thumbs --layouts banner): fixed slots, every word from the source
+        check_spec(v, 'banner', bn, cD(logos=('L?', 1, 2, cI), series=cS(0, 28, True), lead=cS(4, 30), highlight=cS(2, 22), sub=cS(0, 36, True), items=cL(4, 4, cD(icon=cI, text=cS(4, 28))),
+                                       screen=cD(logo=cIo, label=cS(0, 18, True), title=cS(2, 22), steps=cL(3, 3, cS(2, 14))), badges=('L?', 1, 2, cD(top=cS(2, 14), line1=cS(2, 12), line2=cS(0, 12, True), icon=cIo))), icons)
+        if isinstance(bn, dict):
+            for l in bn.get('logos') or []:
+                if not str(l).startswith('logo:'): v.e(f'banner.logos: "{l}" is not an official logo (logo:NAME)')
+            def _bt(o, w):
+                if isinstance(o, str): yield w, o
+                elif isinstance(o, dict): yield from (x for k, val in o.items() if k not in ('icon', 'logo', 'logos') for x in _bt(val, f'{w}.{k}'))
+                elif isinstance(o, list): yield from (x for i, val in enumerate(o) for x in _bt(val, f'{w}[{i}]'))
+            for w_, t_ in _bt(bn, 'banner'):
+                cw_ = content_words(t_)
+                if len(cw_) >= 2 and sum(x in srcw for x in cw_) / len(cw_) < .75: v.e(f'{w_} not grounded in source: "{t_}". Reuse the source\'s words')
     cv = (story.get('reel') or {}).get('cover') if isinstance(story.get('reel'), dict) else None
     if cv is not None:   # optional Reel cover overrides: hook (grounded like every text), layout, kicker, sub
         if not isinstance(cv, dict): v.e('reel.cover must be an object')
@@ -213,6 +227,9 @@ def validate(story, chunks, full_text):
         for e in entities(s):
             if e not in ok and not in_source(e, srcn, srcw): miss.setdefault(e, set()).add(where)
     for e, ws in sorted(miss.items()): v.e(f'ungrounded term "{e}" ({"/".join(sorted(ws))}): not in the source. Remove it, or quote the source for it')
+    for lg in sorted(LG.used(story)):   # official logos only for technologies the source names
+        if not LG.resolve(lg): v.e(f'{lg}: unknown logo (studio.py logos QUERY lists them; studio.py logos --add NAME fetches one)')
+        elif not LG.grounded(lg, full_text): v.e(f'{lg}: the source never names it (looked for: {", ".join(LG.words(lg))}). Use a line icon instead (studio.py spec --icons)')
     return v.err, v.warn
 
 
@@ -254,7 +271,7 @@ CHART_SPEC = {
  'heatmap': cD(rows=cL(3, 6, cS(2, 24)), cols=cL(3, 6, cS(1, 16)), cells=cL(3, 6, cL(3, 6, cN)), unit=cS(0, 3, True), legend=cD(True, lo=cS(1, 20), hi=cS(1, 20))),
 }
 
-ARCH_STYLES = ('sketch', 'cloud', 'flow', 'sequence')
+ARCH_STYLES = ('sketch', 'cloud', 'flow', 'sequence', 'panels')
 def check_arch(v, w, A, icons):
     """architecture diagram (engine/arch.js): sketch|cloud = zones + nodes + edges; flow = lanes + steps (+ edges); sequence = actors + messages"""
     if not isinstance(A, dict): v.e(f'{w}: object required'); return
@@ -270,6 +287,9 @@ def check_arch(v, w, A, icons):
             if sum(1 for n in (A.get('nodes') or []) if isinstance(n, dict) and n.get('zone', 0) == k) > 6: v.e(f'{w}: zone {k} has more than 6 nodes; split it into two zones')
         for i, e in enumerate(A.get('edges') or []):
             if isinstance(e, dict) and (e.get('from') not in ids or e.get('to') not in ids or e.get('from') == e.get('to')): v.e(f'{w}.edges[{i}]: from/to must be two different node ids')
+    elif st == 'panels':
+        _io = cD(icon=cI, label=cS(2, 18))
+        check_spec(v, w, A, cD(panels=cL(2, 6, cD(title=cS(2, 18), input=_io, core=_io, outputs=cL(1, 3, cD(icon=cI, label=cS(2, 20))), caption=cS(0, 60, True)))), icons)
     elif st == 'flow':
         check_spec(v, w, A, cD(lanes=cL(1, 4, cD(title=cS(0, 18, True))), steps=cL(3, 10, cD(id=cS(1, 16, True), title=cS(2, 26), icon=cIo, kind=cE('step', 'decision', 'start', 'end', opt=True))), edges=('L?', 1, 16, cD(**{'from': cS(1, 16), 'to': cS(1, 16), 'label': cS(0, 12, True)}))), icons)
         nl = len(A.get('lanes') or []); ids = [s_.get('id', str(i)) for i, s_ in enumerate(A.get('steps') or []) if isinstance(s_, dict)]

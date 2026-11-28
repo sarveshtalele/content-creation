@@ -23,6 +23,8 @@ jobs:
           python skills/explainer-studio/tests/test_studio.py
           python skills/explainer-studio/tests/test_content.py
           python skills/explainer-studio/tests/test_matrix.py
+          python skills/explainer-studio/tests/test_gates.py
+          python skills/explainer-studio/scripts/logos.py
       - name: Offline self-test (ingest, check, pick, post for every fixture)
         run: python skills/explainer-studio/scripts/selftest.py
       - name: Installer

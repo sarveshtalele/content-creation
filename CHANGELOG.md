@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.4.0
+
+- **Approval gates on every harness**: the agent brainstorms with you and writes `plan.md` (`studio.py plan`), `studio.py gate` stamps it with a 4-character code, and nothing builds (`build`, `thumbs`, `cover`) until you type `approve plan XXXX`; `finalize` waits for `approve final XXXX` after the review. A hook records the approval from your own message (Claude Code and Codex `UserPromptSubmit`, Antigravity `PreInvocation`) and denies agent tool calls that touch the approval records (`PreToolUse`). The code is the plan's hash, so a changed plan needs a new approval. `install.py` registers the hooks in `~/.claude/settings.json`, `~/.codex/hooks.json` and `~/.gemini/config/hooks.json` (and `hooks/hooks.json` for the Claude plugin route); `uninstall` removes only them. The Design Studio and editor count your click as the approval.
+- **Official logos in every design**: any icon can be `logo:NAME`. 204 logos ship (CC0 Iconify `logos` subset: AWS services, Google Cloud, Azure, Claude, Claude Code, OpenAI, Gemini, GitHub, Slack, MCP, Docker, Kubernetes, Terraform and more); `studio.py logos QUERY | --add NAME | --import DIR` (import an official icon pack you downloaded, such as the AWS Architecture Icons). `check` refuses a logo the source never names.
+- **New architecture style `panels`**: 2-6 numbered stage cards, each input -> core -> outputs with a caption; as a GIF the active stage lights up in turn, its icons come alive and dots run along the wires. Design ID `arch-panels`.
+- **LinkedIn newsletter banner** (`studio.py thumbs DIR --layouts banner`, 1920x1080 plus YouTube and Open Graph sizes): logo row, two-part title with a highlighted pill, subtitle bar, four-item checklist, laptop with three checked steps, up to two badges, your cut-out photo and your CTA. `studio.py brand --photo FILE` cuts you out of a photo once (Apple Vision on macOS, offline) or takes a transparent PNG.
+- The cloud and swimlane samples now show official logos (an AWS RAG app; GitHub Actions).
+
 ## 3.3.3
 
 - **Animated icons in architecture diagrams**: every block can carry an icon (cards, start/end pills, and a round badge on decision diamonds). In the GIF and MP4 the icons come alive in workflow order: the step the flow has reached pops and glows, and every icon bobs gently, in the same seamless loop.

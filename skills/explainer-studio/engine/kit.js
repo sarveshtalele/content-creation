@@ -152,7 +152,14 @@ const I = {
   table: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M9 10v9M15 10v9"/>',
 };
 export const ICON_NAMES = Object.keys(I);
+// official logos ("logo:NAME"), packed into data.json by studio.py: drawn unchanged, on a white rounded tile so they read on any colour
+const LOGOS = {};
+export function setLogos(m) { Object.assign(LOGOS, m || {}); }
 export function icon(name, size = 40, color = C.ink, sw = 1.9) {
+  if (name && name.startsWith('logo:')) {
+    const L = LOGOS[name]; if (!L) return '';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" style="display:block;flex:none"><rect width="100" height="100" rx="22" fill="#fff"/><svg x="13" y="13" width="74" height="74" viewBox="0 0 ${L.w} ${L.h}">${L.body}</svg></svg>`;
+  }
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex:none">${I[name]}</svg>`;
 }
 export function iconEl(parent, name, x, y, size, color, sw) {

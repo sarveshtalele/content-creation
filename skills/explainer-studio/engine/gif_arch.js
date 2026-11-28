@@ -6,7 +6,7 @@ import { renderArch } from './arch.js';
 
 export function buildArch(stage, D) {
   const S = scene(stage, D); header(S);
-  const { edges, icons = [] } = renderArch(S.root, S.g.arch, { x: 36, y: TOP + 4, w: 1008, h: BOTTOM - TOP - 16 });
+  const { edges, icons = [], panels = [] } = renderArch(S.root, S.g.arch, { x: 36, y: TOP + 4, w: 1008, h: BOTTOM - TOP - 16 });
   edges.forEach(({ path: p, color }, i) => {
     const L = p.getTotalLength(); if (L < 20) return;
     const n = Math.max(1, Math.round(L / 240)), P = per(S, Math.max(1.2, L / 150)), svg = p.ownerSVGElement;
@@ -20,6 +20,9 @@ export function buildArch(stage, D) {
       el.style.transform = `translateY(${bob.toFixed(2)}px) scale(${(1 + .1 * pop).toFixed(3)}) rotate(${(9 * pop * Math.sin(2 * Math.PI * d / win)).toFixed(2)}deg)`;
       el.style.filter = pop > .02 ? `drop-shadow(0 0 ${(8 * pop).toFixed(1)}px ${color})` : 'none';
       el.style.outline = pop > .02 ? `${(2.5 * pop).toFixed(1)}px solid ${color}` : 'none'; el.style.outlineOffset = '0px'; }); });
+  // panels style: the active stage lights up in turn, in step with its icons
+  panels.forEach((el, k) => S.A.push(u => { const d = (((u / S.LOOP) * panels.length - k) % panels.length + panels.length) % panels.length, on = d < 1 ? Math.sin(Math.PI * d) : 0;
+    el.style.borderColor = on > .05 ? '#D97757' : '#C9C5B5'; el.style.boxShadow = on > .02 ? `0 0 0 ${(4 * on).toFixed(1)}px #F8E6DD` : 'none'; }));
   footer(S);
   return finish(S);
 }
