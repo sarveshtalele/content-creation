@@ -67,7 +67,7 @@ To change the CTA, avatar or hook on an existing diagram, see [CUSTOMIZE.md](CUS
 |---|---|---|
 | `sketch` | `zones[1-5]{title}`, `nodes[2-14]{id, title, sub?, icon?, zone}`, `edges[1-18]{from, to, label?, dashed?}` | a whiteboard-style explanation (Excalifont, hand-drawn strokes, hachure fills) |
 | `cloud` | same as sketch | application and system architecture: zone bands, service cards, legend |
-| `flow` | `lanes[1-4]{title}`, `steps[3-10]{id, title, lane, kind step\|decision\|start\|end}`, `edges?[{from, to, label?}]` | processes and agent loops; a link back to an earlier step loops on the right, dashed |
+| `flow` | `lanes[1-4]{title}`, `steps[3-10]{id, title, lane, icon?, kind step\|decision\|start\|end}`, `edges?[{from, to, label?}]` | processes and agent loops; a link back to an earlier step loops on the right, dashed |
 | `sequence` | `actors[2-5]{title, icon?}`, `messages[2-10]{from, to (actor index), text, reply?}` | protocols and request journeys; replies are dashed |
 
 Zones read top to bottom (client → edge → services → data); at most 6 nodes per zone. Links between zones run vertically, links inside a zone run under the cards, and labels sit on the longest segment, so text never covers a card. Samples: `studio/samples/arch-*.jpg`.

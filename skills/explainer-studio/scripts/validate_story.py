@@ -25,7 +25,7 @@ SPEC = {
           'card': {'title': S(3, 26), 'note': S(0, 22)}},
   'gif_templates': {
     'template': 'arch | chart | grid | hub | columns | pipeline | lanes | ecosystem | framework | exploded | isoflow | orbit | stairs | tower | skyline | conveyor | funnel   (run: studio.py pick DIR to get the best fit; every template: gif.title, gif.subtitle, 1080x1350, flowing-dot arrows)',
-    'arch': 'architecture diagram of the whole post, flow animated on every connector: gif.arch{style sketch|cloud|flow|sequence; sketch/cloud: zones[1-5]{title} nodes[2-14]{id,title<=22,sub?<=36,icon?,zone} edges[1-18]{from,to,label?<=18,dashed?}; flow: lanes[1-4]{title} steps[3-10]{id,title<=26,lane,kind step|decision|start|end} edges?; sequence: actors[2-5]{title<=16,icon?} messages[2-10]{from,to (actor index),text<=34,reply?}}',
+    'arch': 'architecture diagram of the whole post, flow animated on every connector: gif.arch{style sketch|cloud|flow|sequence; sketch/cloud: zones[1-5]{title} nodes[2-14]{id,title<=22,sub?<=36,icon?,zone} edges[1-18]{from,to,label?<=18,dashed?}; flow: lanes[1-4]{title} steps[3-10]{id,title<=26,lane,icon?,kind step|decision|start|end} edges?; sequence: actors[2-5]{title<=16,icon?} messages[2-10]{from,to (actor index),text<=34,reply?}}',
     'chart': 'any of the 21 chart slides animated: gif.chart{type lollipop|dumbbell|slope|bullet|radar|sankey|alluvial|network|arc|flowchart|donut|waffle|treemap|sunburst|mindmap|decision|timeline|gantt|waterfall|line|heatmap, ...the same fields as the carousel slide (docs/CAROUSEL.md)}; data charts take only figures from the source',
     'grid': 'poster of 4, 6 or 9 numbered cards, each with a mini diagram: gif.grid{kicker?,legend[0-4]{label<=20,group},cards[4|6|9]{motif bars|curve|tree|flow|cluster|network|loop|steps|split|pixels,caption<=30,title<=24,sub 10-70,group}}  (also carousel slide type grid)',
     'hub': 'one concept, 9 parts around it: gif.hub{title,steps[<=3],tagline}, gif.groups{blue,green,clay -> label}, gif.cards[9]{title,icon,group,body}',
@@ -271,7 +271,7 @@ def check_arch(v, w, A, icons):
         for i, e in enumerate(A.get('edges') or []):
             if isinstance(e, dict) and (e.get('from') not in ids or e.get('to') not in ids or e.get('from') == e.get('to')): v.e(f'{w}.edges[{i}]: from/to must be two different node ids')
     elif st == 'flow':
-        check_spec(v, w, A, cD(lanes=cL(1, 4, cD(title=cS(0, 18, True))), steps=cL(3, 10, cD(id=cS(1, 16, True), title=cS(2, 26), kind=cE('step', 'decision', 'start', 'end', opt=True))), edges=('L?', 1, 16, cD(**{'from': cS(1, 16), 'to': cS(1, 16), 'label': cS(0, 12, True)}))), icons)
+        check_spec(v, w, A, cD(lanes=cL(1, 4, cD(title=cS(0, 18, True))), steps=cL(3, 10, cD(id=cS(1, 16, True), title=cS(2, 26), icon=cIo, kind=cE('step', 'decision', 'start', 'end', opt=True))), edges=('L?', 1, 16, cD(**{'from': cS(1, 16), 'to': cS(1, 16), 'label': cS(0, 12, True)}))), icons)
         nl = len(A.get('lanes') or []); ids = [s_.get('id', str(i)) for i, s_ in enumerate(A.get('steps') or []) if isinstance(s_, dict)]
         for i, s_ in enumerate(A.get('steps') or []):
             if isinstance(s_, dict) and not (isinstance(s_.get('lane', 0), int) and 0 <= s_.get('lane', 0) < max(1, nl)): v.e(f'{w}.steps[{i}].lane must be a lane index')

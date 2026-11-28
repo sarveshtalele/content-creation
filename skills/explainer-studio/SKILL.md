@@ -57,7 +57,7 @@ The Reel build also renders the designed cover: every layout the story supports 
 Arc: hook (question from the source) -> stakes -> answer -> how -> proof -> takeaway -> engage (question or one-step challenge). Speak to "you", sentences <= 22 words, 90-170 words total so it stays <= 90 s. Every claim beat cites `[[chunkId, "verbatim quote"]]`.
 
 ## Architecture diagrams (a whole post as one diagram)
-`gif.template: arch` (flow-only animated GIF) or carousel slide `type: arch`, style `sketch` (Excalidraw-like) | `cloud` (zones + services) | `flow` (swimlanes) | `sequence`. Fields in docs/TEMPLATES.md. Node titles come from the source; at most 6 nodes per zone.
+`gif.template: arch` (flow-only animated GIF) or carousel slide `type: arch`, style `sketch` (Excalidraw-like) | `cloud` (zones + services) | `flow` (swimlanes) | `sequence`. Fields in docs/TEMPLATES.md. Node titles come from the source; at most 6 nodes per zone. Give every node and every flow step an `icon` that matches its meaning (`spec --icons`): in the GIF and its MP4 the icons come alive step by step in workflow order. In `flow`, name the stage in the step title ("Plan: ...", "Test: ..."), put each human approval in its own lane as a decision (it sits beside the step it judges) and label each edge with the artifact it hands on.
 
 ## Thumbnails and blog covers (only if asked)
 `studio.py thumbs W [--sizes youtube,og,devto,hashnode] [--layouts face,number,diagram,versus,editorial] [--text "3-6 words"]`. Set `thumb{text,kicker}` in story.json (from the source, 3-6 words read best). Show the person the layouts (catalogue section "Thumbnails and blog covers") and ask which to use. Rules: docs/THUMBNAILS.md.

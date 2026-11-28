@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.3
+
+- **Animated icons in architecture diagrams**: every block can carry an icon (cards, start/end pills, and a round badge on decision diamonds). In the GIF and MP4 the icons come alive in workflow order: the step the flow has reached pops and glows, and every icon bobs gently, in the same seamless loop.
+- **Swimlane (`flow`) layout**: lanes are sized by how many steps they hold; a decision in another lane sits beside the step it judges (fewer, taller rows); diamonds are drawn above the lane backgrounds (they were washed out); loop-backs run to the right of every block they pass instead of through the labels in a lane gutter; labelled edges get room for their pill between rows; edge labels never leave the diagram.
+- The swimlane sample now has icons; flow steps accept `icon` in story.json.
+
 ## 3.3.2
 
 - **Video for every GIF, including architecture diagrams**: `build --artifacts gif` now also writes `<slug>-linkedin.mp4`, the same seamless loop as an 18-second 1080x1350 video for posting as native video. The loop renders at 20 fps, so the video is smooth; the GIF stays at 10 fps.

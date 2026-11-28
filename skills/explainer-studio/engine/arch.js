@@ -45,23 +45,26 @@ const longest = pts => { let best = 0, bi = 0; for (let i = 0; i < pts.length - 
 
 // —— node cards ——
 function node(root, svg, n, x, y, w, h, P, hand, i, shape = 'rect') {
-  const font = hand ? 'hand' : 'sans', ink = hand ? '#1e1e1e' : C.ink, hasIc = n.icon && w > 150 && shape === 'rect', tw = w - (hasIc ? 70 : 24) - 10;
+  const font = hand ? 'hand' : 'sans', ink = hand ? '#1e1e1e' : C.ink, hasIc = n.icon && w > 150 && shape !== 'diamond', ts = Math.min(48, h - 10), tw = w - (hasIc ? ts + 22 + (shape === 'pill' ? 12 : 0) : 24) - 10;
   if (shape === 'diamond') {
     const pts = [[x + w / 2, y], [x + w, y + h / 2], [x + w / 2, y + h], [x, y + h / 2]];
     if (hand) { NS(svg, 'path', { d: roundPts(pts, 8, true), fill: P.soft, stroke: 'none' }); roughPoly(svg, pts, { stroke: ink, seed: 40 + i, closed: true }); }
     else path(svg, roundPts(pts, 14, true), { stroke: P.ink, w: 3, fill: '#fff', sharp: true });   // white so it stands out from a tinted lane
-    const z = fitSize(n.title, { w: w * .58, h: h * .5, max: hand ? 26 : 22, min: 20, weight: hand ? 400 : 700, font, lh: 1.1 });
-    tx(root, 'ar-n' + i, n.title, { x: x + w * .21, y: y + h * .25, w: w * .58, h: h * .5, size: z, weight: hand ? 400 : 700, font, color: hand ? ink : P.ink, align: 'center', wrap: true, lh: 1.1 });
-    return;
+    const z = fitSize(n.title, { w: w * .64, h: h * .5, max: hand ? 26 : 22, min: 20, weight: hand ? 400 : 700, font, lh: 1.1 });
+    tx(root, 'ar-n' + i, n.title, { x: x + w * .18, y: y + h * .25, w: w * .64, h: h * .5, size: z, weight: hand ? 400 : 700, font, color: hand ? ink : P.ink, align: 'center', wrap: true, lh: 1.1 });
+    if (!n.icon) return null;   // a round icon badge on the diamond's right corner (arrows arrive at the top and the left)
+    const bs = Math.min(44, h * .62);
+    return E(root, 'abs', `left:${f1(x + w - bs / 2 - 4)}px;top:${f1(y + h / 2 - bs / 2)}px;width:${f1(bs)}px;height:${f1(bs)}px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px ${P.ink};display:flex;align-items:center;justify-content:center`, icon(n.icon, Math.round(bs * .58), P.ink, 2.2));
   }
   const r = shape === 'pill' ? h / 2 : hand ? 10 : 20;
   if (hand) { NS(svg, 'rect', { x, y, width: w, height: h, rx: r, fill: '#fff' }); hachure(svg, x, y, w, h, P.bd, 70 + i); roughPoly(svg, rectPts(x, y, w, h), { stroke: ink, seed: 90 + i, closed: true }); }
   else { const b = card(root, { x, y, w, h, r, fill: shape === 'pill' ? P.soft : '#fff', bd: P.bd, bw: 3, css: 'box-shadow:0 10px 22px rgba(20,20,19,.08);' }); b.dataset.round = shape === 'pill' ? '1' : ''; }
-  if (hasIc) E(root, 'abs', `left:${x + 12}px;top:${f1(y + (h - 48) / 2)}px;width:48px;height:48px;border-radius:14px;background:${hand ? 'transparent' : P.soft};display:flex;align-items:center;justify-content:center`, icon(n.icon, 30, hand ? ink : P.ink, hand ? 2.2 : 2));
-  const tx0 = x + (hasIc ? 70 : 14), sub = n.sub && h >= 84, th = sub ? h * .5 : h - 12;
+  const ic = hasIc ? E(root, 'abs', `left:${f1(x + (shape === 'pill' ? 18 : 10))}px;top:${f1(y + (h - ts) / 2)}px;width:${ts}px;height:${ts}px;border-radius:${Math.round(ts * .3)}px;background:${hand ? 'transparent' : P.soft};display:flex;align-items:center;justify-content:center`, icon(n.icon, Math.round(ts * .62), hand ? ink : P.ink, hand ? 2.2 : 2)) : null;
+  const tx0 = x + (hasIc ? ts + 22 + (shape === 'pill' ? 12 : 0) : 14), sub = n.sub && h >= 84, th = sub ? h * .5 : h - 12;
   const z = fitSize(n.title, { w: tw, h: th - 4, max: hand ? 30 : 24, min: 20, weight: hand ? 400 : 700, font, lh: 1.1 });
   tx(root, 'ar-n' + i, n.title, { x: tx0, y: y + (sub ? 8 : 6), w: tw, h: th, size: z, weight: hand ? 400 : 700, font, color: ink, wrap: true, lh: 1.1, align: hasIc ? 'left' : 'center' });
   if (sub) { const zs = fitSize(n.sub, { w: tw, h: h - th - 14, max: hand ? 22 : 18, min: 20, weight: hand ? 400 : 500, font, lh: 1.15 }); tx(root, 'ar-s' + i, n.sub, { x: tx0, y: y + th + 2, w: tw, h: h - th - 10, size: zs, weight: hand ? 400 : 500, font, color: hand ? '#444' : C.mid, wrap: true, lh: 1.15, align: hasIc ? 'left' : 'center', css: 'align-items:flex-start;' }); }
+  return ic;
 }
 
 // —— connectors: orthogonal routes with rounded elbows (auto in path()), or hand-drawn segments ——
@@ -77,7 +80,7 @@ function connector(svg, pts, { color, hand, dashed, seed }) {
 // —— zone styles (sketch + cloud) ——
 function zones(root, A, B, hand) {
   const svg = svgLayer(root, 1080, 1920), T = TONES(), Z = A.zones && A.zones.length ? A.zones : [{ title: '' }], nz = Z.length, gap = 18, legendH = hand ? 0 : 44;
-  const zh = (B.h - legendH - gap * (nz - 1)) / nz, pos = {}, edges = [], ink = hand ? '#1e1e1e' : null;
+  const zic = [], zh = (B.h - legendH - gap * (nz - 1)) / nz, pos = {}, edges = [], ink = hand ? '#1e1e1e' : null;
   Z.forEach((z, k) => {
     const P = T[(z.group ?? k) % T.length], y = B.y + k * (zh + gap);
     if (hand) { roughPoly(svg, rectPts(B.x, y, B.w, zh), { stroke: '#8a8a8a', w: 1.8, seed: 7 + k, closed: true }).setAttribute('stroke-dasharray', '10 8'); }
@@ -86,7 +89,7 @@ function zones(root, A, B, hand) {
     const ns = A.nodes.filter(n => (n.zone ?? 0) === k), rows = ns.length > 4 ? 2 : 1, per = Math.ceil(ns.length / rows), top = y + (z.title ? 44 : 14), avail = zh - (z.title ? 54 : 24);
     const nh = Math.min(hand ? 104 : 96, (avail - (rows - 1) * 16) / rows), nw = Math.min(300, (B.w - 40 - (per - 1) * 26) / per);
     ns.forEach((n, j) => { const r = Math.floor(j / per), c = j % per, cnt = r === rows - 1 ? ns.length - r * per : per, x = B.x + (B.w - (cnt * nw + (cnt - 1) * 26)) / 2 + c * (nw + 26), yy = top + (avail - (rows * nh + (rows - 1) * 16)) / 2 + r * (nh + 16);
-      pos[n.id] = { x, y: yy, w: nw, h: nh, zone: k, P: T[(n.group ?? Z[k].group ?? k) % T.length] }; node(root, svg, n, x, yy, nw, nh, pos[n.id].P, hand, A.nodes.indexOf(n)); });
+      pos[n.id] = { x, y: yy, w: nw, h: nh, zone: k, P: T[(n.group ?? Z[k].group ?? k) % T.length] }; zic[A.nodes.indexOf(n)] = { el: node(root, svg, n, x, yy, nw, nh, pos[n.id].P, hand, A.nodes.indexOf(n)), color: pos[n.id].P.ink }; });
   });
   const esvg = svgLayer(root, 1080, 1920);   // connectors above the zone backgrounds
   const outs = {}; A.edges.forEach(e => { (outs[e.from] = outs[e.from] || []).push(e); });
@@ -102,26 +105,34 @@ function zones(root, A, B, hand) {
   if (!hand && legendH) { const lg = E(root, 'abs', `left:${B.x}px;top:${B.y + B.h - 34}px;width:${B.w}px;display:flex;gap:22px;justify-content:center;align-items:center`);
     const it = (t, dash, k) => { const s = E(lg, 'tx sans', `display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:600;color:${C.mid};white-space:nowrap`); const sp = E(s, '', 'display:block', '', 'span'); sp.textContent = t; E(s, '', `width:34px;height:0;border-top:3px ${dash ? 'dashed' : 'solid'} ${C.mid};order:-1`); s.dataset.id = 'ar-lg' + k; s.dataset.text = t; };
     it('request / data flow', false, 0); if (A.edges.some(e => e.dashed)) it('async / optional', true, 1); }
-  return { edges };
+  return { edges, icons: zic.filter(q => q && q.el) };
 }
 
 // —— flowchart with swimlanes ——
 function flow(root, A, B) {
-  const svg = svgLayer(root, 1080, 1920), T = TONES(), L = A.lanes && A.lanes.length ? A.lanes : [{ title: '' }], nl = L.length, lw = B.w / nl, head = L[0].title ? 52 : 0, steps = A.steps, n = steps.length;
-  L.forEach((l, k) => { const P = T[k % T.length], x = B.x + k * lw;
+  const T = TONES(), L = A.lanes && A.lanes.length ? A.lanes : [{ title: '' }], nl = L.length, head = L[0].title ? 52 : 0, steps = A.steps, n = steps.length;
+  const wt = L.map((_, k) => 2 + steps.filter(s => Math.min(nl - 1, s.lane ?? 0) === k).length), ws = wt.reduce((a, b) => a + b, 0), lwOf = L.map((_, k) => B.w * wt[k] / ws);   // busy lanes get more room
+  for (let it = 0; it < 3; it++) { const lo = lwOf.map(v => v < 260), need = lo.reduce((a, l, k) => a + (l ? 260 - lwOf[k] : 0), 0), rest = lwOf.reduce((a, v, k) => a + (lo[k] ? 0 : v), 0); if (!need || !rest) break; lwOf.forEach((v, k) => { lwOf[k] = lo[k] ? 260 : v - need * v / rest; }); }
+  const lx = k => B.x + lwOf.slice(0, k).reduce((a, b) => a + b, 0);
+  L.forEach((l, k) => { const P = T[k % T.length], x = lx(k), lw = lwOf[k];
     const bg = card(root, { x: x + 4, y: B.y, w: lw - 8, h: B.h, r: 22, fill: k % 2 ? '#fff' : P.soft, bd: C.line, bw: 2, shadow: false, bg: true }); bg.style.opacity = '.9';
     if (l.title) tx(root, 'ar-l' + k, l.title, { x: x + 10, y: B.y + 8, w: lw - 20, h: 38, size: fitSize(l.title, { w: lw - 24, h: 34, max: 22, min: 20, weight: 800 }), weight: 800, color: P.ink, align: 'center' }); });
-  const rh = (B.h - head - 16) / n, pos = {}, ids = steps.map((s, i) => s.id ?? String(i));
+  const svg = svgLayer(root, 1080, 1920);   // after the lanes, so diamonds are drawn on top of the lane backgrounds
+  const laneOf = st => Math.min(nl - 1, st.lane ?? 0), row = [];   // a decision in another lane sits beside the step it judges
+  steps.forEach((st, i) => { row[i] = i === 0 ? 0 : row[i - 1] + (st.kind === 'decision' && laneOf(st) !== laneOf(steps[i - 1]) && steps[i - 1].kind !== 'decision' ? 0 : 1); });
+  const nr = row[n - 1] + 1, icons = [], rh = (B.h - head - 16) / nr, pos = {}, ids = steps.map((s, i) => s.id ?? String(i)), gapMin = (A.edges || []).some(e => e && e.label) ? 54 : 26;   // a labelled edge needs room for its pill between two rows
   steps.forEach((s, i) => { const k = Math.min(nl - 1, s.lane ?? 0), shape = s.kind === 'decision' ? 'diamond' : (s.kind === 'start' || s.kind === 'end') ? 'pill' : 'rect';
-    const w = Math.min(lw - 36, shape === 'diamond' ? 240 : 280), h = Math.min(rh - 26, shape === 'diamond' ? 112 : 84), x = B.x + k * lw + (lw - w) / 2, y = B.y + head + 8 + i * rh + (rh - h) / 2;
-    pos[ids[i]] = { x, y, w, h, i, P: T[k % T.length] }; node(root, svg, s, x, y, w, h, pos[ids[i]].P, false, i, shape); });
+    const lw = lwOf[k], bd = shape === 'diamond' && s.icon ? 48 : 0, w = Math.min(lw - 36 - bd, shape === 'diamond' ? Math.max(240, Math.min(300, lw * .8)) : Math.max(280, Math.min(420, lw * .8))), h = Math.min(rh - gapMin, shape === 'diamond' ? 112 : 84), x = lx(k) + (lw - w - bd) / 2, y = B.y + head + 8 + row[i] * rh + (rh - h) / 2;
+    pos[ids[i]] = { x, y, w, h, i: row[i], rx: x + w + bd / 2, P: T[k % T.length] };   /* rx: right edge including the icon badge */ icons[i] = { el: node(root, svg, s, x, y, w, h, pos[ids[i]].P, false, i, shape), color: pos[ids[i]].P.ink }; });
   const E_ = A.edges && A.edges.length ? A.edges : steps.slice(1).map((s, i) => ({ from: ids[i], to: ids[i + 1] })), edges = [], esvg = svgLayer(root, 1080, 1920);
   E_.forEach((e, i) => { const a = pos[e.from], b = pos[e.to]; if (!a || !b) return; let pts;
-    if (b.i > a.i) { const x1 = a.x + a.w / 2, y1 = a.y + a.h, x2 = b.x + b.w / 2, y2 = b.y, my = y1 + Math.min(26, (y2 - y1) / 2); pts = Math.abs(x1 - x2) < 4 ? [[x1, y1], [x2, y2]] : [[x1, y1], [x1, my], [x2, my], [x2, y2]]; }
-    else { const xr = Math.min(B.x + B.w - 10, Math.max(a.x + a.w, b.x + b.w) + 34); pts = [[a.x + a.w, a.y + a.h / 2], [xr, a.y + a.h / 2], [xr, b.y + b.h / 2], [b.x + b.w, b.y + b.h / 2]]; }
+    if (b.i === a.i) { const ltr = b.x > a.x, ya = a.y + a.h / 2, yb = b.y + b.h / 2; pts = [[ltr ? a.x + a.w : a.x, ya], [ltr ? b.x : b.x + b.w, yb]]; }   // side by side in one row
+    else if (b.i > a.i) { const x1 = a.x + a.w / 2, y1 = a.y + a.h, x2 = b.x + b.w / 2, y2 = b.y, my = y1 + Math.min(26, (y2 - y1) / 2); pts = Math.abs(x1 - x2) < 4 ? [[x1, y1], [x2, y2]] : [[x1, y1], [x1, my], [x2, my], [x2, y2]]; }
+    else {   // loop back on the right of every node it passes, so it never runs through the labels in a lane gutter
+      const span = Object.values(pos).filter(q => q.i >= b.i && q.i <= a.i), xr = Math.min(B.x + B.w - 12, Math.max(...span.map(q => q.rx ?? q.x + q.w)) + 30); pts = [[a.rx ?? a.x + a.w, a.y + a.h / 2], [xr, a.y + a.h / 2], [xr, b.y + b.h / 2], [b.x + b.w, b.y + b.h / 2]]; }
     const color = b.i < a.i ? C.clayD : a.P.ink, route = connector(esvg, pts, { color, hand: false, dashed: b.i < a.i, seed: i }); edges.push({ path: route, color });
-    if (e.label) { const [lx, ly] = longest(pts); label(root, 'ar-e' + i, e.label, lx, ly, { hand: false, color, maxW: 140 }); } });
-  return { edges };
+    if (e.label) { const [lx, ly] = longest(pts), hw = Math.min(70, e.label.length * 7 + 18) + 6; label(root, 'ar-e' + i, e.label, Math.max(B.x + hw, Math.min(B.x + B.w - hw, lx)), ly, { hand: false, color, maxW: 140 }); } });   // a pill never leaves the diagram
+  return { edges, icons: icons.filter(q => q && q.el) };
 }
 
 // —— sequence diagram ——

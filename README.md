@@ -7,7 +7,7 @@
 Ranked GIF diagrams · chart carousels · narrated Reels with designed covers · verified walkthrough videos · LinkedIn posts
 
 [![CI](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml/badge.svg)](https://github.com/sarveshtalele/content-creation/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-3.3.2-D97757)
+![Version](https://img.shields.io/badge/version-3.3.3-D97757)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)
 ![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Antigravity-141413)
@@ -47,7 +47,7 @@ Ranked GIF diagrams · chart carousels · narrated Reels with designed covers ·
 | **GIF** | 1080x1350 looping GIF (under 5 MB) + the same loop as an MP4 video + still PNG | 16 templates (funnel, pipeline, orbit, exploded layers, skyline, conveyor, card grid… and an **animated chart** template for any of the 21 charts), **ranked for your content**; you choose. The complete diagram is on screen from the first frame; only the flow moves (dots on connectors, pulses, belts), in a seamless loop |
 | **Carousel** | PDF + one PNG per slide + first-comment text | 5 cover layouts and over 30 slide types, including **21 chart slides**: lollipop, dumbbell, slope, bullet, radar, sankey, alluvial, network, arc, flowchart, donut, waffle, treemap, sunburst, mind map, decision tree, timeline, Gantt, waterfall, line/area, heatmap |
 | **Reel** | 1080x1920 MP4 with offline narration and subtitles | Claude light theme by default, kinetic word-by-word hook, masked scene reveals, camera push, animated counters, particles on connectors |
-| **Architecture diagram** | GIF and MP4 video (flow-only motion), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
+| **Architecture diagram** | GIF and MP4 video (flowing connectors and icons that come alive step by step), PNG and carousel slide | One diagram for a whole post in four styles: Excalidraw-like **sketch**, **cloud** reference architecture, **swimlane** flowchart, **sequence** diagram |
 | **Thumbnail / blog cover** | PNG per size and layout | YouTube 1280×720, Open Graph 1200×630, LinkedIn newsletter 1920×1080, dev.to 1000×420, Hashnode 1600×840; five layouts, each with your photo, name and tagline (face, number, diagram, versus, editorial) following current thumbnail research |
 | **Reel cover** | 1080x1920 PNG per layout + poster JPG | Designed (not a video frame): hero, question, number, split, face; safe for the profile-grid crop and the Reels buttons |
 | **Walkthrough video** | 1080x1920 MP4 + E2E report | A real guide run in a browser by **Playwright**: every step is performed, checked (expected vs actual) and shown with a cursor, a highlight and a Verified/Failed badge |
